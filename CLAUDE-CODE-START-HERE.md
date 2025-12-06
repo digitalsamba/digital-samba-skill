@@ -4,6 +4,7 @@
 
 This is the Digital Samba Claude Code skill - documentation to help developers integrate video conferencing using Digital Samba's API and SDK.
 
+**Repo**: https://github.com/digitalsamba/digital-samba-skill (private)
 **Planning docs location**: `~/Documents/Obsidian Vault/01-Projects/Digital-Samba-Skill/`
 
 Read these for full context:
