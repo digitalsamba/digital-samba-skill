@@ -62,13 +62,13 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 });
 
 // React to events
-sambaFrame.on('participantJoined', handleJoin);
-sambaFrame.on('participantLeft', handleLeave);
+sambaFrame.on('userJoined', handleJoin);
+sambaFrame.on('userLeft', handleLeave);
 sambaFrame.on('recordingStarted', handleRecording);
 
-// Control room
-document.getElementById('mute-all').onclick = () => {
-  sambaFrame.muteAllParticipants();
+// Control room (mute a specific user)
+document.getElementById('mute-user').onclick = () => {
+  sambaFrame.requestMute('user-id');
 };
 
 sambaFrame.load();
