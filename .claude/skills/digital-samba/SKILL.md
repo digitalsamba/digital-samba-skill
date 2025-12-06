@@ -52,8 +52,7 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
   frame: document.getElementById('video-frame')
 });
 
-sambaFrame.on('participantJoined', (p) => console.log(`${p.name} joined`));
-sambaFrame.muteAllParticipants();
+sambaFrame.on('userJoined', (e) => console.log(`${e.data.name} joined`));
 sambaFrame.load();
 ```
 
