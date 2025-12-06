@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create skill zip
+        run: |
+          cd .claude/skills
+          zip -r ../../digital-samba.zip digital-samba/
+          cd ../..
+          echo "Created digital-samba.zip"
+          unzip -l digital-samba.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: digital-samba.zip
+          generate_release_notes: true
+          body: |
+            ## Digital Samba Skill for Claude
+
+            ### Installation
+
+            **Claude Code (CLI):**
+            ```bash
+            cp -r .claude/skills/digital-samba your-project/.claude/skills/
+            ```
+
+            **Claude Desktop/Web:**
+            1. Download `digital-samba.zip` below
+            2. Go to Claude Settings > Skills
+            3. Click "Add custom skill" and upload the ZIP
+
+            ### What's Included
+
+            - `SKILL.md` - Quick start guide
+            - `api-reference.md` - REST API (97 endpoints)
+            - `sdk-reference.md` - SDK methods & events
+            - `patterns.md` - 6 integration patterns
+            - `jwt-tokens.md` - Token authentication
+
+            See [README](https://github.com/digitalsamba/digital-samba-skill#readme) for full documentation.
