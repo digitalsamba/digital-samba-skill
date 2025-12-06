@@ -101,8 +101,41 @@ digital-samba-skill/
 After each Claude Code session:
 - [ ] Commit work with descriptive message
 - [ ] Push to origin
-- [ ] Update Obsidian ROADMAP.md with progress
-- [ ] Note any blockers or decisions in session log
+- [ ] Update Obsidian project (see below)
+
+## Obsidian Project Tracking
+
+**Project location**: `/Users/conalmullan/Documents/Obsidian Vault/01-Projects/Digital-Samba-Skill/`
+
+### After Each Session, Update:
+
+1. **ROADMAP.md** (`00-Command/ROADMAP.md`)
+   - Mark completed tasks with `[x]`
+   - Add session to Session Log table
+   - Note any new blockers/decisions
+
+2. **Session Summary** (optional but recommended)
+   - Template: `00-Command/01-Sessions/SESSION-TEMPLATE.md`
+   - Save as: `00-Command/01-Sessions/Planning-Sessions/Session-YYYY-MM-DD-NN.md`
+   - Or for implementation: `00-Command/01-Sessions/Implementation-Sessions/`
+
+3. **PROJECT-COMMAND.md** (`00-Command/PROJECT-COMMAND.md`)
+   - Update progress bars
+   - Update "Current Focus" if changed
+
+### Example Session Log Entry
+```markdown
+| 2 | 2025-12-06 | Implementation | Complete API reference | api-reference.md populated |
+```
+
+### Quick Update Commands
+```bash
+# View current roadmap
+cat ~/Documents/Obsidian\ Vault/01-Projects/Digital-Samba-Skill/00-Command/ROADMAP.md
+
+# Edit roadmap (or use any editor)
+code ~/Documents/Obsidian\ Vault/01-Projects/Digital-Samba-Skill/00-Command/ROADMAP.md
+```
 
 ## Questions to Resolve
 
