@@ -107,6 +107,13 @@ After each Claude Code session:
 
 **Project location**: `/Users/conalmullan/Documents/Obsidian Vault/01-Projects/Digital-Samba-Skill/`
 
+> **Note**: Claude Code needs file access to the Obsidian vault. If you can't access it, the user may need to grant permissions or you can ask them to update manually.
+
+### Verify Access
+```bash
+ls ~/Documents/Obsidian\ Vault/01-Projects/Digital-Samba-Skill/00-Command/
+```
+
 ### After Each Session, Update:
 
 1. **ROADMAP.md** (`00-Command/ROADMAP.md`)
