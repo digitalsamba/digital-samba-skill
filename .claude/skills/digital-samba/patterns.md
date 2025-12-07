@@ -98,6 +98,8 @@ iframe.src = `https://${TEAM_DOMAIN}.digitalsamba.com/${roomId}?token=${token}`;
 
 Best for: Custom UIs, programmatic control
 
+> **Production tip**: Bundle the SDK into your app rather than fetching from npm/CDN at runtime. npm outages can break your app's availability.
+
 ```javascript
 import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
 

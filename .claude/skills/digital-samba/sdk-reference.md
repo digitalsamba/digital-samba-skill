@@ -15,6 +15,8 @@ Or via CDN:
 <script src="https://unpkg.com/@digitalsamba/embedded-sdk"></script>
 ```
 
+**Production recommendation**: Bundle the SDK into your application rather than fetching from npm/CDN at runtime. npm and CDN outages can break your app's availability. Use your bundler (webpack, vite, esbuild) to include it in your production build.
+
 ## Security Requirement
 
 The SDK requires a **secure context** (HTTPS). Local development accepts:
