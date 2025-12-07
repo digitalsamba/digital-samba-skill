@@ -54,6 +54,8 @@ cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skil
 
 ### Claude Desktop
 
+<img src="assets/claude-desktop-install.gif" alt="Claude Desktop Installation" width="600">
+
 1. Download `digital-samba.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
 2. Open Claude Desktop → Settings → Capabilities → Skills
 3. Click "Upload skill" and select the downloaded ZIP
