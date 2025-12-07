@@ -25,3 +25,8 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+
+# Local development files (not part of the distributed skill)
+CLAUDE.md
+.claude/commands/
+*.cast
