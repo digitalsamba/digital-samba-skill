@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🎥 Digital Samba Skill for Claude Code
+<img src="assets/embedded-app-icon.png" alt="Digital Samba" width="80">
+
+# Digital Samba Skill for Claude Code
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-blueviolet)](https://claude.ai/code)
