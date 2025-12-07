@@ -2,10 +2,10 @@
 
 <img src="assets/embedded-app-icon.png" alt="Digital Samba" width="80">
 
-# Digital Samba Skill for Claude Code
+# Digital Samba Skill for Claude
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-blueviolet)](https://claude.ai/code)
+[![Claude](https://img.shields.io/badge/Claude-Skill-blueviolet)](https://docs.anthropic.com/en/docs/claude-code/skills)
 [![Version](https://img.shields.io/github/v/release/digitalsamba/digital-samba-skill)](https://github.com/digitalsamba/digital-samba-skill/releases)
 
 AI-assisted development for embedding white-label video conferencing into your platform.
@@ -16,11 +16,13 @@ AI-assisted development for embedding white-label video conferencing into your p
 
 ---
 
-## 🤖 What's a Claude Code Skill?
+## 🤖 What's a Claude Skill?
 
 A **skill** gives Claude domain expertise. It's a set of markdown files that teach Claude about a specific API, SDK, or workflow. When you install this skill, Claude understands Digital Samba's video conferencing platform and can write integration code, explain concepts, and troubleshoot issues—without you having to paste documentation into every conversation.
 
-[Learn more about Claude Code skills →](https://docs.anthropic.com/en/docs/claude-code/skills)
+Works with both **Claude Code** (CLI) and **Claude Desktop**.
+
+[Learn more about skills →](https://docs.anthropic.com/en/docs/claude-code/skills)
 
 ---
 
@@ -39,11 +41,18 @@ Building a telehealth app? Online learning platform? Virtual consultation servic
 
 ## 🚀 Quick Start
 
+### Claude Code (CLI)
+
 ```bash
 # Clone and copy to your project
 git clone https://github.com/digitalsamba/digital-samba-skill.git
 cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skills/
 ```
+
+### Claude Desktop
+
+1. Download `digital-samba-skill.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
+2. Extract to `.claude/skills/digital-samba/` in your project folder
 
 Then ask Claude:
 
@@ -70,7 +79,7 @@ cd your-project
 git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba-skill
 ```
 
-### Option 3: Download ZIP (Claude Desktop/Web)
+### Option 3: Download ZIP
 
 1. Download `digital-samba-skill.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
 2. Extract to `.claude/skills/digital-samba/` in your project
@@ -135,7 +144,7 @@ The `examples/` directory contains ready-to-use code for common integration scen
 ## 📋 Requirements
 
 - **Digital Samba Account** - Get your Developer Key from [dashboard.digitalsamba.com](https://dashboard.digitalsamba.com)
-- **Claude Code** or **Claude Desktop/Web** with custom skills enabled
+- **Claude Code** (CLI) or **Claude Desktop** with project skills enabled
 
 ---
 
