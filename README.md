@@ -42,6 +42,8 @@ Building a telehealth app? Online learning platform? Virtual consultation servic
 
 ### Claude Code (CLI)
 
+<img src="assets/claude-code-install.gif" alt="Claude Code Installation" width="600">
+
 ```bash
 # Clone and copy to your project
 git clone https://github.com/digitalsamba/digital-samba-skill.git
