@@ -17,9 +17,10 @@ jobs:
 
       - name: Create skill zip
         run: |
-          cd .claude/skills
-          zip -r ../../digital-samba.zip digital-samba/
-          cd ../..
+          # Claude Desktop requires SKILL.md at root level of ZIP
+          cd .claude/skills/digital-samba
+          zip -r ../../../digital-samba.zip .
+          cd ../../..
           echo "Created digital-samba.zip"
           unzip -l digital-samba.zip
 

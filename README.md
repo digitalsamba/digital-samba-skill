@@ -52,8 +52,9 @@ cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skil
 
 ### Claude Desktop
 
-1. Download `digital-samba-skill.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
-2. Extract to `.claude/skills/digital-samba/` in your project folder
+1. Download `digital-samba.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
+2. Open Claude Desktop → Settings → Capabilities → Skills
+3. Click "Upload skill" and select the downloaded ZIP
 
 Then ask Claude:
 
@@ -80,10 +81,11 @@ cd your-project
 git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba-skill
 ```
 
-### Option 3: Download ZIP
+### Option 3: Download ZIP (Claude Desktop)
 
-1. Download `digital-samba-skill.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
-2. Extract to `.claude/skills/digital-samba/` in your project
+1. Download `digital-samba.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
+2. Open Claude Desktop → Settings → Capabilities → Skills
+3. Click "Upload skill" and select the ZIP
 
 ---
 
