@@ -22,6 +22,8 @@ A **skill** gives Claude domain expertise. It's a set of markdown files that tea
 
 Works with both **Claude Code** (CLI) and **Claude Desktop**.
 
+> **Note:** Skills install differently on each platform. Claude Code uses project-level folders (`.claude/skills/`), while Claude Desktop uses a ZIP upload via Settings. We provide both methods below.
+
 [Learn more about skills →](https://docs.anthropic.com/en/docs/claude-code/skills)
 
 ---
