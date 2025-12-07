@@ -17,6 +17,13 @@ jobs:
 
       - name: Create skill zip
         run: |
+          # Extract version from tag (e.g., v1.0.2 -> 1.0.2)
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "Version: $VERSION"
+
+          # Update VERSION file to match release tag
+          echo "$VERSION" > .claude/skills/digital-samba/VERSION
+
           # Claude Desktop requires SKILL.md at root level of ZIP
           cd .claude/skills/digital-samba
           zip -r ../../../digital-samba.zip .
