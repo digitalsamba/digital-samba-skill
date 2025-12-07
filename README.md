@@ -10,7 +10,7 @@
 
 AI-assisted development for embedding white-label video conferencing into your platform.
 
-[Quick Start](#-quick-start) • [Installation](#-installation) • [Examples](#-code-examples) • [Resources](#-resources)
+[Installation](#-installation) • [Usage](#-usage) • [Examples](#-code-examples) • [Resources](#-resources)
 
 </div>
 
@@ -40,7 +40,7 @@ Building a telehealth app? Online learning platform? Virtual consultation servic
 
 ---
 
-## 🚀 Quick Start
+## 📦 Installation
 
 ### Claude Code (CLI)
 
@@ -52,6 +52,13 @@ git clone https://github.com/digitalsamba/digital-samba-skill.git
 cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skills/
 ```
 
+**Alternative:** Add as a git submodule:
+
+```bash
+cd your-project
+git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba-skill
+```
+
 ### Claude Desktop
 
 <img src="assets/claude-desktop-install.gif" alt="Claude Desktop Installation" width="600">
@@ -59,37 +66,6 @@ cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skil
 1. Download `digital-samba.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
 2. Open Claude Desktop → Settings → Capabilities → Skills
 3. Click "Upload skill" and select the downloaded ZIP
-
-Then ask Claude:
-
-> "Help me embed video conferencing into my React app using Digital Samba"
-
----
-
-## 📦 Installation
-
-### Option 1: Copy Skill Folder (Recommended)
-
-```bash
-# Clone the repo
-git clone https://github.com/digitalsamba/digital-samba-skill.git
-
-# Copy skill to your project
-cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skills/
-```
-
-### Option 2: Git Submodule
-
-```bash
-cd your-project
-git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba-skill
-```
-
-### Option 3: Download ZIP (Claude Desktop)
-
-1. Download `digital-samba.zip` from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases)
-2. Open Claude Desktop → Settings → Capabilities → Skills
-3. Click "Upload skill" and select the ZIP
 
 ---
 
