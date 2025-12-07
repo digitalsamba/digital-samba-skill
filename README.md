@@ -158,6 +158,18 @@ The `examples/` directory contains ready-to-use code for common integration scen
 
 ---
 
+## 🔄 Staying Updated
+
+Anthropic currently doesn't support auto-updating of skills. To get the latest version:
+
+1. **Watch this repo** - Click "Watch" → "Releases only" to get notified of updates
+2. **Check your version** - Compare `.claude/skills/digital-samba/VERSION` with the [latest release](https://github.com/digitalsamba/digital-samba-skill/releases)
+3. **Update manually** - Re-download and replace the skill folder
+
+We update this skill when Digital Samba releases new API endpoints or SDK features.
+
+---
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.
