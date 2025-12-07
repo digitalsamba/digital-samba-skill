@@ -16,6 +16,14 @@ AI-assisted development for embedding white-label video conferencing into your p
 
 ---
 
+## 🤖 What's a Claude Code Skill?
+
+A **skill** gives Claude domain expertise. It's a set of markdown files that teach Claude about a specific API, SDK, or workflow. When you install this skill, Claude understands Digital Samba's video conferencing platform and can write integration code, explain concepts, and troubleshoot issues—without you having to paste documentation into every conversation.
+
+[Learn more about Claude Code skills →](https://docs.anthropic.com/en/docs/claude-code/skills)
+
+---
+
 ## ✨ What This Skill Does
 
 Building a telehealth app? Online learning platform? Virtual consultation service? This skill helps Claude assist you with integrating Digital Samba's video conferencing into your product.
