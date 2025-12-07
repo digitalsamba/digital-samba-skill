@@ -16,7 +16,7 @@ AI-assisted development for embedding white-label video conferencing into your p
 
 ---
 
-## 🤖 What's a Claude Skill?
+## 🤖 What is a Claude Skill?
 
 A **skill** gives Claude domain expertise. It's a set of markdown files that teach Claude about a specific API, SDK, or workflow. When you install this skill, Claude understands Digital Samba's video conferencing platform and can write integration code, explain concepts, and troubleshoot issues—without you having to paste documentation into every conversation.
 
@@ -32,10 +32,9 @@ Building a telehealth app? Online learning platform? Virtual consultation servic
 
 - 🏠 **Room Management** - Create and configure video rooms via API
 - 🔐 **User Authentication** - Generate JWT tokens to securely connect your users
-- 📺 **Iframe Embedding** - Integrate video calls seamlessly into your UI
+- 📺 **Embedding** - Integrate video calls seamlessly into your UI
 - 🎛️ **SDK Control** - Programmatically control the video experience
 - 🔔 **Webhooks** - React to room events in your backend
-- 🎬 **Recordings** - Capture and manage meeting recordings
 
 ---
 
