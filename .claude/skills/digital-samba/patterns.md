@@ -1,5 +1,50 @@
 # Integration Patterns
 
+## Iframe Sizing (Important)
+
+The Digital Samba SDK injects an iframe into the container element. **The iframe does not auto-size** - you must explicitly set dimensions on the container or the iframe will render very small.
+
+### CSS Solution (Recommended)
+
+```css
+/* Container must have explicit dimensions */
+.video-container {
+  width: 100%;
+  height: 100vh; /* or calc(100vh - headerHeight) */
+  position: relative;
+}
+
+/* Target the injected iframe */
+.video-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+```
+
+### React/Tailwind Example
+
+```jsx
+{/* Parent needs explicit height */}
+<div className="relative" style={{ height: 'calc(100vh - 60px)' }}>
+  {/* Container targets child iframe with Tailwind arbitrary selectors */}
+  <div
+    ref={containerRef}
+    className="absolute inset-0 [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
+  />
+</div>
+```
+
+### Common Mistakes
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Tiny iframe | Container has no height | Set explicit `height` on container |
+| Iframe overflows | No `overflow: hidden` | Add overflow control to parent |
+| Scrollbars appear | iframe border | Add `border: none` to iframe |
+
+---
+
 ## Pattern 1: Simple Public Room
 
 Best for: Quick demos, open meetings
