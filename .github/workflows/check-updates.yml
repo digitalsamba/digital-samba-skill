@@ -58,7 +58,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Check if issue already exists
           EXISTING=$(gh issue list --label "api-update" --state open --json number --jq 'length')
           if [ "$EXISTING" -gt 0 ]; then
             echo "API update issue already exists"
@@ -66,33 +65,37 @@ jobs:
           fi
 
           DATE=$(date +%Y-%m-%d)
+          cat << 'ISSUE_BODY' > /tmp/issue-body.md
+          The Digital Samba OpenAPI specification has changed.
+
+          ## Next Steps
+
+          1. Start a Claude Code session in this repo
+          2. Run `/session-start`
+          3. Ask Claude to analyze the API changes and update the skill
+
+          ## Quick Command
+
+          ```
+          Compare openapi-stored.yaml with the current spec at https://developer.digitalsamba.com/rest-api/openapi.yaml
+
+          Identify:
+          - New endpoints
+          - Changed parameters
+          - Removed endpoints (flag for review)
+
+          Update api-reference.md accordingly.
+          ```
+          ISSUE_BODY
+          echo "" >> /tmp/issue-body.md
+          echo "---" >> /tmp/issue-body.md
+          echo "*Detected by automated check on ${DATE}*" >> /tmp/issue-body.md
+
           gh issue create \
-            --title "🔄 API Update Detected" \
+            --title "API Update Detected" \
             --label "api-update" \
             --label "needs-review" \
-            --body "The Digital Samba OpenAPI specification has changed.
-
-## Next Steps
-
-1. Start a Claude Code session in this repo
-2. Run \`/session-start\`
-3. Ask Claude to analyze the API changes and update the skill
-
-## Quick Command
-
-\`\`\`
-Compare openapi-stored.yaml with the current spec at https://developer.digitalsamba.com/rest-api/openapi.yaml
-
-Identify:
-- New endpoints
-- Changed parameters
-- Removed endpoints (flag for review)
-
-Update api-reference.md accordingly.
-\`\`\`
-
----
-*Detected by automated check on ${DATE}*"
+            --body-file /tmp/issue-body.md
 
       - name: Create issue for SDK changes
         if: steps.sdk-check.outputs.sdk_changed == 'true'
@@ -101,7 +104,6 @@ Update api-reference.md accordingly.
           OLD_VERSION: ${{ steps.sdk-check.outputs.old_version }}
           NEW_VERSION: ${{ steps.sdk-check.outputs.new_version }}
         run: |
-          # Check if issue already exists
           EXISTING=$(gh issue list --label "sdk-update" --state open --json number --jq 'length')
           if [ "$EXISTING" -gt 0 ]; then
             echo "SDK update issue already exists"
@@ -109,28 +111,32 @@ Update api-reference.md accordingly.
           fi
 
           DATE=$(date +%Y-%m-%d)
+          cat << ISSUE_BODY > /tmp/issue-body.md
+          The Digital Samba Embedded SDK has been updated.
+
+          ## Version Change
+
+          - **Previous**: ${OLD_VERSION}
+          - **Latest**: ${NEW_VERSION}
+
+          ## Resources
+
+          - [NPM Package](https://www.npmjs.com/package/@digitalsamba/embedded-sdk)
+          - [SDK GitHub](https://github.com/digitalsamba/embedded-sdk)
+          - [SDK Docs](https://docs.digitalsamba.com/reference/sdk)
+
+          ## Next Steps
+
+          1. Start a Claude Code session in this repo
+          2. Run \`/session-start\`
+          3. Ask Claude to check for new methods/events and update sdk-reference.md
+
+          ---
+          *Detected by automated check on ${DATE}*
+          ISSUE_BODY
+
           gh issue create \
-            --title "🔄 SDK Update Detected: ${OLD_VERSION} → ${NEW_VERSION}" \
+            --title "SDK Update Detected: ${OLD_VERSION} to ${NEW_VERSION}" \
             --label "sdk-update" \
             --label "needs-review" \
-            --body "The Digital Samba Embedded SDK has been updated.
-
-## Version Change
-
-- **Previous**: ${OLD_VERSION}
-- **Latest**: ${NEW_VERSION}
-
-## Resources
-
-- [NPM Package](https://www.npmjs.com/package/@digitalsamba/embedded-sdk)
-- [SDK GitHub](https://github.com/digitalsamba/embedded-sdk)
-- [SDK Docs](https://docs.digitalsamba.com/reference/sdk)
-
-## Next Steps
-
-1. Start a Claude Code session in this repo
-2. Run \`/session-start\`
-3. Ask Claude to check for new methods/events and update sdk-reference.md
-
----
-*Detected by automated check on ${DATE}*"
+            --body-file /tmp/issue-body.md
