@@ -1,0 +1,149 @@
+name: Check for API/SDK Updates
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9am UTC
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check OpenAPI spec for changes
+        id: api-check
+        run: |
+          curl -s https://developer.digitalsamba.com/rest-api/openapi.yaml -o openapi-new.yaml
+
+          if ! diff -q openapi-stored.yaml openapi-new.yaml > /dev/null 2>&1; then
+            echo "api_changed=true" >> $GITHUB_OUTPUT
+            echo "API spec has changed"
+          else
+            echo "api_changed=false" >> $GITHUB_OUTPUT
+            echo "API spec unchanged"
+          fi
+
+      - name: Check SDK version for changes
+        id: sdk-check
+        run: |
+          STORED_VERSION=$(cat .sdk-version | tr -d '\n')
+          LATEST_VERSION=$(npm view @digitalsamba/embedded-sdk version)
+
+          echo "Stored: $STORED_VERSION"
+          echo "Latest: $LATEST_VERSION"
+
+          if [ "$STORED_VERSION" != "$LATEST_VERSION" ]; then
+            echo "sdk_changed=true" >> $GITHUB_OUTPUT
+            echo "old_version=$STORED_VERSION" >> $GITHUB_OUTPUT
+            echo "new_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+            echo "SDK version changed: $STORED_VERSION -> $LATEST_VERSION"
+          else
+            echo "sdk_changed=false" >> $GITHUB_OUTPUT
+            echo "SDK version unchanged"
+          fi
+
+      - name: Create issue for API changes
+        if: steps.api-check.outputs.api_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'api-update',
+              state: 'open'
+            });
+
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🔄 API Update Detected',
+                body: `The Digital Samba OpenAPI specification has changed.
+
+## Next Steps
+
+1. Start a Claude Code session in this repo
+2. Run \`/session-start\`
+3. Ask Claude to analyze the API changes and update the skill
+
+## Quick Command
+
+\`\`\`
+Compare openapi-stored.yaml with the current spec at https://developer.digitalsamba.com/rest-api/openapi.yaml
+
+Identify:
+- New endpoints
+- Changed parameters
+- Removed endpoints (flag for review)
+
+Update api-reference.md accordingly.
+\`\`\`
+
+---
+*Detected by automated check on ${new Date().toISOString().split('T')[0]}*`,
+                labels: ['api-update', 'needs-review']
+              });
+              console.log('Created API update issue');
+            } else {
+              console.log('API update issue already exists');
+            }
+
+      - name: Create issue for SDK changes
+        if: steps.sdk-check.outputs.sdk_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const oldVersion = '${{ steps.sdk-check.outputs.old_version }}';
+            const newVersion = '${{ steps.sdk-check.outputs.new_version }}';
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'sdk-update',
+              state: 'open'
+            });
+
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🔄 SDK Update Detected: ${oldVersion} → ${newVersion}`,
+                body: `The Digital Samba Embedded SDK has been updated.
+
+## Version Change
+
+- **Previous**: ${oldVersion}
+- **Latest**: ${newVersion}
+
+## Resources
+
+- [NPM Package](https://www.npmjs.com/package/@digitalsamba/embedded-sdk)
+- [SDK GitHub](https://github.com/digitalsamba/embedded-sdk)
+- [SDK Docs](https://docs.digitalsamba.com/reference/sdk)
+
+## Next Steps
+
+1. Start a Claude Code session in this repo
+2. Run \`/session-start\`
+3. Ask Claude to check for new methods/events and update sdk-reference.md
+
+---
+*Detected by automated check on ${new Date().toISOString().split('T')[0]}*`,
+                labels: ['sdk-update', 'needs-review']
+              });
+              console.log('Created SDK update issue');
+            } else {
+              console.log('SDK update issue already exists');
+            }

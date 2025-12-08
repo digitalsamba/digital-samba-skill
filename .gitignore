@@ -31,7 +31,5 @@ CLAUDE.md
 .claude/commands/
 *.cast
 
-# Maintenance baselines and internal docs
-.api-version
-.sdk-version
+# Internal docs (not distributed)
 SDK-UNDOCUMENTED-FEATURES.md
