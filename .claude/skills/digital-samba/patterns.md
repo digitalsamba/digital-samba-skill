@@ -190,6 +190,125 @@ for (const rec of recordings.data) {
 }
 ```
 
+## Pattern 7: Playwright E2E Testing
+
+Best for: Automated testing, demo recordings, CI/CD validation
+
+Digital Samba apps involve async SDK loading and iframe interactions. Here's how to test reliably:
+
+### Playwright Config for Video Recording
+
+```typescript
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  timeout: 120000, // Video rooms need time to connect
+  use: {
+    actionTimeout: 30000,
+    video: {
+      mode: 'on',
+      size: { width: 1920, height: 1080 }
+    }
+  },
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: true
+  }
+});
+```
+
+### Testing Room Creation Flow
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('create and join video room', async ({ page }) => {
+  // Create room via UI
+  await page.goto('/create');
+  await page.fill('input[placeholder*="title"]', 'Test Interview');
+  await page.fill('input[placeholder*="name"]', 'Test User');
+  await page.click('button[type="submit"]');
+
+  // Wait for room creation API response
+  await expect(page.locator('text=Room Created')).toBeVisible();
+
+  // Extract room code for joining
+  const roomCode = await page.locator('.room-code').textContent();
+
+  // Join room and wait for SDK connection
+  await page.goto(`/room/${roomCode}`);
+
+  // Wait for Digital Samba iframe to load
+  await expect(page.frameLocator('iframe').locator('body')).toBeVisible({
+    timeout: 15000
+  });
+});
+```
+
+### Testing SDK Events
+
+```typescript
+test('SDK emits connection events', async ({ page }) => {
+  // Expose handler to capture SDK events
+  const events: string[] = [];
+  await page.exposeFunction('captureEvent', (name: string) => events.push(name));
+
+  // Inject event listener before SDK loads
+  await page.addInitScript(() => {
+    window.addEventListener('message', (e) => {
+      if (e.data?.type?.startsWith('digitalSamba:')) {
+        (window as any).captureEvent(e.data.type);
+      }
+    });
+  });
+
+  await page.goto('/room/test-room?token=...');
+
+  // Wait for connection
+  await page.waitForTimeout(10000);
+
+  expect(events).toContain('digitalSamba:userJoined');
+});
+```
+
+### Recording Demo Videos
+
+```typescript
+// Slow down for watchable recordings
+const SLOW_MO = 800;
+
+test('demo recording - full flow', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForTimeout(2000); // Hold for intro
+
+  // Character-by-character typing for effect
+  const input = page.locator('input[placeholder*="title"]');
+  for (const char of 'Product Demo') {
+    await input.type(char, { delay: 50 });
+  }
+  await page.waitForTimeout(SLOW_MO);
+
+  // Continue flow with pauses for video clarity
+  await page.click('button[type="submit"]');
+  await page.waitForTimeout(3000); // Hold on result
+});
+```
+
+### Handling Iframe Permissions
+
+```typescript
+// Grant camera/mic permissions for video testing
+const context = await browser.newContext({
+  permissions: ['camera', 'microphone'],
+  viewport: { width: 1920, height: 1080 }
+});
+```
+
+---
+
 ## Error Handling Pattern
 
 ```javascript
