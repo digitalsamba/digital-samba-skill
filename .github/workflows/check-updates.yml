@@ -55,22 +55,22 @@ jobs:
 
       - name: Create issue for API changes
         if: steps.api-check.outputs.api_changed == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'api-update',
-              state: 'open'
-            });
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Check if issue already exists
+          EXISTING=$(gh issue list --label "api-update" --state open --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "API update issue already exists"
+            exit 0
+          fi
 
-            if (issues.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: '🔄 API Update Detected',
-                body: `The Digital Samba OpenAPI specification has changed.
+          DATE=$(date +%Y-%m-%d)
+          gh issue create \
+            --title "🔄 API Update Detected" \
+            --label "api-update" \
+            --label "needs-review" \
+            --body "The Digital Samba OpenAPI specification has changed.
 
 ## Next Steps
 
@@ -92,40 +92,33 @@ Update api-reference.md accordingly.
 \`\`\`
 
 ---
-*Detected by automated check on ${new Date().toISOString().split('T')[0]}*`,
-                labels: ['api-update', 'needs-review']
-              });
-              console.log('Created API update issue');
-            } else {
-              console.log('API update issue already exists');
-            }
+*Detected by automated check on ${DATE}*"
 
       - name: Create issue for SDK changes
         if: steps.sdk-check.outputs.sdk_changed == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const oldVersion = '${{ steps.sdk-check.outputs.old_version }}';
-            const newVersion = '${{ steps.sdk-check.outputs.new_version }}';
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OLD_VERSION: ${{ steps.sdk-check.outputs.old_version }}
+          NEW_VERSION: ${{ steps.sdk-check.outputs.new_version }}
+        run: |
+          # Check if issue already exists
+          EXISTING=$(gh issue list --label "sdk-update" --state open --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "SDK update issue already exists"
+            exit 0
+          fi
 
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'sdk-update',
-              state: 'open'
-            });
-
-            if (issues.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `🔄 SDK Update Detected: ${oldVersion} → ${newVersion}`,
-                body: `The Digital Samba Embedded SDK has been updated.
+          DATE=$(date +%Y-%m-%d)
+          gh issue create \
+            --title "🔄 SDK Update Detected: ${OLD_VERSION} → ${NEW_VERSION}" \
+            --label "sdk-update" \
+            --label "needs-review" \
+            --body "The Digital Samba Embedded SDK has been updated.
 
 ## Version Change
 
-- **Previous**: ${oldVersion}
-- **Latest**: ${newVersion}
+- **Previous**: ${OLD_VERSION}
+- **Latest**: ${NEW_VERSION}
 
 ## Resources
 
@@ -140,10 +133,4 @@ Update api-reference.md accordingly.
 3. Ask Claude to check for new methods/events and update sdk-reference.md
 
 ---
-*Detected by automated check on ${new Date().toISOString().split('T')[0]}*`,
-                labels: ['sdk-update', 'needs-review']
-              });
-              console.log('Created SDK update issue');
-            } else {
-              console.log('SDK update issue already exists');
-            }
+*Detected by automated check on ${DATE}*"
