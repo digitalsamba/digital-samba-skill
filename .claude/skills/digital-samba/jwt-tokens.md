@@ -120,6 +120,18 @@ Response:
 }
 ```
 
+## Role Permissions
+
+The `role` claim maps to roles configured in your Digital Samba dashboard. Key permission:
+
+| Permission | Effect |
+|------------|--------|
+| `start_session` | User can start/join meeting without waiting in lobby |
+
+If users are stuck on the join screen, ensure their role has `start_session` permission. Default `moderator` role typically has this; `speaker` and `attendee` may not.
+
+List available permissions: `GET /api/v1/permissions`
+
 ## Security Best Practices
 
 1. **Never expose DEVELOPER_KEY to browsers** - Generate tokens server-side only
