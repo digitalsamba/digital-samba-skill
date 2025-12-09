@@ -522,18 +522,32 @@ sambaFrame.removeTileAction('send-gift');
 
 ### Custom Tiles
 
-Add custom iframe panels to the call.
+Add custom HTML panels to the video call UI.
 
 ```javascript
+// Add a custom tile (must be called after userJoined)
 sambaFrame.addCustomTile({
-  name: 'poll-panel',
-  // ... options
+  name: 'poll-panel',           // Tile identifier and title
+  html: '<div>Poll content</div>', // HTML content
+  position: 'last'              // 'first' or 'last' in tile list
 });
 
+// Remove a custom tile
 sambaFrame.removeCustomTile('poll-panel');
+
+// Send data to the custom tile's iframe
 sambaFrame.sendMessageToCustomTile({
-  name: 'poll-panel',
-  message: { type: 'update', data: pollResults }
+  name: 'poll-panel',           // Must match addCustomTile name
+  event: 'updateResults',       // Custom event name (optional)
+  origin: '*',                  // postMessage origin (optional)
+  data: { results: [1, 2, 3] }  // Payload (optional)
+});
+```
+
+**Receiving messages in the custom tile:**
+```javascript
+window.addEventListener('message', (event) => {
+  console.log(event.data); // { event: 'updateResults', data: { results: [1, 2, 3] } }
 });
 ```
 
