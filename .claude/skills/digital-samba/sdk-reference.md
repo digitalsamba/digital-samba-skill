@@ -510,15 +510,26 @@ if (sambaFrame.featureEnabled('recordings')) {
 
 ### Custom Tile Actions
 
-Add custom buttons to user video tiles.
+Add custom actions to the 3-dots menu on video tiles.
 
 ```javascript
-sambaFrame.addTileAction('send-gift', properties, (userId) => {
-  sendGift(userId);
-});
+// Add a custom action to remote user tiles
+sambaFrame.addTileAction(
+  'sendEmail',                              // Action identifier
+  { label: 'Send Email', scope: 'remote' }, // Properties
+  () => console.log('Send email clicked')   // Callback
+);
 
-sambaFrame.removeTileAction('send-gift');
+// Remove the action
+sambaFrame.removeTileAction('sendEmail');
 ```
+
+**Scope values:**
+- `'remote'` - Other users' tiles
+- `'local'` - Current user's tile
+- `'custom'` - Custom tiles (from addCustomTile)
+- `'screenshare-local'` - Local screen share
+- `'screenshare-remote'` - Remote screen share
 
 ### Custom Tiles
 
