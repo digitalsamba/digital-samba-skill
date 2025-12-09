@@ -466,9 +466,15 @@ sambaFrame.openWhiteboard('whiteboard-id');
 sambaFrame.closeWhiteboard('whiteboard-id');
 sambaFrame.toggleWhiteboard();
 
-// Add image to whiteboard
+// Add image to whiteboard (URL - requires CORS on external server)
 sambaFrame.addImageToWhiteboard({
-  url: 'https://example.com/diagram.png'
+  url: 'https://example.com/diagram.png',
+  position: { x: 100, y: 50 }  // Optional, auto-centers if omitted
+});
+
+// Add image via base64
+sambaFrame.addImageToWhiteboard({
+  base64: 'data:image/png;base64,iVBORw0KGgo...'
 });
 ```
 
@@ -504,9 +510,6 @@ if (sambaFrame.featureEnabled('recordings')) {
 ---
 
 ## Advanced Features
-
-> Note: These methods exist in the TypeScript types but may not be fully documented.
-> See SDK-UNDOCUMENTED-FEATURES.md for details.
 
 ### Custom Tile Actions
 
@@ -564,37 +567,64 @@ window.addEventListener('message', (event) => {
 
 ### UI Callbacks
 
-Hook into UI interactions.
+Override UI interactions with custom logic. The default action is suppressed.
 
 ```javascript
-sambaFrame.addUICallback('callbackName', (data) => {
-  // Handle UI event
-});
+// Override leave session with confirmation
+const leaveCallback = () => {
+  if (confirm('Are you sure you want to leave?')) {
+    sambaFrame.leaveSession();
+  }
+};
 
-sambaFrame.removeUICallback('callbackName', handler);
+sambaFrame.addUICallback('leaveSession', leaveCallback);
+
+// Remove the override
+sambaFrame.removeUICallback('leaveSession', leaveCallback);
 ```
+
+**Supported events:** `'leaveSession'`
 
 ### Frame Event Listeners
 
-Listen to iframe document/window events.
+Listen to JavaScript events inside the iframe (e.g., for custom key combinations).
 
 ```javascript
-sambaFrame.addFrameEventListener('visibilitychange', 'document', () => {
-  console.log('Tab visibility changed');
-});
+// Listen for keyup on window
+const keyHandler = (payload) => console.log('keyup', payload);
+sambaFrame.addFrameEventListener('keyup', 'window', keyHandler);
 
-sambaFrame.removeFrameEventListener('visibilitychange', 'document', handler);
+// Listen for clicks on document
+const clickHandler = (payload) => console.log('click', payload);
+sambaFrame.addFrameEventListener('click', 'document', clickHandler);
+
+// Remove listener
+sambaFrame.removeFrameEventListener('keyup', 'window', keyHandler);
 ```
+
+**Targets:** `'window'` or `'document'`
 
 ### Runtime Branding
 
-Change branding without reloading.
+Change room appearance without reloading.
 
 ```javascript
+// Switch to dark theme
+sambaFrame.changeBrandingOptions({ paletteMode: 'dark' });
+
+// Custom colors
 sambaFrame.changeBrandingOptions({
-  // Branding configuration
+  primaryColor: '#0066FF',       // Accent color
+  toolbarColor: '#1a1a1a',       // Toolbar background
+  roomBackgroundColor: '#000000' // Room background
 });
 ```
+
+**Options:**
+- `paletteMode` - `'dark'` or `'light'`
+- `primaryColor` - Hex color for accents
+- `toolbarColor` - Hex color for toolbar
+- `roomBackgroundColor` - Hex color for background
 
 ---
 
