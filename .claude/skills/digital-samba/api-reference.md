@@ -58,6 +58,11 @@ Update default room settings.
 ### POST /api/v1/rooms
 Create a new room.
 
+**Field Constraints**:
+| Field | Constraint |
+|-------|------------|
+| `friendly_url` | Max 32 characters. URL-safe string for room URL path. Must be unique per team. |
+
 **Request Body**:
 ```json
 {
@@ -73,6 +78,7 @@ Create a new room.
   "chat_enabled": true,
   "qa_enabled": false,
   "recordings_enabled": true,
+  "recording_bookmarks_enabled": true,
   "screenshare_enabled": true,
   "raise_hand_enabled": true,
   "video_on_join_enabled": true,
@@ -245,15 +251,24 @@ Create a new poll.
 ```json
 {
   "question": "What topic should we cover next?",
-  "multiple": false,
+  "type": "single",
   "anonymous": true,
   "options": [
-    {"label": "API Design"},
-    {"label": "Security"},
-    {"label": "Performance"}
+    {"id": "uuid-optional", "label": "API Design"},
+    {"id": "uuid-optional", "label": "Security"},
+    {"id": "uuid-optional", "label": "Performance"}
   ]
 }
 ```
+
+**Poll Types**:
+| Type | Description |
+|------|-------------|
+| `single` | Single choice (one answer) |
+| `multiple` | Multiple choices (select many) |
+| `free` | Short answer (free text) |
+
+> **Note**: The `multiple` boolean field is deprecated. Use `type: "multiple"` instead.
 
 **Response**:
 ```json
@@ -261,9 +276,13 @@ Create a new poll.
   "id": "uuid",
   "question": "What topic...",
   "status": "draft",
-  "multiple": false,
+  "type": "single",
   "anonymous": true,
-  "options": [...],
+  "options": [
+    {"id": "uuid", "label": "API Design"},
+    {"id": "uuid", "label": "Security"},
+    {"id": "uuid", "label": "Performance"}
+  ],
   "created_at": "2024-01-15T10:30:00Z"
 }
 ```

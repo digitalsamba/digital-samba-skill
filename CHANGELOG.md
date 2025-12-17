@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-12-17
+
+### Added
+
+- `recording_bookmarks_enabled` room setting in api-reference.md
+- `friendly_url` 32-character limit constraint documentation (fixes #1)
+- Poll `type` field with `single`, `multiple`, `free` options in api-reference.md
+- Poll option `id` field in api-reference.md
+
+### Changed
+
+- Poll `multiple` boolean field marked as deprecated (use `type: "multiple"` instead)
+
 ## [1.0.6] - 2025-12-09
 
 ### Changed
