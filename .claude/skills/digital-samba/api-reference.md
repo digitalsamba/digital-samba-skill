@@ -62,6 +62,7 @@ Create a new room.
 | Field | Constraint |
 |-------|------------|
 | `friendly_url` | Max 32 characters. URL-safe string for room URL path. Must be unique per team. |
+| `default_role` | Must be included in the `roles` array. If specifying `default_role`, you must also provide `roles` containing that role. |
 
 **Request Body**:
 ```json
