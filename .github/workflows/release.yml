@@ -22,12 +22,11 @@ jobs:
           echo "Version: $VERSION"
 
           # Update VERSION file to match release tag
-          echo "$VERSION" > .claude/skills/digital-samba/VERSION
+          echo "$VERSION" > VERSION
 
+          # Skill files are now at repo root - zip them directly
           # Claude Desktop requires SKILL.md at root level of ZIP
-          cd .claude/skills/digital-samba
-          zip -r ../../../digital-samba.zip .
-          cd ../../..
+          zip digital-samba.zip SKILL.md api-reference.md sdk-reference.md patterns.md jwt-tokens.md VERSION
           echo "Created digital-samba.zip"
           unzip -l digital-samba.zip
 
@@ -41,9 +40,16 @@ jobs:
 
             ### Installation
 
-            **Claude Code (CLI):**
+            **Claude Code (CLI) - Submodule (recommended):**
             ```bash
-            cp -r .claude/skills/digital-samba your-project/.claude/skills/
+            git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba
+            ```
+
+            **Claude Code (CLI) - Manual copy:**
+            ```bash
+            git clone https://github.com/digitalsamba/digital-samba-skill.git /tmp/ds-skill
+            mkdir -p .claude/skills/digital-samba
+            cp /tmp/ds-skill/{SKILL,api-reference,sdk-reference,patterns,jwt-tokens}.md /tmp/ds-skill/VERSION .claude/skills/digital-samba/
             ```
 
             **Claude Desktop/Web:**

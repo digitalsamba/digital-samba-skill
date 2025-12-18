@@ -46,17 +46,19 @@ Building a telehealth app? Online learning platform? Virtual consultation servic
 
 <img src="assets/claude-code-install.gif" alt="Claude Code Installation" width="600">
 
-```bash
-# Clone and copy to your project
-git clone https://github.com/digitalsamba/digital-samba-skill.git
-cp -r digital-samba-skill/.claude/skills/digital-samba your-project/.claude/skills/
-```
-
-**Alternative:** Add as a git submodule:
+**Option A: Git submodule (recommended)** - Enables easy updates via git
 
 ```bash
 cd your-project
-git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba-skill
+git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claude/skills/digital-samba
+```
+
+**Option B: Manual copy**
+
+```bash
+git clone https://github.com/digitalsamba/digital-samba-skill.git /tmp/ds-skill
+mkdir -p your-project/.claude/skills/digital-samba
+cp /tmp/ds-skill/{SKILL,api-reference,sdk-reference,patterns,jwt-tokens}.md /tmp/ds-skill/VERSION your-project/.claude/skills/digital-samba/
 ```
 
 ### Claude Desktop
@@ -144,13 +146,19 @@ The `examples/` directory contains ready-to-use code for common integration scen
 
 ## 🔄 Staying Updated
 
-Anthropic currently doesn't support auto-updating of skills. To get the latest version:
-
-1. **Watch this repo** - Click "Watch" → "Releases only" to get notified of updates
-2. **Check your version** - Compare `.claude/skills/digital-samba/VERSION` with the [latest release](https://github.com/digitalsamba/digital-samba-skill/releases)
-3. **Update manually** - Re-download and replace the skill folder
-
 We update this skill when Digital Samba releases new API endpoints or SDK features.
+
+**Check for updates:** Ask Claude *"Is my Digital Samba skill up to date?"* - it knows how to check.
+
+**To update:**
+
+| Install Method | Update Command |
+|----------------|----------------|
+| **Submodule** | `git submodule update --remote .claude/skills/digital-samba` |
+| **Manual copy** | Re-run the install commands above |
+| **Claude Desktop** | Download latest ZIP from [Releases](https://github.com/digitalsamba/digital-samba-skill/releases) and re-upload |
+
+**Get notified:** Click "Watch" → "Releases only" on this repo to receive update notifications.
 
 ---
 

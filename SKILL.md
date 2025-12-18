@@ -103,8 +103,23 @@ Assign roles via JWT `role` field. Common roles:
 | 404 | Room not found | Check room UUID/URL |
 | 422 | Validation error | Check request body |
 
+## Check for Updates
+
+To check if your installed skill is up to date:
+
+1. **Local version**: `cat .claude/skills/digital-samba/VERSION`
+2. **Latest version**: `curl -s https://api.github.com/repos/digitalsamba/digital-samba-skill/releases/latest | grep '"tag_name"'`
+
+**To update (submodule install):**
+```bash
+git submodule update --remote .claude/skills/digital-samba
+```
+
+**To update (manual install):** Re-clone and copy skill files from https://github.com/digitalsamba/digital-samba-skill
+
 ## Resources
 
 - API Reference: https://developer.digitalsamba.com/rest-api/
 - SDK NPM: https://www.npmjs.com/package/@digitalsamba/embedded-sdk
 - Dashboard: https://dashboard.digitalsamba.com
+- Skill Releases: https://github.com/digitalsamba/digital-samba-skill/releases

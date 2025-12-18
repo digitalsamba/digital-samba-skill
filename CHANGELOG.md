@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-12-18
+
+### Changed
+
+- **BREAKING**: Moved skill files to repo root for proper submodule support
+  - Submodule install now works: `git submodule add <url> .claude/skills/digital-samba`
+  - Manual copy path changed (see README)
+- Updated README with new installation instructions
+- Updated release workflow for new structure
+
+### Added
+
+- Version check instructions in SKILL.md - ask Claude "Is my Digital Samba skill up to date?"
+
 ## [1.0.8] - 2025-12-17
 
 ### Added
