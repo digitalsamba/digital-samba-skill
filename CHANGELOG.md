@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **BREAKING**: Moved skill files to repo root for proper submodule support
-  - Submodule install now works: `git submodule add <url> .claude/skills/digital-samba`
+  - Submodule install now preferred: `git submodule add <url> .claude/skills/digital-samba`
   - Manual copy path changed (see README)
 - Updated README with new installation instructions
 - Updated release workflow for new structure
