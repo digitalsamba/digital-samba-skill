@@ -73,17 +73,55 @@ cp /tmp/ds-skill/{SKILL,api-reference,sdk-reference,patterns,jwt-tokens}.md /tmp
 
 ## 💬 Usage
 
-Once installed, ask Claude to help with your integration:
+Once installed, Claude understands Digital Samba's entire platform. Invoke the skill explicitly for best results:
+
+### Build Complete Features
 
 ```
-"Create an API endpoint that provisions video rooms for my users"
-"How do I pass my user's identity to Digital Samba via JWT?"
-"Embed a video call component in my Next.js app"
-"Set up webhooks to track when meetings start and end"
+"Using Digital Samba, build a telehealth video consultation system
+with a waiting room, recording consent toggle, and post-call summary"
+
+"Use the Digital Samba skill to create a virtual classroom with
+breakout rooms for group exercises, a Q&A panel, and attendance tracking"
+
+"Using Digital Samba, add video depositions to my legal platform
+with recording, timestamped bookmarks, and transcript export"
 ```
 
-**Trigger phrases:**
-`Digital Samba` · `video conferencing API` · `embed video calls` · `meeting room integration` · `participant tokens`
+### Generate Production Code
+
+```
+"Use Digital Samba to create a React component that displays
+participant video tiles with mute indicators, and lets moderators remove users"
+
+"Using the Digital Samba skill, build a Node.js service that provisions
+rooms on-demand, generates secure tokens, and cleans up after 24 hours"
+
+"Use Digital Samba to set up webhook handlers that save recordings
+to S3 and email users when their transcript is ready"
+```
+
+### Debug & Troubleshoot
+
+```
+"Help me debug my Digital Samba JWT tokens - here's my code, what's wrong?"
+
+"Using Digital Samba, why are users joining with the wrong role?"
+
+"My Digital Samba iframe isn't filling its container - how do I fix the CSS?"
+```
+
+### Learn the Platform
+
+```
+"Using Digital Samba, what's the difference between public and private rooms?"
+
+"Explain how Digital Samba breakout rooms work and show me the API calls"
+
+"Use the Digital Samba skill to help me implement GDPR-compliant recording consent"
+```
+
+**Tip:** Start prompts with `"Using Digital Samba..."` or `"Use the Digital Samba skill to..."` for reliable activation.
 
 ---
 
