@@ -243,7 +243,7 @@ Delete AI-generated summaries.
 ## Polls
 
 ### GET /api/v1/rooms/{room}/polls
-List polls for a room.
+List polls for a room. Returns paginated response with `total_count` and `data` array.
 
 ### POST /api/v1/rooms/{room}/polls
 Create a new poll.
@@ -290,9 +290,6 @@ Create a new poll.
 
 ### DELETE /api/v1/rooms/{room}/polls
 Delete all polls.
-
-### GET /api/v1/rooms/{room}/quizzes/export
-Export quiz results.
 
 ---
 
@@ -347,6 +344,18 @@ Get participant details.
 
 ### GET /api/v1/participants/{participant}/sessions
 List sessions for a participant.
+
+---
+
+## Phone Bridge (SIP)
+
+Connect phone participants to rooms via SIP integration.
+
+### POST /api/v1/rooms/{room}/phone/connect
+Connect the room to the phone bridge (SIP). Enables phone dial-in participants to join the meeting.
+
+### POST /api/v1/rooms/{room}/phone/disconnect
+Disconnect the room from the phone bridge (SIP).
 
 ---
 
