@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-01-26
+
+### Added
+
+- **Quizzes API** (8 endpoints): Full CRUD for in-meeting quizzes with questions, choices, results, and export (fixes #6)
+- **Restreamers API** (2 endpoints): Start/stop RTMP streaming to YouTube, Vimeo, Cloudflare, or custom servers (fixes #6)
+- `DELETE /sessions/{session}/quizzes` endpoint in Sessions section
+- `startRestreaming()` and `stopRestreaming()` SDK methods (fixes #7)
+
+### Changed
+
+- SDK version updated to 0.0.53
+
 ## [1.1.1] - 2026-01-05
 
 ### Added

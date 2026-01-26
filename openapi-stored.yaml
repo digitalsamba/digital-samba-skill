@@ -1,4 +1,5 @@
-# Baseline stored: $(date +%Y-%m-%d)
+# Baseline stored: 2026-01-26
+
 openapi: 3.0.3
 info:
   title: 'Digital Samba Embedded'
@@ -27,6 +28,9 @@ tags:
     name: Recordings
     description: "\n<a target=\"_blank\" href=\"https://docs.digitalsamba.com/dashboard/creating-a-room/recordings\">Documentation</a>"
   -
+    name: Restreamers
+    description: ''
+  -
     name: Roles
     description: "\n<a target=\"_blank\" href=\"https://docs.digitalsamba.com/dashboard/managing-roles\">Documentation</a>"
   -
@@ -38,6 +42,9 @@ tags:
   -
     name: Polls
     description: "\n<a target=\"_blank\" href=\"https://docs.digitalsamba.com/dashboard/creating-a-room/polls\">Documentation</a>"
+  -
+    name: Quizzes
+    description: ''
   -
     name: Live
     description: ''
@@ -717,7 +724,7 @@ paths:
                 domain:
                   type: string
                   description: 'Must contain only letters, numbers, dashes and underscores. Must not be one of docs, api, dev-api, staging-api, you, or dashboard Must be at least 3 characters. Must not be greater than 32 characters.'
-                  example: quis
+                  example: dolore
                 default_role:
                   type: string
                   description: 'Select a role to be assigned to participants who join with no token (shared link to public room) or with a token without a role. Role ID or name.'
@@ -771,7 +778,7 @@ paths:
                   example: light
                 language:
                   type: string
-                  description: 'Select a default language for the room’s UI. Must be one of ar-SA, en, es-ES, de-DE, it-IT, pt-PT, ro-RO, zh-CN or zh-TW.'
+                  description: 'Select a default language for the room’s UI. Must be one of ar-SA, en, es-ES, de-DE, it-IT, nl-NL, pt-PT, ro-RO, zh-CN or zh-TW.'
                   example: en
                 languages:
                   type: array
@@ -927,15 +934,15 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in rooms and its recordings. Image URL or base64 encoded file source.'
-                  example: vitae
+                  example: culpa
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: maxime
+                  example: repellendus
                 favicon:
                   type: string
                   description: 'You may add custom favicon to be displayed in rooms. Image URL or base64 encoded file source.'
-                  example: ab
+                  example: aliquam
                 recording_logo_enabled:
                   type: boolean
                   description: 'When enabled, the logo will be shown in recordings.'
@@ -1050,7 +1057,7 @@ paths:
                   example: false
                 captions_language:
                   type: string
-                  description: 'Set the default input language to be transcribed in rooms. Must be en or de.'
+                  description: 'Set the default input language to be transcribed in rooms. Must be one of de, en, es, fr, it, nl, pt or ro.'
                   example: en
                 captions_in_recordings_enabled:
                   type: boolean
@@ -1772,7 +1779,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: ww-w
+        example: '--'
         required: true
         schema:
           type: string
@@ -2024,21 +2031,325 @@ paths:
                     id:
                       type: string
                       description: 'Must be a valid UUID.'
-                      example: 6483d459-b4db-3a9f-83a0-a35664155732
+                      example: 35a23f95-3997-3898-a4ff-e1a873a6793a
                       nullable: true
                     text:
                       type: string
                       description: 'Must be at least 1 character. Must not be greater than 255 characters.'
-                      example: ldyblsmqgfzpsxqmtmzl
+                      example: ltoocsadguwlpvnbwcdpvgdy
                   required:
                     - text
                   nullable: true
                 multiple:
                   type: boolean
                   description: 'Deprecated, use type=multiple instead.'
-                  example: true
+                  example: false
               required:
                 - options
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room or room friendly URL.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/quizzes':
+    delete:
+      summary: 'Delete quizzes by room.'
+      operationId: deleteQuizzesByRoom
+      description: ''
+      parameters: []
+      responses:
+        204:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {  }
+                properties: {  }
+      tags:
+        - Rooms
+    get:
+      summary: 'Get quizzes.'
+      operationId: getQuizzes
+      description: "Get available quizzes for the room.\n\n<small class=\"badge badge-blue\">Paginated</small>"
+      parameters:
+        -
+          in: query
+          name: limit
+          description: 'Limit the number of returned records. Used for pagination. Maximum and default is 100'
+          example: 20
+          required: false
+          schema:
+            type: integer
+            description: 'Limit the number of returned records. Used for pagination. Maximum and default is 100'
+            example: 20
+        -
+          in: query
+          name: offset
+          description: 'The offset of the first item returned in the records collection. Used for pagination.'
+          example: 0
+          required: false
+          schema:
+            type: integer
+            description: 'The offset of the first item returned in the records collection. Used for pagination.'
+            example: 0
+        -
+          in: query
+          name: order
+          description: 'Order of returned records. Default is desc.'
+          example: asc
+          required: false
+          schema:
+            type: string
+            description: 'Order of returned records. Default is desc.'
+            example: asc
+        -
+          in: query
+          name: after
+          description: 'The UUID of the quiz after which records will be returned.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'The UUID of the quiz after which records will be returned.'
+            example: null
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  total_count: 1
+                  data:
+                    -
+                      id: 3cd39349-0ac0-480b-8919-810f36a7c469
+                      title: 'My quiz.'
+                      time_limit_minutes: 45
+                      status: created
+                      created_at: '2025-12-19T05:33:54Z'
+                properties:
+                  total_count:
+                    type: integer
+                    example: 1
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 3cd39349-0ac0-480b-8919-810f36a7c469
+                        title: 'My quiz.'
+                        time_limit_minutes: 45
+                        status: created
+                        created_at: '2025-12-19T05:33:54Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 3cd39349-0ac0-480b-8919-810f36a7c469
+                        title:
+                          type: string
+                          example: 'My quiz.'
+                        time_limit_minutes:
+                          type: integer
+                          example: 45
+                        status:
+                          type: string
+                          example: created
+                        created_at:
+                          type: string
+                          example: '2025-12-19T05:33:54Z'
+      tags:
+        - Quizzes
+    post:
+      summary: 'Create quiz.'
+      operationId: createQuiz
+      description: 'Create a new quiz.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: d84a4ad8-b051-4af5-b885-08663e9e401a
+                  title: 'My quiz'
+                  time_limit_minutes: 90
+                  status: created
+                  questions:
+                    -
+                      id: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                      text: 'Question #1'
+                      multiple: false
+                      choices:
+                        -
+                          id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                          text: 'Correct answer'
+                          correct: true
+                        -
+                          id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                          text: 'Wrong answer'
+                          correct: false
+                    -
+                      id: 56ae59e7-2c9b-4a01-ae66-f26309f9c672
+                      text: 'Question #2'
+                      multiple: true
+                      choices:
+                        -
+                          id: 9196ddcc-400b-49d8-a57a-25ad7b652071
+                          text: 'Correct answer #1'
+                          correct: true
+                        -
+                          id: 6eccae14-c478-43d8-b3d5-c4e484d5a148
+                          text: 'Wrong answer'
+                          correct: false
+                        -
+                          id: cbe49091-3b4d-4c1b-9ea6-bdf6594e799d
+                          text: 'Correct answer #2'
+                          correct: true
+                  created_at: '2025-12-19T05:38:51Z'
+                properties:
+                  id:
+                    type: string
+                    example: d84a4ad8-b051-4af5-b885-08663e9e401a
+                  title:
+                    type: string
+                    example: 'My quiz'
+                  time_limit_minutes:
+                    type: integer
+                    example: 90
+                  status:
+                    type: string
+                    example: created
+                  questions:
+                    type: array
+                    example:
+                      -
+                        id: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                        text: 'Question #1'
+                        multiple: false
+                        choices:
+                          -
+                            id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                            text: 'Correct answer'
+                            correct: true
+                          -
+                            id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                            text: 'Wrong answer'
+                            correct: false
+                      -
+                        id: 56ae59e7-2c9b-4a01-ae66-f26309f9c672
+                        text: 'Question #2'
+                        multiple: true
+                        choices:
+                          -
+                            id: 9196ddcc-400b-49d8-a57a-25ad7b652071
+                            text: 'Correct answer #1'
+                            correct: true
+                          -
+                            id: 6eccae14-c478-43d8-b3d5-c4e484d5a148
+                            text: 'Wrong answer'
+                            correct: false
+                          -
+                            id: cbe49091-3b4d-4c1b-9ea6-bdf6594e799d
+                            text: 'Correct answer #2'
+                            correct: true
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                        text:
+                          type: string
+                          example: 'Question #1'
+                        multiple:
+                          type: boolean
+                          example: false
+                        choices:
+                          type: array
+                          example:
+                            -
+                              id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                              text: 'Correct answer'
+                              correct: true
+                            -
+                              id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                              text: 'Wrong answer'
+                              correct: false
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                              text:
+                                type: string
+                                example: 'Correct answer'
+                              correct:
+                                type: boolean
+                                example: true
+                  created_at:
+                    type: string
+                    example: '2025-12-19T05:38:51Z'
+      tags:
+        - Quizzes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Quiz title. Min: 1, Max 255.'
+                  example: 'My quiz.'
+                time_limit_minutes:
+                  type: integer
+                  description: 'Quiz time limit in minutes. Min: 1, Max 1440 .'
+                  example: 60
+                questions:
+                  type: object
+                  description: 'Must be an array of quiz questions.'
+                  example: []
+                  properties:
+                    text:
+                      type: string
+                      description: 'Question text.'
+                      example: 'My question'
+                    multiple:
+                      type: boolean
+                      description: 'Multiple flag'
+                      example: false
+                    choices:
+                      type: object
+                      description: 'Must be an array of question choices.'
+                      example: []
+                      properties:
+                        text:
+                          type: string
+                          description: 'Question choice text.'
+                          example: 'My answer'
+                        correct:
+                          type: boolean
+                          description: 'Correct flag.'
+                          example: true
+                      required:
+                        - text
+                  required:
+                    - text
+                    - choices
+              required:
+                - title
+                - questions
     parameters:
       -
         in: path
@@ -2140,10 +2451,10 @@ paths:
                 example:
                   data:
                     -
-                      id: 030edd3e-1888-331c-9667-e14af8d10235
-                      description: 'Omnis deserunt sit.'
-                      topic: 'Omnis deserunt sit.'
-                      friendly_url: DjPZ5AP-xNWUolugr5mMsi4ZxpOxgkDh
+                      id: c9fd55fb-69c7-391e-b4a8-5174df84de61
+                      description: 'Libero aut delectus.'
+                      topic: 'Libero aut delectus.'
+                      friendly_url: LHUjVHBSTXXCHywqqiBmQkiGYz6vAo2q
                       privacy: public
                       max_participants: 100
                       max_broadcasters: 100
@@ -2163,6 +2474,7 @@ paths:
                         - es-ES
                         - fr-FR
                         - it-IT
+                        - nl-NL
                         - ro-RO
                         - pt-PT
                         - zh-CN
@@ -2207,17 +2519,17 @@ paths:
                       consent_message_type: generic
                       recordings_layout_mode: tiled
                       layout_mode_on_join: tiled
-                      room_url: 'https://6542dace3114cd724b81e115d748ef8c.digitalsamba.com/DjPZ5AP-xNWUolugr5mMsi4ZxpOxgkDh'
-                      external_id: EXTID902428710
+                      room_url: 'https://78f530ae4205be991a07a663900c2bbf.digitalsamba.com/LHUjVHBSTXXCHywqqiBmQkiGYz6vAo2q'
+                      external_id: EXTID634881411
                       transcription_auto_start_enabled: true
                       captions_language: en
-                      created_at: '2026-01-05T18:05:20Z'
-                      updated_at: '2026-01-05T18:05:20Z'
+                      created_at: '2026-01-16T15:15:34Z'
+                      updated_at: '2026-01-16T15:15:34Z'
                     -
-                      id: 725ac810-03ea-3e32-a0ad-a72866bb993a
-                      description: 'Aperiam temporibus.'
-                      topic: 'Aperiam temporibus.'
-                      friendly_url: mw-kDjR_Laell_I0jSiuVzlWsK-vKZHD
+                      id: 4ae13dfd-69d5-393a-9eed-83f18f74e1be
+                      description: 'Ab quibusdam et.'
+                      topic: 'Ab quibusdam et.'
+                      friendly_url: 5zCLuuopOuuWU0EmCPrhzQTITBLp4FJG
                       privacy: public
                       max_participants: 100
                       max_broadcasters: 100
@@ -2237,6 +2549,7 @@ paths:
                         - es-ES
                         - fr-FR
                         - it-IT
+                        - nl-NL
                         - ro-RO
                         - pt-PT
                         - zh-CN
@@ -2281,22 +2594,22 @@ paths:
                       consent_message_type: generic
                       recordings_layout_mode: tiled
                       layout_mode_on_join: tiled
-                      room_url: 'https://09f9e48b720e353e1a271826a8d1c8a2.digitalsamba.com/mw-kDjR_Laell_I0jSiuVzlWsK-vKZHD'
-                      external_id: EXTID1502495834
+                      room_url: 'https://424081fb919158154918964db901bff5.digitalsamba.com/5zCLuuopOuuWU0EmCPrhzQTITBLp4FJG'
+                      external_id: EXTID203673855
                       transcription_auto_start_enabled: true
                       captions_language: en
-                      created_at: '2026-01-05T18:05:20Z'
-                      updated_at: '2026-01-05T18:05:20Z'
+                      created_at: '2026-01-16T15:15:34Z'
+                      updated_at: '2026-01-16T15:15:34Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: 030edd3e-1888-331c-9667-e14af8d10235
-                        description: 'Omnis deserunt sit.'
-                        topic: 'Omnis deserunt sit.'
-                        friendly_url: DjPZ5AP-xNWUolugr5mMsi4ZxpOxgkDh
+                        id: c9fd55fb-69c7-391e-b4a8-5174df84de61
+                        description: 'Libero aut delectus.'
+                        topic: 'Libero aut delectus.'
+                        friendly_url: LHUjVHBSTXXCHywqqiBmQkiGYz6vAo2q
                         privacy: public
                         max_participants: 100
                         max_broadcasters: 100
@@ -2316,6 +2629,7 @@ paths:
                           - es-ES
                           - fr-FR
                           - it-IT
+                          - nl-NL
                           - ro-RO
                           - pt-PT
                           - zh-CN
@@ -2360,17 +2674,17 @@ paths:
                         consent_message_type: generic
                         recordings_layout_mode: tiled
                         layout_mode_on_join: tiled
-                        room_url: 'https://6542dace3114cd724b81e115d748ef8c.digitalsamba.com/DjPZ5AP-xNWUolugr5mMsi4ZxpOxgkDh'
-                        external_id: EXTID902428710
+                        room_url: 'https://78f530ae4205be991a07a663900c2bbf.digitalsamba.com/LHUjVHBSTXXCHywqqiBmQkiGYz6vAo2q'
+                        external_id: EXTID634881411
                         transcription_auto_start_enabled: true
                         captions_language: en
-                        created_at: '2026-01-05T18:05:20Z'
-                        updated_at: '2026-01-05T18:05:20Z'
+                        created_at: '2026-01-16T15:15:34Z'
+                        updated_at: '2026-01-16T15:15:34Z'
                       -
-                        id: 725ac810-03ea-3e32-a0ad-a72866bb993a
-                        description: 'Aperiam temporibus.'
-                        topic: 'Aperiam temporibus.'
-                        friendly_url: mw-kDjR_Laell_I0jSiuVzlWsK-vKZHD
+                        id: 4ae13dfd-69d5-393a-9eed-83f18f74e1be
+                        description: 'Ab quibusdam et.'
+                        topic: 'Ab quibusdam et.'
+                        friendly_url: 5zCLuuopOuuWU0EmCPrhzQTITBLp4FJG
                         privacy: public
                         max_participants: 100
                         max_broadcasters: 100
@@ -2390,6 +2704,7 @@ paths:
                           - es-ES
                           - fr-FR
                           - it-IT
+                          - nl-NL
                           - ro-RO
                           - pt-PT
                           - zh-CN
@@ -2434,27 +2749,27 @@ paths:
                         consent_message_type: generic
                         recordings_layout_mode: tiled
                         layout_mode_on_join: tiled
-                        room_url: 'https://09f9e48b720e353e1a271826a8d1c8a2.digitalsamba.com/mw-kDjR_Laell_I0jSiuVzlWsK-vKZHD'
-                        external_id: EXTID1502495834
+                        room_url: 'https://424081fb919158154918964db901bff5.digitalsamba.com/5zCLuuopOuuWU0EmCPrhzQTITBLp4FJG'
+                        external_id: EXTID203673855
                         transcription_auto_start_enabled: true
                         captions_language: en
-                        created_at: '2026-01-05T18:05:20Z'
-                        updated_at: '2026-01-05T18:05:20Z'
+                        created_at: '2026-01-16T15:15:34Z'
+                        updated_at: '2026-01-16T15:15:34Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: 030edd3e-1888-331c-9667-e14af8d10235
+                          example: c9fd55fb-69c7-391e-b4a8-5174df84de61
                         description:
                           type: string
-                          example: 'Omnis deserunt sit.'
+                          example: 'Libero aut delectus.'
                         topic:
                           type: string
-                          example: 'Omnis deserunt sit.'
+                          example: 'Libero aut delectus.'
                         friendly_url:
                           type: string
-                          example: DjPZ5AP-xNWUolugr5mMsi4ZxpOxgkDh
+                          example: LHUjVHBSTXXCHywqqiBmQkiGYz6vAo2q
                         privacy:
                           type: string
                           example: public
@@ -2500,6 +2815,7 @@ paths:
                             - es-ES
                             - fr-FR
                             - it-IT
+                            - nl-NL
                             - ro-RO
                             - pt-PT
                             - zh-CN
@@ -2628,10 +2944,10 @@ paths:
                           example: tiled
                         room_url:
                           type: string
-                          example: 'https://6542dace3114cd724b81e115d748ef8c.digitalsamba.com/DjPZ5AP-xNWUolugr5mMsi4ZxpOxgkDh'
+                          example: 'https://78f530ae4205be991a07a663900c2bbf.digitalsamba.com/LHUjVHBSTXXCHywqqiBmQkiGYz6vAo2q'
                         external_id:
                           type: string
-                          example: EXTID902428710
+                          example: EXTID634881411
                         transcription_auto_start_enabled:
                           type: boolean
                           example: true
@@ -2640,10 +2956,10 @@ paths:
                           example: en
                         created_at:
                           type: string
-                          example: '2026-01-05T18:05:20Z'
+                          example: '2026-01-16T15:15:34Z'
                         updated_at:
                           type: string
-                          example: '2026-01-05T18:05:20Z'
+                          example: '2026-01-16T15:15:34Z'
                   total_count:
                     type: string
                     example: '2'
@@ -3137,7 +3453,7 @@ paths:
                   example: light
                 language:
                   type: string
-                  description: 'Select a default language for the room’s UI. Must be one of ar-SA, en, es-ES, de-DE, it-IT, pt-PT, ro-RO, zh-CN or zh-TW.'
+                  description: 'Select a default language for the room’s UI. Must be one of ar-SA, en, es-ES, de-DE, it-IT, nl-NL, pt-PT, ro-RO, zh-CN or zh-TW.'
                   example: en
                 languages:
                   type: array
@@ -3304,6 +3620,22 @@ paths:
                   type: boolean
                   description: 'Allow participants to record sessions.'
                   example: true
+                recordings_layout_mode:
+                  type: string
+                  description: "Set the layout mode for recordings. Auto mode highlights the active speaker, open content, or shared screen, ideal for novice users, while Tiled mode offers customisable grid layouts for personalized viewing experiences. Must be in ['auto', 'tiled']."
+                  example: tiled
+                hide_tiles_in_recordings_enabled:
+                  type: boolean
+                  description: "When enabled, recordings will only capture participants' audio and shared screens. A blank screen will be recorded if no screen is shared."
+                  example: false
+                recording_logo_enabled:
+                  type: boolean
+                  description: 'When enabled, the logo will be shown in this room’s recordings.'
+                  example: true
+                participant_names_in_recordings_enabled:
+                  type: boolean
+                  description: 'When enabled, recordings in this room will include participant name badges on tiles.'
+                  example: true
                 recording_autostart_enabled:
                   type: boolean
                   description: 'When enabled, recording will automatically start when the first participant joins.'
@@ -3316,6 +3648,54 @@ paths:
                   type: boolean
                   description: 'When enabled, automatically start recording breakout rooms when the first user joins.'
                   example: false
+                recording_consent_message_enabled:
+                  type: boolean
+                  description: "When enabled, participants initiating a recording will be reminded that all participants' consent, including those who join late, can be a legal requirement."
+                  example: true
+                captions_in_recordings_enabled:
+                  type: boolean
+                  description: 'Display session transcriptions as subtitles in this room’s recordings.'
+                  example: false
+                restream_enabled:
+                  type: boolean
+                  description: 'Allow participants to start restreaming. When enabled restream this meeting live to platforms like YouTube, Cloudflare, Vimeo, or add custom.'
+                  example: false
+                restream_type:
+                  type: string
+                  description: "Restreamer type. Must be in ['youtube', 'vimeo', 'cloudflare', 'custom']."
+                  example: custom
+                restream_key:
+                  type: string
+                  description: 'Unique authentication token for your restreaming.'
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                restream_url:
+                  type: string
+                  description: 'Custom restreamer server URL.'
+                  example: 'rtmps://your-rtmp-server.com/live'
+                restream_layout_mode:
+                  type: string
+                  description: "Restreaming layout mode. Auto mode automatically magnifies the active speaker, while tiled mode renders a basic grid with participant tiles. However, both layout modes will magnify any open content or shared screen. Must be in ['auto', 'tiled']."
+                  example: tiled
+                hide_tiles_in_restream_enabled:
+                  type: boolean
+                  description: "When enabled, restreaming will not include participants' video tiles. Participants' audio, screen sharing, and other shared content will still be streamed."
+                  example: false
+                restream_logo_enabled:
+                  type: boolean
+                  description: "When enabled, the logo will be displayed in this room's restreaming."
+                  example: true
+                restream_autostart_enabled:
+                  type: boolean
+                  description: 'Restreaming will automatically start when the first participant joins.'
+                  example: false
+                participant_names_in_restream_enabled:
+                  type: boolean
+                  description: 'When enabled, restreaming in this room will include participant name badges on tiles.'
+                  example: true
+                restream_consent_message_enabled:
+                  type: boolean
+                  description: "When enabled, participants starting a restreaming will be reminded that all participants' consent, including those who join late, may be a legal requirement."
+                  example: true
                 logo_enabled:
                   type: boolean
                   description: 'When enabled, the logo will be shown in this room.'
@@ -3323,15 +3703,11 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in this room and its recordings. Image URL or base64 encoded file source.'
-                  example: saepe
+                  example: ratione
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: repellendus
-                recording_logo_enabled:
-                  type: boolean
-                  description: 'When enabled, the logo will be shown in this room’s recordings.'
-                  example: true
+                  example: dignissimos
                 virtual_backgrounds_enabled:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
@@ -3340,14 +3716,6 @@ paths:
                   type: boolean
                   description: 'Allow participants to raise hand to take turns to speak without disrupting this session.'
                   example: true
-                participant_names_in_recordings_enabled:
-                  type: boolean
-                  description: 'When enabled, recordings in this room will include participant name badges on tiles.'
-                  example: true
-                hide_tiles_in_recordings_enabled:
-                  type: boolean
-                  description: "When enabled, recordings will only capture participants' audio and shared screens. A blank screen will be recorded if no screen is shared."
-                  example: false
                 invite_participants_enabled:
                   type: boolean
                   description: 'When enabled, users allowed to ‘Invite participants’ will see an ‘Invite people’ button in the participants panel.'
@@ -3380,10 +3748,6 @@ paths:
                   type: boolean
                   description: 'When enabled, participants will be reminded that by joining, they consent to the processing of their personal data in accordance with your organisation’s Privacy Policy.'
                   example: true
-                recording_consent_message_enabled:
-                  type: boolean
-                  description: "When enabled, participants initiating a recording will be reminded that all participants' consent, including those who join late, can be a legal requirement."
-                  example: true
                 consent_message_type:
                   type: string
                   description: "Must be in ['generic', 'custom']."
@@ -3396,10 +3760,6 @@ paths:
                   type: string
                   description: "Add a custom message to the ‘don’t show this again' checkbox."
                   example: 'Don’t show this again.'
-                recordings_layout_mode:
-                  type: string
-                  description: "Set the layout mode for recordings. Auto mode highlights the active speaker, open content, or shared screen, ideal for novice users, while Tiled mode offers customisable grid layouts for personalized viewing experiences. Must be in ['auto', 'tiled']."
-                  example: tiled
                 layout_mode_on_join:
                   type: string
                   description: "Set the layout mode on join: Auto mode highlights the active speaker, open content, or shared screen, ideal for novice users, while Tiled mode offers customisable grid layouts for personalized viewing experiences. Must be in ['auto', 'tiled']."
@@ -3454,12 +3814,8 @@ paths:
                   example: false
                 captions_language:
                   type: string
-                  description: 'Set the default input language to be transcribed in this room. Must be en or de.'
+                  description: 'Set the default input language to be transcribed in this room. Must be one of de, en, es, fr, it, nl, pt or ro.'
                   example: en
-                captions_in_recordings_enabled:
-                  type: boolean
-                  description: 'Display session transcriptions as subtitles in this room’s recordings.'
-                  example: false
                 whip_enabled:
                   type: boolean
                   description: 'Enable/disable WHIP (WebRTC-HTTP Ingestion Protocol). WHIP allows you to inject live video streams from external tools like OBS, vMix, or FFmpeg into a video call with minimal delay and high quality.'
@@ -4362,7 +4718,7 @@ paths:
                   example: light
                 language:
                   type: string
-                  description: 'Select a default language for the room’s UI. Must be one of ar-SA, en, es-ES, de-DE, it-IT, pt-PT, ro-RO, zh-CN or zh-TW.'
+                  description: 'Select a default language for the room’s UI. Must be one of ar-SA, en, es-ES, de-DE, it-IT, nl-NL, pt-PT, ro-RO, zh-CN or zh-TW.'
                   example: en
                 language_selection_enabled:
                   type: boolean
@@ -4521,10 +4877,30 @@ paths:
                   type: boolean
                   description: 'Allow participants to record sessions.'
                   example: true
+                recordings_layout_mode:
+                  type: string
+                  description: "Set the layout mode for recordings. Auto mode highlights the active speaker, open content, or shared screen, ideal for novice users, while Tiled mode offers customisable grid layouts for personalized viewing experiences. Must be in ['auto', 'tiled']."
+                  example: tiled
+                hide_tiles_in_recordings_enabled:
+                  type: boolean
+                  description: "When enabled, recordings will only capture participants' audio and shared screens. A blank screen will be recorded if no screen is shared."
+                  example: false
+                recording_logo_enabled:
+                  type: boolean
+                  description: 'When enabled, the logo will be shown in this room’s recordings.'
+                  example: true
                 recording_autostart_enabled:
                   type: boolean
                   description: 'When enabled, recording will automatically start when the first participant joins.'
                   example: false
+                participant_names_in_recordings_enabled:
+                  type: boolean
+                  description: 'When enabled, recordings in this room will include participant name badges on tiles.'
+                  example: true
+                recording_consent_message_enabled:
+                  type: boolean
+                  description: "When enabled, participants initiating a recording will be reminded that all participants' consent, including those who join late, can be a legal requirement."
+                  example: true
                 recording_bookmarks_enabled:
                   type: boolean
                   description: 'When When enabled, bookmarks can be added during active recordings to highlight important moments.'
@@ -4533,6 +4909,50 @@ paths:
                   type: boolean
                   description: 'When enabled, automatically start recording breakout rooms when the first user joins.'
                   example: false
+                captions_in_recordings_enabled:
+                  type: boolean
+                  description: 'Display session transcriptions as subtitles in this room’s recordings.'
+                  example: false
+                restream_enabled:
+                  type: boolean
+                  description: 'Allow participants to start restreaming. When enabled restream this meeting live to platforms like YouTube, Cloudflare, Vimeo, or add custom.'
+                  example: false
+                restream_type:
+                  type: string
+                  description: "Restreamer type. Must be in ['youtube', 'vimeo', 'cloudflare', 'custom']."
+                  example: custom
+                restream_key:
+                  type: string
+                  description: 'Unique authentication token for your restreaming.'
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                restream_url:
+                  type: string
+                  description: 'Custom restreamer server URL.'
+                  example: 'rtmps://your-rtmp-server.com/live'
+                restream_layout_mode:
+                  type: string
+                  description: "Restreaming layout mode. Auto mode automatically magnifies the active speaker, while tiled mode renders a basic grid with participant tiles. However, both layout modes will magnify any open content or shared screen. Must be in ['auto', 'tiled']."
+                  example: tiled
+                hide_tiles_in_restream_enabled:
+                  type: boolean
+                  description: "When enabled, restreaming will not include participants' video tiles. Participants' audio, screen sharing, and other shared content will still be streamed."
+                  example: false
+                restream_logo_enabled:
+                  type: boolean
+                  description: "When enabled, the logo will be displayed in this room's restreaming."
+                  example: true
+                restream_autostart_enabled:
+                  type: boolean
+                  description: 'Restreaming will automatically start when the first participant joins.'
+                  example: false
+                participant_names_in_restream_enabled:
+                  type: boolean
+                  description: 'When enabled, restreaming in this room will include participant name badges on tiles.'
+                  example: true
+                restream_consent_message_enabled:
+                  type: boolean
+                  description: "When enabled, participants starting a restreaming will be reminded that all participants' consent, including those who join late, may be a legal requirement."
+                  example: true
                 logo_enabled:
                   type: boolean
                   description: 'When enabled, the logo will be shown in this room.'
@@ -4540,34 +4960,22 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in this room and its recordings. Image URL or base64 encoded file source.'
-                  example: labore
+                  example: ea
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: et
-                recording_logo_enabled:
-                  type: boolean
-                  description: 'When enabled, the logo will be shown in this room’s recordings.'
-                  example: true
+                  example: qui
                 virtual_backgrounds_enabled:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
                   example: true
-                raise_hand_enabled:
-                  type: boolean
-                  description: 'Allow participants to raise hand to take turns to speak without disrupting this session.'
-                  example: true
-                participant_names_in_recordings_enabled:
-                  type: boolean
-                  description: 'When enabled, recordings in this room will include participant name badges on tiles.'
-                  example: true
-                hide_tiles_in_recordings_enabled:
-                  type: boolean
-                  description: "When enabled, recordings will only capture participants' audio and shared screens. A blank screen will be recorded if no screen is shared."
-                  example: false
                 invite_participants_enabled:
                   type: boolean
                   description: 'When enabled, users allowed to ‘Invite participants’ will see an ‘Invite people’ button in the participants panel.'
+                  example: true
+                raise_hand_enabled:
+                  type: boolean
+                  description: 'Allow participants to raise hand to take turns to speak without disrupting this session.'
                   example: true
                 whiteboard_enabled:
                   type: boolean
@@ -4597,10 +5005,6 @@ paths:
                   type: boolean
                   description: 'When enabled, participants will be reminded that by joining, they consent to the processing of their personal data in accordance with your organisation’s Privacy Policy.'
                   example: true
-                recording_consent_message_enabled:
-                  type: boolean
-                  description: "When enabled, participants initiating a recording will be reminded that all participants' consent, including those who join late, can be a legal requirement."
-                  example: true
                 consent_message_type:
                   type: string
                   description: "Must be in ['generic', 'custom']."
@@ -4613,10 +5017,6 @@ paths:
                   type: string
                   description: "Add a custom message to the ‘don’t show this again' checkbox."
                   example: 'Don’t show this again.'
-                recordings_layout_mode:
-                  type: string
-                  description: "Set the layout mode for recordings. Auto mode highlights the active speaker, open content, or shared screen, ideal for novice users, while Tiled mode offers customisable grid layouts for personalized viewing experiences. Must be in ['auto', 'tiled']."
-                  example: tiled
                 layout_mode_on_join:
                   type: string
                   description: "Set the layout mode on join: Auto mode highlights the active speaker, open content, or shared screen, ideal for novice users, while Tiled mode offers customisable grid layouts for personalized viewing experiences. Must be in ['auto', 'tiled']."
@@ -4671,12 +5071,8 @@ paths:
                   example: false
                 captions_language:
                   type: string
-                  description: 'Set the default input language to be transcribed in this room. Must be en or de.'
+                  description: 'Set the default input language to be transcribed in this room. Must be one of de, en, es, fr, it, nl, pt or ro.'
                   example: en
-                captions_in_recordings_enabled:
-                  type: boolean
-                  description: 'Display session transcriptions as subtitles in this room’s recordings.'
-                  example: false
                 whip_enabled:
                   type: boolean
                   description: 'Enable/disable WHIP (WebRTC-HTTP Ingestion Protocol). WHIP allows you to inject live video streams from external tools like OBS, vMix, or FFmpeg into a video call with minimal delay and high quality.'
@@ -5000,6 +5396,32 @@ paths:
         required: true
         schema:
           type: string
+  '/api/v1/sessions/{session}/quizzes':
+    delete:
+      summary: 'Delete quizzes by session.'
+      operationId: deleteQuizzesBySession
+      description: ''
+      parameters: []
+      responses:
+        204:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {  }
+                properties: {  }
+      tags:
+        - Sessions
+    parameters:
+      -
+        in: path
+        name: session
+        description: 'The UUID of the session.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
   '/api/v1/sessions/{session}/recordings':
     delete:
       summary: 'Delete recordings by session.'
@@ -5241,7 +5663,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: '--w-'
+        example: '--'
         required: true
         schema:
           type: string
@@ -5639,7 +6061,7 @@ paths:
         in: path
         name: session
         description: 'The session.'
-        example: eum
+        example: voluptate
         required: true
         schema:
           type: string
@@ -6065,7 +6487,7 @@ paths:
         in: path
         name: participant
         description: 'The participant.'
-        example: officiis
+        example: ex
         required: true
         schema:
           type: string
@@ -6270,7 +6692,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: '-www'
+        example: '-w'
         required: true
         schema:
           type: string
@@ -6536,17 +6958,17 @@ paths:
                 date_start:
                   type: string
                   description: 'Must be a valid date in the format <code>Y-m-d</code>.'
-                  example: '2026-01-05'
+                  example: '2026-01-16'
                 date_end:
                   type: string
                   description: 'Must be a valid date in the format <code>Y-m-d</code>.'
-                  example: '2026-01-05'
+                  example: '2026-01-16'
     parameters:
       -
         in: path
         name: session
         description: 'The session.'
-        example: unde
+        example: ut
         required: true
         schema:
           type: string
@@ -6610,7 +7032,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: w--w-w
+        example: w
         required: true
         schema:
           type: string
@@ -6648,7 +7070,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: '--'
+        example: w-w
         required: true
         schema:
           type: string
@@ -6854,101 +7276,101 @@ paths:
                 example:
                   data:
                     -
-                      id: e9ba75ed-8a7a-3a5c-bb6d-454ef7fbb6df
-                      name: 'Iure illum nemo ea.'
+                      id: b280d539-2112-3877-89b6-b352f17aed81
+                      name: 'Magni amet magni.'
                       status: AWAITING_START
-                      room_id: 6f019f5b-f539-300d-a29c-c9a687bf435d
-                      external_room_id: EXTID185533904
-                      friendly_url: vFoLfMaKlFKgdQzPDuLsnE0CBg9BIXHX
+                      room_id: 55604242-b768-35ce-a8a4-05da0ff92ba0
+                      external_room_id: EXTID944392880
+                      friendly_url: LzZr3EMCQnmkO0dIcCXTysMQbDyDN6rJ
                       privacy: public
-                      participant_id: 689a939f-4320-41ab-b1ba-c6c30eea89a3
-                      participant_name: schimmel.jarvis
-                      participant_external_id: EXTID80
-                      created_at: '2026-01-05T18:05:21Z'
-                      updated_at: '2026-01-05T18:05:21Z'
+                      participant_id: f940c49e-f0e3-4734-84fc-aee917629733
+                      participant_name: larson.brooke
+                      participant_external_id: EXTID65
+                      created_at: '2026-01-16T15:15:35Z'
+                      updated_at: '2026-01-16T15:15:35Z'
                     -
-                      id: 775c04bf-176b-3797-b42b-f79a93b5d8e9
-                      name: 'Dolorum illum culpa.'
+                      id: 0a48b38f-3e28-3e79-974a-e8c5f6697478
+                      name: 'Et porro a qui.'
                       status: AWAITING_START
-                      room_id: 0602755c-3500-3d39-82cd-baf8f9cf6060
-                      external_room_id: EXTID599412130
-                      friendly_url: zefwOVbGT0ETM7epGb191jV0TZaDvY-a
+                      room_id: b02f5b16-97e4-3eab-95e6-fb63dcb94351
+                      external_room_id: EXTID895523219
+                      friendly_url: 1xsk3D8SjxIsecI431IPe2g1_pb48S0c
                       privacy: public
-                      participant_id: 9d8db776-d5d2-4d88-a03c-2da6bdabc0e4
-                      participant_name: nash87
-                      participant_external_id: EXTID30
-                      created_at: '2026-01-05T18:05:21Z'
-                      updated_at: '2026-01-05T18:05:21Z'
+                      participant_id: f0ca0abd-d637-40c3-a9e6-45c48e89242a
+                      participant_name: awalsh
+                      participant_external_id: EXTID36
+                      created_at: '2026-01-16T15:15:36Z'
+                      updated_at: '2026-01-16T15:15:36Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: e9ba75ed-8a7a-3a5c-bb6d-454ef7fbb6df
-                        name: 'Iure illum nemo ea.'
+                        id: b280d539-2112-3877-89b6-b352f17aed81
+                        name: 'Magni amet magni.'
                         status: AWAITING_START
-                        room_id: 6f019f5b-f539-300d-a29c-c9a687bf435d
-                        external_room_id: EXTID185533904
-                        friendly_url: vFoLfMaKlFKgdQzPDuLsnE0CBg9BIXHX
+                        room_id: 55604242-b768-35ce-a8a4-05da0ff92ba0
+                        external_room_id: EXTID944392880
+                        friendly_url: LzZr3EMCQnmkO0dIcCXTysMQbDyDN6rJ
                         privacy: public
-                        participant_id: 689a939f-4320-41ab-b1ba-c6c30eea89a3
-                        participant_name: schimmel.jarvis
-                        participant_external_id: EXTID80
-                        created_at: '2026-01-05T18:05:21Z'
-                        updated_at: '2026-01-05T18:05:21Z'
+                        participant_id: f940c49e-f0e3-4734-84fc-aee917629733
+                        participant_name: larson.brooke
+                        participant_external_id: EXTID65
+                        created_at: '2026-01-16T15:15:35Z'
+                        updated_at: '2026-01-16T15:15:35Z'
                       -
-                        id: 775c04bf-176b-3797-b42b-f79a93b5d8e9
-                        name: 'Dolorum illum culpa.'
+                        id: 0a48b38f-3e28-3e79-974a-e8c5f6697478
+                        name: 'Et porro a qui.'
                         status: AWAITING_START
-                        room_id: 0602755c-3500-3d39-82cd-baf8f9cf6060
-                        external_room_id: EXTID599412130
-                        friendly_url: zefwOVbGT0ETM7epGb191jV0TZaDvY-a
+                        room_id: b02f5b16-97e4-3eab-95e6-fb63dcb94351
+                        external_room_id: EXTID895523219
+                        friendly_url: 1xsk3D8SjxIsecI431IPe2g1_pb48S0c
                         privacy: public
-                        participant_id: 9d8db776-d5d2-4d88-a03c-2da6bdabc0e4
-                        participant_name: nash87
-                        participant_external_id: EXTID30
-                        created_at: '2026-01-05T18:05:21Z'
-                        updated_at: '2026-01-05T18:05:21Z'
+                        participant_id: f0ca0abd-d637-40c3-a9e6-45c48e89242a
+                        participant_name: awalsh
+                        participant_external_id: EXTID36
+                        created_at: '2026-01-16T15:15:36Z'
+                        updated_at: '2026-01-16T15:15:36Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: e9ba75ed-8a7a-3a5c-bb6d-454ef7fbb6df
+                          example: b280d539-2112-3877-89b6-b352f17aed81
                         name:
                           type: string
-                          example: 'Iure illum nemo ea.'
+                          example: 'Magni amet magni.'
                         status:
                           type: string
                           example: AWAITING_START
                         room_id:
                           type: string
-                          example: 6f019f5b-f539-300d-a29c-c9a687bf435d
+                          example: 55604242-b768-35ce-a8a4-05da0ff92ba0
                         external_room_id:
                           type: string
-                          example: EXTID185533904
+                          example: EXTID944392880
                         friendly_url:
                           type: string
-                          example: vFoLfMaKlFKgdQzPDuLsnE0CBg9BIXHX
+                          example: LzZr3EMCQnmkO0dIcCXTysMQbDyDN6rJ
                         privacy:
                           type: string
                           example: public
                         participant_id:
                           type: string
-                          example: 689a939f-4320-41ab-b1ba-c6c30eea89a3
+                          example: f940c49e-f0e3-4734-84fc-aee917629733
                         participant_name:
                           type: string
-                          example: schimmel.jarvis
+                          example: larson.brooke
                         participant_external_id:
                           type: string
-                          example: EXTID80
+                          example: EXTID65
                         created_at:
                           type: string
-                          example: '2026-01-05T18:05:21Z'
+                          example: '2026-01-16T15:15:35Z'
                         updated_at:
                           type: string
-                          example: '2026-01-05T18:05:21Z'
+                          example: '2026-01-16T15:15:35Z'
                   total_count:
                     type: string
                     example: '2'
@@ -7020,101 +7442,101 @@ paths:
                 example:
                   data:
                     -
-                      id: cdc5e56c-0d52-31b5-ab2c-7849b040aa00
-                      name: 'Consequatur id.'
+                      id: 13f907ee-ccb5-398a-88b8-eca0855ddc51
+                      name: 'Nostrum quas libero.'
                       status: AWAITING_START
-                      room_id: b85ea961-9050-3a8f-94d6-f8b954d93a54
-                      external_room_id: EXTID1279776839
-                      friendly_url: j2Jp4Jxq7pFbe1U-ILeR-1gQvuEym9I9
+                      room_id: 4ff4ab62-690b-3570-847d-fec235e90a05
+                      external_room_id: EXTID1523989688
+                      friendly_url: CZxS12F47PLM9lxTo7AnuAoLnZrCCY27
                       privacy: public
-                      participant_id: 21a73e6c-5e77-48e9-90b8-d7eb86f520d7
-                      participant_name: yernser
-                      participant_external_id: EXTID57
-                      created_at: '2026-01-05T18:05:21Z'
-                      updated_at: '2026-01-05T18:05:21Z'
+                      participant_id: fea234ff-3cee-41a9-a132-5fcf31cd22e9
+                      participant_name: baylee15
+                      participant_external_id: EXTID58
+                      created_at: '2026-01-16T15:15:36Z'
+                      updated_at: '2026-01-16T15:15:36Z'
                     -
-                      id: 914637c3-1b48-3d54-8000-f8eb85bf514a
-                      name: 'Sint eaque qui vel.'
+                      id: 85e57ceb-4dfb-325f-a9b4-3b0c38e56665
+                      name: 'Natus tenetur ipsa.'
                       status: AWAITING_START
-                      room_id: f08a9fc8-6884-3fe2-b463-c65313906b9a
-                      external_room_id: EXTID1349893105
-                      friendly_url: l0hSknvv_qcD0bDROtW_AUUXiU0ToSky
+                      room_id: 54b072ae-3b45-3e9e-9bd7-3fa228891958
+                      external_room_id: EXTID850088948
+                      friendly_url: sac9e-u7qJ4RZD2qFwi3hjW2_5H7g6hj
                       privacy: public
-                      participant_id: 8882ccb5-de76-4a9c-8fc1-945299c567e2
-                      participant_name: ofarrell
-                      participant_external_id: EXTID27
-                      created_at: '2026-01-05T18:05:22Z'
-                      updated_at: '2026-01-05T18:05:22Z'
+                      participant_id: 3e137810-01b1-4ba9-ba6e-ce358d789c4e
+                      participant_name: nolan.mara
+                      participant_external_id: EXTID36
+                      created_at: '2026-01-16T15:15:36Z'
+                      updated_at: '2026-01-16T15:15:36Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: cdc5e56c-0d52-31b5-ab2c-7849b040aa00
-                        name: 'Consequatur id.'
+                        id: 13f907ee-ccb5-398a-88b8-eca0855ddc51
+                        name: 'Nostrum quas libero.'
                         status: AWAITING_START
-                        room_id: b85ea961-9050-3a8f-94d6-f8b954d93a54
-                        external_room_id: EXTID1279776839
-                        friendly_url: j2Jp4Jxq7pFbe1U-ILeR-1gQvuEym9I9
+                        room_id: 4ff4ab62-690b-3570-847d-fec235e90a05
+                        external_room_id: EXTID1523989688
+                        friendly_url: CZxS12F47PLM9lxTo7AnuAoLnZrCCY27
                         privacy: public
-                        participant_id: 21a73e6c-5e77-48e9-90b8-d7eb86f520d7
-                        participant_name: yernser
-                        participant_external_id: EXTID57
-                        created_at: '2026-01-05T18:05:21Z'
-                        updated_at: '2026-01-05T18:05:21Z'
+                        participant_id: fea234ff-3cee-41a9-a132-5fcf31cd22e9
+                        participant_name: baylee15
+                        participant_external_id: EXTID58
+                        created_at: '2026-01-16T15:15:36Z'
+                        updated_at: '2026-01-16T15:15:36Z'
                       -
-                        id: 914637c3-1b48-3d54-8000-f8eb85bf514a
-                        name: 'Sint eaque qui vel.'
+                        id: 85e57ceb-4dfb-325f-a9b4-3b0c38e56665
+                        name: 'Natus tenetur ipsa.'
                         status: AWAITING_START
-                        room_id: f08a9fc8-6884-3fe2-b463-c65313906b9a
-                        external_room_id: EXTID1349893105
-                        friendly_url: l0hSknvv_qcD0bDROtW_AUUXiU0ToSky
+                        room_id: 54b072ae-3b45-3e9e-9bd7-3fa228891958
+                        external_room_id: EXTID850088948
+                        friendly_url: sac9e-u7qJ4RZD2qFwi3hjW2_5H7g6hj
                         privacy: public
-                        participant_id: 8882ccb5-de76-4a9c-8fc1-945299c567e2
-                        participant_name: ofarrell
-                        participant_external_id: EXTID27
-                        created_at: '2026-01-05T18:05:22Z'
-                        updated_at: '2026-01-05T18:05:22Z'
+                        participant_id: 3e137810-01b1-4ba9-ba6e-ce358d789c4e
+                        participant_name: nolan.mara
+                        participant_external_id: EXTID36
+                        created_at: '2026-01-16T15:15:36Z'
+                        updated_at: '2026-01-16T15:15:36Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: cdc5e56c-0d52-31b5-ab2c-7849b040aa00
+                          example: 13f907ee-ccb5-398a-88b8-eca0855ddc51
                         name:
                           type: string
-                          example: 'Consequatur id.'
+                          example: 'Nostrum quas libero.'
                         status:
                           type: string
                           example: AWAITING_START
                         room_id:
                           type: string
-                          example: b85ea961-9050-3a8f-94d6-f8b954d93a54
+                          example: 4ff4ab62-690b-3570-847d-fec235e90a05
                         external_room_id:
                           type: string
-                          example: EXTID1279776839
+                          example: EXTID1523989688
                         friendly_url:
                           type: string
-                          example: j2Jp4Jxq7pFbe1U-ILeR-1gQvuEym9I9
+                          example: CZxS12F47PLM9lxTo7AnuAoLnZrCCY27
                         privacy:
                           type: string
                           example: public
                         participant_id:
                           type: string
-                          example: 21a73e6c-5e77-48e9-90b8-d7eb86f520d7
+                          example: fea234ff-3cee-41a9-a132-5fcf31cd22e9
                         participant_name:
                           type: string
-                          example: yernser
+                          example: baylee15
                         participant_external_id:
                           type: string
-                          example: EXTID57
+                          example: EXTID58
                         created_at:
                           type: string
-                          example: '2026-01-05T18:05:21Z'
+                          example: '2026-01-16T15:15:36Z'
                         updated_at:
                           type: string
-                          example: '2026-01-05T18:05:21Z'
+                          example: '2026-01-16T15:15:36Z'
                   total_count:
                     type: string
                     example: '2'
@@ -7134,28 +7556,28 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 1bdbf031-b8d8-3c9c-9448-5e78196cf283
-                  name: 'Voluptatem tempora.'
+                  id: eb71357e-0b03-3257-9763-64187cc5d947
+                  name: 'Ratione ipsa aut.'
                   duration: 0
                   status: AWAITING_START
-                  room_id: 682bedb5-26de-3bdd-b91d-06501140c8aa
-                  external_room_id: EXTID1705891253
-                  friendly_url: 7T0Qp2GNrj_L6Pfti01HVb0zfYNlCXa8
+                  room_id: 6511ec71-1ce9-31a4-b3e8-da6de9da84a8
+                  external_room_id: EXTID479031047
+                  friendly_url: vvRCzQzXBdmwclmyJT3vwvMnNSexKrx4
                   room_is_deleted: false
                   privacy: public
                   session_id: null
-                  participant_id: 2d05dfb9-f9aa-4661-a77e-93eddc8b7c6e
-                  participant_name: karina.prohaska
-                  participant_external_id: EXTID58
-                  created_at: '2026-01-05T18:05:22Z'
-                  updated_at: '2026-01-05T18:05:22Z'
+                  participant_id: 67910145-8e65-4e39-b66e-13c6c0bb9d57
+                  participant_name: myrtice.lehner
+                  participant_external_id: EXTID99
+                  created_at: '2026-01-16T15:15:37Z'
+                  updated_at: '2026-01-16T15:15:37Z'
                 properties:
                   id:
                     type: string
-                    example: 1bdbf031-b8d8-3c9c-9448-5e78196cf283
+                    example: eb71357e-0b03-3257-9763-64187cc5d947
                   name:
                     type: string
-                    example: 'Voluptatem tempora.'
+                    example: 'Ratione ipsa aut.'
                   duration:
                     type: integer
                     example: 0
@@ -7164,13 +7586,13 @@ paths:
                     example: AWAITING_START
                   room_id:
                     type: string
-                    example: 682bedb5-26de-3bdd-b91d-06501140c8aa
+                    example: 6511ec71-1ce9-31a4-b3e8-da6de9da84a8
                   external_room_id:
                     type: string
-                    example: EXTID1705891253
+                    example: EXTID479031047
                   friendly_url:
                     type: string
-                    example: 7T0Qp2GNrj_L6Pfti01HVb0zfYNlCXa8
+                    example: vvRCzQzXBdmwclmyJT3vwvMnNSexKrx4
                   room_is_deleted:
                     type: boolean
                     example: false
@@ -7182,19 +7604,19 @@ paths:
                     example: null
                   participant_id:
                     type: string
-                    example: 2d05dfb9-f9aa-4661-a77e-93eddc8b7c6e
+                    example: 67910145-8e65-4e39-b66e-13c6c0bb9d57
                   participant_name:
                     type: string
-                    example: karina.prohaska
+                    example: myrtice.lehner
                   participant_external_id:
                     type: string
-                    example: EXTID58
+                    example: EXTID99
                   created_at:
                     type: string
-                    example: '2026-01-05T18:05:22Z'
+                    example: '2026-01-16T15:15:37Z'
                   updated_at:
                     type: string
-                    example: '2026-01-05T18:05:22Z'
+                    example: '2026-01-16T15:15:37Z'
       tags:
         - Recordings
     delete:
@@ -7433,6 +7855,77 @@ paths:
         required: true
         schema:
           type: string
+  '/api/v1/rooms/{room}/restreamers/start':
+    post:
+      summary: 'Start restreamer'
+      operationId: startRestreamer
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'HTTP/1.1 200 OK'
+      tags:
+        - Restreamers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: "Restreaming provider. Type shouldn't be passed when server_url is provided. Must be in ['vimeo', 'youtube', 'cloudflare']."
+                  example: vimeo
+                server_url:
+                  type: string
+                  description: "URL of custom restream server. URL shouldn't be passed when type is provided, example: rtmps://rtmp-global.cloud.vimeo.com/live."
+                  example: null
+                stream_key:
+                  type: string
+                  description: 'Unique authentication token for your restreaming.'
+                  example: 53858671-c5e0-441a-9e33-e5d7f7f1861e
+              required:
+                - stream_key
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room or room friendly URL.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/restreamers/stop':
+    post:
+      summary: 'Stop restreamer'
+      operationId: stopRestreamer
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'HTTP/1.1 200 OK'
+      tags:
+        - Restreamers
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room or room friendly URL.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
   /api/v1/roles:
     get:
       summary: 'Get available roles for the team.'
@@ -7616,8 +8109,9 @@ paths:
                     manage_personal_content_library: true
                     manage_phone_users: false
                     push_content: true
-                    raise_hand: false
-                    recording: false
+                    raise_hand: true
+                    recording: true
+                    restreaming: true
                     transcribe_session: true
                     remote_muting: false
                     invite_participant: true
@@ -7763,10 +8257,13 @@ paths:
                         example: true
                       raise_hand:
                         type: boolean
-                        example: false
+                        example: true
                       recording:
                         type: boolean
-                        example: false
+                        example: true
+                      restreaming:
+                        type: boolean
+                        example: true
                       transcribe_session:
                         type: boolean
                         example: true
@@ -7916,8 +8413,9 @@ paths:
                     manage_personal_content_library: true
                     manage_phone_users: false
                     push_content: true
-                    raise_hand: false
-                    recording: false
+                    raise_hand: true
+                    recording: true
+                    restreaming: true
                     transcribe_session: true
                     remote_muting: false
                     invite_participant: true
@@ -8063,10 +8561,13 @@ paths:
                         example: true
                       raise_hand:
                         type: boolean
-                        example: false
+                        example: true
                       recording:
                         type: boolean
-                        example: false
+                        example: true
+                      restreaming:
+                        type: boolean
+                        example: true
                       transcribe_session:
                         type: boolean
                         example: true
@@ -8176,8 +8677,9 @@ paths:
                     manage_personal_content_library: true
                     manage_phone_users: false
                     push_content: true
-                    raise_hand: false
-                    recording: false
+                    raise_hand: true
+                    recording: true
+                    restreaming: true
                     transcribe_session: true
                     remote_muting: false
                     invite_participant: true
@@ -8323,10 +8825,13 @@ paths:
                         example: true
                       raise_hand:
                         type: boolean
-                        example: false
+                        example: true
                       recording:
                         type: boolean
-                        example: false
+                        example: true
+                      restreaming:
+                        type: boolean
+                        example: true
                       transcribe_session:
                         type: boolean
                         example: true
@@ -8492,6 +8997,7 @@ paths:
                   - push_content
                   - raise_hand
                   - recording
+                  - restreaming
                   - transcribe_session
                   - remote_muting
                   - invite_participant
@@ -8960,7 +9466,7 @@ paths:
         in: path
         name: library
         description: 'The library.'
-        example: et
+        example: aut
         required: true
         schema:
           type: string
@@ -9074,7 +9580,7 @@ paths:
         in: path
         name: libraryFolder
         description: ''
-        example: et
+        example: voluptatem
         required: true
         schema:
           type: string
@@ -9232,14 +9738,14 @@ paths:
                 initiator_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: 869a0dee-fc48-330c-b1e1-7bbd2321fa4f
+                  example: 2c2d1500-6995-34b3-8a23-47da45db5f7b
                   nullable: true
     parameters:
       -
         in: path
         name: library
         description: 'The library.'
-        example: beatae
+        example: ex
         required: true
         schema:
           type: string
@@ -9351,7 +9857,7 @@ paths:
                 initiator_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: b4f89637-bf92-34d1-a792-3937684f91ee
+                  example: 165dcda1-4d93-31a3-aaaf-9d3900f0cdb6
                   nullable: true
     delete:
       summary: 'Delete the specified file.'
@@ -9382,7 +9888,7 @@ paths:
         in: path
         name: libraryFile
         description: ''
-        example: pariatur
+        example: eaque
         required: true
         schema:
           type: string
@@ -9459,7 +9965,7 @@ paths:
         in: path
         name: library
         description: 'The library.'
-        example: veritatis
+        example: laborum
         required: true
         schema:
           type: string
@@ -9467,7 +9973,7 @@ paths:
         in: path
         name: libraryFile
         description: ''
-        example: eius
+        example: quos
         required: true
         schema:
           type: string
@@ -9539,14 +10045,14 @@ paths:
                 initiator_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: 37a2c448-e1b0-3593-8bf5-47d4165b3ba3
+                  example: 0da33330-b51e-30d1-8db2-ccab93207f54
                   nullable: true
     parameters:
       -
         in: path
         name: library
         description: 'The library.'
-        example: laborum
+        example: deserunt
         required: true
         schema:
           type: string
@@ -9625,7 +10131,7 @@ paths:
         in: path
         name: library
         description: 'The library.'
-        example: sapiente
+        example: quos
         required: true
         schema:
           type: string
@@ -9831,7 +10337,7 @@ paths:
                 anonymous:
                   type: boolean
                   description: ''
-                  example: true
+                  example: false
                   nullable: true
                 type:
                   type: string
@@ -9849,19 +10355,19 @@ paths:
                     id:
                       type: string
                       description: 'Must be a valid UUID.'
-                      example: d98d4155-6b04-3df3-a541-89382467046e
+                      example: ebd0e238-f79f-3c00-8ea8-84e025a931a4
                       nullable: true
                     text:
                       type: string
                       description: 'Must be at least 1 character. Must not be greater than 255 characters.'
-                      example: yibyutfhvmjydbdmjqu
+                      example: cdomkbhjmllrhvwzxjsuisxt
                   required:
                     - text
                   nullable: true
                 multiple:
                   type: boolean
                   description: 'Deprecated, use type=multiple instead.'
-                  example: false
+                  example: true
               required:
                 - options
     delete:
@@ -10048,6 +10554,665 @@ paths:
         in: path
         name: poll
         description: 'The UUID of the poll.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/quizzes/export':
+    get:
+      summary: Export.
+      operationId: export
+      description: 'Export quiz results.'
+      parameters:
+        -
+          in: query
+          name: format
+          description: 'Export format (cvj, txt or json).'
+          example: txt
+          required: false
+          schema:
+            type: string
+            description: 'Export format (cvj, txt or json).'
+            example: txt
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  -
+                    description: ''
+                    type: object
+                    example:
+                      message: 'Not Found'
+                      error: not-found
+                    properties:
+                      message:
+                        type: string
+                        example: 'Not Found'
+                      error:
+                        type: string
+                        example: not-found
+                  -
+                    description: ''
+                    type: object
+                    example:
+                      message: 'Not Found'
+                      error: not-found
+                    properties:
+                      message:
+                        type: string
+                        example: 'Not Found'
+                      error:
+                        type: string
+                        example: not-found
+      tags:
+        - Quizzes
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/quizzes/{quiz}':
+    get:
+      summary: 'Get quiz.'
+      operationId: getQuiz
+      description: 'Get the specified quiz.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: d84a4ad8-b051-4af5-b885-08663e9e401a
+                  title: 'My quiz'
+                  time_limit_minutes: 90
+                  status: created
+                  questions:
+                    -
+                      id: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                      text: 'Question #1'
+                      multiple: false
+                      choices:
+                        -
+                          id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                          text: 'Correct answer'
+                          correct: true
+                        -
+                          id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                          text: 'Wrong answer'
+                          correct: false
+                    -
+                      id: 56ae59e7-2c9b-4a01-ae66-f26309f9c672
+                      text: 'Question #2'
+                      multiple: true
+                      choices:
+                        -
+                          id: 9196ddcc-400b-49d8-a57a-25ad7b652071
+                          text: 'Correct answer #1'
+                          correct: true
+                        -
+                          id: 6eccae14-c478-43d8-b3d5-c4e484d5a148
+                          text: 'Wrong answer'
+                          correct: false
+                        -
+                          id: cbe49091-3b4d-4c1b-9ea6-bdf6594e799d
+                          text: 'Correct answer #2'
+                          correct: true
+                  created_at: '2025-12-19T05:38:51Z'
+                properties:
+                  id:
+                    type: string
+                    example: d84a4ad8-b051-4af5-b885-08663e9e401a
+                  title:
+                    type: string
+                    example: 'My quiz'
+                  time_limit_minutes:
+                    type: integer
+                    example: 90
+                  status:
+                    type: string
+                    example: created
+                  questions:
+                    type: array
+                    example:
+                      -
+                        id: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                        text: 'Question #1'
+                        multiple: false
+                        choices:
+                          -
+                            id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                            text: 'Correct answer'
+                            correct: true
+                          -
+                            id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                            text: 'Wrong answer'
+                            correct: false
+                      -
+                        id: 56ae59e7-2c9b-4a01-ae66-f26309f9c672
+                        text: 'Question #2'
+                        multiple: true
+                        choices:
+                          -
+                            id: 9196ddcc-400b-49d8-a57a-25ad7b652071
+                            text: 'Correct answer #1'
+                            correct: true
+                          -
+                            id: 6eccae14-c478-43d8-b3d5-c4e484d5a148
+                            text: 'Wrong answer'
+                            correct: false
+                          -
+                            id: cbe49091-3b4d-4c1b-9ea6-bdf6594e799d
+                            text: 'Correct answer #2'
+                            correct: true
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                        text:
+                          type: string
+                          example: 'Question #1'
+                        multiple:
+                          type: boolean
+                          example: false
+                        choices:
+                          type: array
+                          example:
+                            -
+                              id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                              text: 'Correct answer'
+                              correct: true
+                            -
+                              id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                              text: 'Wrong answer'
+                              correct: false
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                              text:
+                                type: string
+                                example: 'Correct answer'
+                              correct:
+                                type: boolean
+                                example: true
+                  created_at:
+                    type: string
+                    example: '2025-12-19T05:38:51Z'
+      tags:
+        - Quizzes
+    patch:
+      summary: 'Update quiz.'
+      operationId: updateQuiz
+      description: 'Update the specified quiz.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: d84a4ad8-b051-4af5-b885-08663e9e401a
+                  title: 'My quiz'
+                  time_limit_minutes: 90
+                  status: created
+                  questions:
+                    -
+                      id: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                      text: 'Question #1'
+                      multiple: false
+                      choices:
+                        -
+                          id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                          text: 'Correct answer'
+                          correct: true
+                        -
+                          id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                          text: 'Wrong answer'
+                          correct: false
+                    -
+                      id: 56ae59e7-2c9b-4a01-ae66-f26309f9c672
+                      text: 'Question #2'
+                      multiple: true
+                      choices:
+                        -
+                          id: 9196ddcc-400b-49d8-a57a-25ad7b652071
+                          text: 'Correct answer #1'
+                          correct: true
+                        -
+                          id: 6eccae14-c478-43d8-b3d5-c4e484d5a148
+                          text: 'Wrong answer'
+                          correct: false
+                        -
+                          id: cbe49091-3b4d-4c1b-9ea6-bdf6594e799d
+                          text: 'Correct answer #2'
+                          correct: true
+                  created_at: '2025-12-19T05:38:51Z'
+                properties:
+                  id:
+                    type: string
+                    example: d84a4ad8-b051-4af5-b885-08663e9e401a
+                  title:
+                    type: string
+                    example: 'My quiz'
+                  time_limit_minutes:
+                    type: integer
+                    example: 90
+                  status:
+                    type: string
+                    example: created
+                  questions:
+                    type: array
+                    example:
+                      -
+                        id: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                        text: 'Question #1'
+                        multiple: false
+                        choices:
+                          -
+                            id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                            text: 'Correct answer'
+                            correct: true
+                          -
+                            id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                            text: 'Wrong answer'
+                            correct: false
+                      -
+                        id: 56ae59e7-2c9b-4a01-ae66-f26309f9c672
+                        text: 'Question #2'
+                        multiple: true
+                        choices:
+                          -
+                            id: 9196ddcc-400b-49d8-a57a-25ad7b652071
+                            text: 'Correct answer #1'
+                            correct: true
+                          -
+                            id: 6eccae14-c478-43d8-b3d5-c4e484d5a148
+                            text: 'Wrong answer'
+                            correct: false
+                          -
+                            id: cbe49091-3b4d-4c1b-9ea6-bdf6594e799d
+                            text: 'Correct answer #2'
+                            correct: true
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: b4de7c9c-b4fb-4f2c-87f6-ee9395d79198
+                        text:
+                          type: string
+                          example: 'Question #1'
+                        multiple:
+                          type: boolean
+                          example: false
+                        choices:
+                          type: array
+                          example:
+                            -
+                              id: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                              text: 'Correct answer'
+                              correct: true
+                            -
+                              id: 4db512ce-46f2-48e6-a90b-b67499b15092
+                              text: 'Wrong answer'
+                              correct: false
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: b89aec8f-8c1c-46b1-b5e8-8245940041ac
+                              text:
+                                type: string
+                                example: 'Correct answer'
+                              correct:
+                                type: boolean
+                                example: true
+                  created_at:
+                    type: string
+                    example: '2025-12-19T05:38:51Z'
+      tags:
+        - Quizzes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Quiz title. Min: 1, Max 255.'
+                  example: 'My quiz.'
+                time_limit_minutes:
+                  type: integer
+                  description: 'Quiz time limit in minutes. Min: 1, Max 1440.'
+                  example: 60
+                questions:
+                  type: object
+                  description: 'Must be an array of quiz questions.'
+                  example: []
+                  properties:
+                    text:
+                      type: string
+                      description: 'Question text.'
+                      example: 'My question'
+                    multiple:
+                      type: boolean
+                      description: 'Multiple flag'
+                      example: true
+                    choices:
+                      type: object
+                      description: 'Must be an array of question choices.'
+                      example: []
+                      properties:
+                        id:
+                          type: string
+                          description: 'Question choice UUID.'
+                          example: fae5eda8-611e-4d65-82f0-8653a0106f76
+                        text:
+                          type: string
+                          description: 'Question choice text.'
+                          example: 'My answer'
+                        correct:
+                          type: boolean
+                          description: 'Correct flag.'
+                          example: true
+                    id:
+                      type: string
+                      description: 'Question UUID.'
+                      example: 0eb58aa7-a956-483d-a333-90cefb7748b3
+                  required:
+                    - choices
+                  nullable: true
+              required:
+                - questions
+    delete:
+      summary: 'Delete quiz.'
+      operationId: deleteQuiz
+      description: 'Delete the specified quiz.'
+      parameters: []
+      responses:
+        204:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {  }
+                properties: {  }
+      tags:
+        - Quizzes
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: quiz
+        description: 'The UUID of the quiz.'
+        example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/quizzes/{quiz}/results':
+    get:
+      summary: 'Quiz results.'
+      operationId: quizResults
+      description: ''
+      parameters:
+        -
+          in: query
+          name: session_id
+          description: 'UUID of the Session.'
+          example: 5ce6fda5-d42b-4110-8796-177e571a7407
+          required: false
+          schema:
+            type: string
+            description: 'UUID of the Session.'
+            example: 5ce6fda5-d42b-4110-8796-177e571a7407
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: 0cf11706-a024-4b38-a1f6-deed0d8fb4ff
+                    session_id:
+                      type: string
+                      example: 7c3275f2-8e67-4913-939a-11d059a6436c
+                    title:
+                      type: string
+                      example: 'My quiz.'
+                    status:
+                      type: string
+                      example: launched
+                    started:
+                      type: string
+                      example: '2025-12-19T07:29:52Z'
+                    ended:
+                      type: string
+                      example: '2025-12-19T07:29:52Z'
+                    questions:
+                      type: array
+                      example:
+                        -
+                          id: 51040216-6c62-4dfe-a2ff-79e35d776c68
+                          question: 'Question #1'
+                          voted: 4
+                          votes:
+                            -
+                              id: e0f06dd1-4e9a-4414-b114-e8aace9c1d16
+                              text: 'Answer #1'
+                              voted: 3
+                              voters:
+                                -
+                                  id: 079b6d2f-96ce-4139-95b5-692d70b07568
+                                  name: xdickinson
+                                -
+                                  id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                  name: trey64
+                                -
+                                  id: 14e70654-e38b-42a4-857a-fb6dc137cd42
+                                  name: keshawn25
+                            -
+                              id: c75b8a57-581d-4e08-9974-d73899c92641
+                              text: 'Answer #2'
+                              voted: 0
+                            -
+                              id: aebaa80b-a04f-4f9c-9879-e55dddb8c450
+                              text: 'Answer #3'
+                              voted: 1
+                              voters:
+                                -
+                                  id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                  name: trey64
+                        -
+                          id: a3abb77f-289f-475f-afe5-d79b000be363
+                          question: 'Question #2'
+                          voted: 1
+                          votes:
+                            -
+                              id: c5e67619-3979-4dce-a070-a7564f03663a
+                              text: 'Answer #1'
+                              voted: 0
+                            -
+                              id: f999d0f5-1b7f-4365-8420-d837d54823f4
+                              text: 'Answer #2.'
+                              voted: 1
+                              voters:
+                                -
+                                  id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                  name: trey64
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: 51040216-6c62-4dfe-a2ff-79e35d776c68
+                          question:
+                            type: string
+                            example: 'Question #1'
+                          voted:
+                            type: integer
+                            example: 4
+                          votes:
+                            type: array
+                            example:
+                              -
+                                id: e0f06dd1-4e9a-4414-b114-e8aace9c1d16
+                                text: 'Answer #1'
+                                voted: 3
+                                voters:
+                                  -
+                                    id: 079b6d2f-96ce-4139-95b5-692d70b07568
+                                    name: xdickinson
+                                  -
+                                    id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                    name: trey64
+                                  -
+                                    id: 14e70654-e38b-42a4-857a-fb6dc137cd42
+                                    name: keshawn25
+                              -
+                                id: c75b8a57-581d-4e08-9974-d73899c92641
+                                text: 'Answer #2'
+                                voted: 0
+                              -
+                                id: aebaa80b-a04f-4f9c-9879-e55dddb8c450
+                                text: 'Answer #3'
+                                voted: 1
+                                voters:
+                                  -
+                                    id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                    name: trey64
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: e0f06dd1-4e9a-4414-b114-e8aace9c1d16
+                                text:
+                                  type: string
+                                  example: 'Answer #1'
+                                voted:
+                                  type: integer
+                                  example: 3
+                                voters:
+                                  type: array
+                                  example:
+                                    -
+                                      id: 079b6d2f-96ce-4139-95b5-692d70b07568
+                                      name: xdickinson
+                                    -
+                                      id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                      name: trey64
+                                    -
+                                      id: 14e70654-e38b-42a4-857a-fb6dc137cd42
+                                      name: keshawn25
+                                  items:
+                                    type: object
+                                    properties:
+                                      id: { type: string, example: 079b6d2f-96ce-4139-95b5-692d70b07568 }
+                                      name: { type: string, example: xdickinson }
+                example:
+                  -
+                    id: 0cf11706-a024-4b38-a1f6-deed0d8fb4ff
+                    session_id: 7c3275f2-8e67-4913-939a-11d059a6436c
+                    title: 'My quiz.'
+                    status: launched
+                    started: '2025-12-19T07:29:52Z'
+                    ended: '2025-12-19T07:29:52Z'
+                    questions:
+                      -
+                        id: 51040216-6c62-4dfe-a2ff-79e35d776c68
+                        question: 'Question #1'
+                        voted: 4
+                        votes:
+                          -
+                            id: e0f06dd1-4e9a-4414-b114-e8aace9c1d16
+                            text: 'Answer #1'
+                            voted: 3
+                            voters:
+                              -
+                                id: 079b6d2f-96ce-4139-95b5-692d70b07568
+                                name: xdickinson
+                              -
+                                id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                name: trey64
+                              -
+                                id: 14e70654-e38b-42a4-857a-fb6dc137cd42
+                                name: keshawn25
+                          -
+                            id: c75b8a57-581d-4e08-9974-d73899c92641
+                            text: 'Answer #2'
+                            voted: 0
+                          -
+                            id: aebaa80b-a04f-4f9c-9879-e55dddb8c450
+                            text: 'Answer #3'
+                            voted: 1
+                            voters:
+                              -
+                                id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                name: trey64
+                      -
+                        id: a3abb77f-289f-475f-afe5-d79b000be363
+                        question: 'Question #2'
+                        voted: 1
+                        votes:
+                          -
+                            id: c5e67619-3979-4dce-a070-a7564f03663a
+                            text: 'Answer #1'
+                            voted: 0
+                          -
+                            id: f999d0f5-1b7f-4365-8420-d837d54823f4
+                            text: 'Answer #2.'
+                            voted: 1
+                            voters:
+                              -
+                                id: 30cc29e3-c872-4a3a-92c4-0bfce96293a2
+                                name: trey64
+      tags:
+        - Quizzes
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room or room friendly URL.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: quiz
+        description: 'The UUID of the quiz.'
         example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
         required: true
         schema:
@@ -11608,7 +12773,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: w-w--
+        example: '-w'
         required: true
         schema:
           type: string
@@ -11808,7 +12973,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: '-www---ww'
+        example: '-w'
         required: true
         schema:
           type: string
@@ -12012,7 +13177,7 @@ paths:
         in: path
         name: session
         description: 'The session.'
-        example: consectetur
+        example: quisquam
         required: true
         schema:
           type: string
@@ -12114,7 +13279,7 @@ paths:
         in: path
         name: participant
         description: 'The participant.'
-        example: labore
+        example: quisquam
         required: true
         schema:
           type: string
@@ -12244,59 +13409,59 @@ paths:
                 example:
                   data:
                     -
-                      id: e36966f1-a5ad-434c-b792-dabf61a1915b
-                      endpoint: 'http://www.johnston.com/dolores-voluptatem-quis-vel.html'
-                      authorization_header: dc4240f201e920a4641b4c1c7fe55667
-                      name: 'My webhook 4'
-                      created_at: '2026-01-05T18:05:23Z'
-                      updated_at: '2026-01-05T18:05:23Z'
+                      id: 62b6c4ef-a7f2-40b7-aeb7-eaf9227251dc
+                      endpoint: 'http://reynolds.net/'
+                      authorization_header: 447a33e68825bb3b6abafd22130ec0c1
+                      name: 'My webhook 2'
+                      created_at: '2026-01-16T15:15:37Z'
+                      updated_at: '2026-01-16T15:15:37Z'
                     -
-                      id: 14c37839-3a49-4116-8ada-dc90cb5292e3
-                      endpoint: 'http://armstrong.info/quo-nihil-maiores-a-numquam-deserunt.html'
-                      authorization_header: 65ce87d1876196057bc5ed7c6e3b722f
-                      name: 'My webhook 4'
-                      created_at: '2026-01-05T18:05:23Z'
-                      updated_at: '2026-01-05T18:05:23Z'
+                      id: 3e9a9bc6-5d17-40aa-99f7-bc55b15b161a
+                      endpoint: 'http://walter.info/quia-tempora-repudiandae-iure-sequi-quo-a-facilis.html'
+                      authorization_header: dd5af0f5eb5c78026845b1021235b162
+                      name: 'My webhook 9'
+                      created_at: '2026-01-16T15:15:37Z'
+                      updated_at: '2026-01-16T15:15:37Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: e36966f1-a5ad-434c-b792-dabf61a1915b
-                        endpoint: 'http://www.johnston.com/dolores-voluptatem-quis-vel.html'
-                        authorization_header: dc4240f201e920a4641b4c1c7fe55667
-                        name: 'My webhook 4'
-                        created_at: '2026-01-05T18:05:23Z'
-                        updated_at: '2026-01-05T18:05:23Z'
+                        id: 62b6c4ef-a7f2-40b7-aeb7-eaf9227251dc
+                        endpoint: 'http://reynolds.net/'
+                        authorization_header: 447a33e68825bb3b6abafd22130ec0c1
+                        name: 'My webhook 2'
+                        created_at: '2026-01-16T15:15:37Z'
+                        updated_at: '2026-01-16T15:15:37Z'
                       -
-                        id: 14c37839-3a49-4116-8ada-dc90cb5292e3
-                        endpoint: 'http://armstrong.info/quo-nihil-maiores-a-numquam-deserunt.html'
-                        authorization_header: 65ce87d1876196057bc5ed7c6e3b722f
-                        name: 'My webhook 4'
-                        created_at: '2026-01-05T18:05:23Z'
-                        updated_at: '2026-01-05T18:05:23Z'
+                        id: 3e9a9bc6-5d17-40aa-99f7-bc55b15b161a
+                        endpoint: 'http://walter.info/quia-tempora-repudiandae-iure-sequi-quo-a-facilis.html'
+                        authorization_header: dd5af0f5eb5c78026845b1021235b162
+                        name: 'My webhook 9'
+                        created_at: '2026-01-16T15:15:37Z'
+                        updated_at: '2026-01-16T15:15:37Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: e36966f1-a5ad-434c-b792-dabf61a1915b
+                          example: 62b6c4ef-a7f2-40b7-aeb7-eaf9227251dc
                         endpoint:
                           type: string
-                          example: 'http://www.johnston.com/dolores-voluptatem-quis-vel.html'
+                          example: 'http://reynolds.net/'
                         authorization_header:
                           type: string
-                          example: dc4240f201e920a4641b4c1c7fe55667
+                          example: 447a33e68825bb3b6abafd22130ec0c1
                         name:
                           type: string
-                          example: 'My webhook 4'
+                          example: 'My webhook 2'
                         created_at:
                           type: string
-                          example: '2026-01-05T18:05:23Z'
+                          example: '2026-01-16T15:15:37Z'
                         updated_at:
                           type: string
-                          example: '2026-01-05T18:05:23Z'
+                          example: '2026-01-16T15:15:37Z'
                   total_count:
                     type: string
                     example: '2'
@@ -12315,39 +13480,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: a6aceebf-b961-4251-bb13-fdd0c3da8a57
-                  endpoint: 'http://zboncak.biz/'
-                  authorization_header: 57ba1fc62fbf1dbd3370fee0a8e8d15b
-                  name: 'My webhook 3'
+                  id: 6d12d819-c0ae-42b5-b320-a7791890c662
+                  endpoint: 'http://www.boehm.com/enim-eos-maxime-sunt.html'
+                  authorization_header: ae3209335dcb077acde0e4fad4590468
+                  name: 'My webhook 7'
                   events:
-                    - participant_esse
-                  created_at: '2026-01-05T18:05:24Z'
-                  updated_at: '2026-01-05T18:05:24Z'
+                    - participant_aut
+                  created_at: '2026-01-16T15:15:38Z'
+                  updated_at: '2026-01-16T15:15:38Z'
                 properties:
                   id:
                     type: string
-                    example: a6aceebf-b961-4251-bb13-fdd0c3da8a57
+                    example: 6d12d819-c0ae-42b5-b320-a7791890c662
                   endpoint:
                     type: string
-                    example: 'http://zboncak.biz/'
+                    example: 'http://www.boehm.com/enim-eos-maxime-sunt.html'
                   authorization_header:
                     type: string
-                    example: 57ba1fc62fbf1dbd3370fee0a8e8d15b
+                    example: ae3209335dcb077acde0e4fad4590468
                   name:
                     type: string
-                    example: 'My webhook 3'
+                    example: 'My webhook 7'
                   events:
                     type: array
                     example:
-                      - participant_esse
+                      - participant_aut
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-01-05T18:05:24Z'
+                    example: '2026-01-16T15:15:38Z'
                   updated_at:
                     type: string
-                    example: '2026-01-05T18:05:24Z'
+                    example: '2026-01-16T15:15:38Z'
       tags:
         - Webhooks
       requestBody:
@@ -12395,39 +13560,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: cfa2b9c7-d08f-4f60-88f7-71129074ed1d
-                  endpoint: 'http://goodwin.com/magni-officiis-pariatur-expedita-perspiciatis-ut-dignissimos.html'
-                  authorization_header: f53c18e7136219e5fcb8d48849298e6e
-                  name: 'My webhook 7'
+                  id: 307b2471-ea6e-4a70-82a9-a403277305a6
+                  endpoint: 'http://harris.com/'
+                  authorization_header: 1a6347cb8ca1a092287ed06d73a7dab8
+                  name: 'My webhook 6'
                   events:
-                    - participant_eum
-                  created_at: '2026-01-05T18:05:23Z'
-                  updated_at: '2026-01-05T18:05:23Z'
+                    - participant_enim
+                  created_at: '2026-01-16T15:15:37Z'
+                  updated_at: '2026-01-16T15:15:37Z'
                 properties:
                   id:
                     type: string
-                    example: cfa2b9c7-d08f-4f60-88f7-71129074ed1d
+                    example: 307b2471-ea6e-4a70-82a9-a403277305a6
                   endpoint:
                     type: string
-                    example: 'http://goodwin.com/magni-officiis-pariatur-expedita-perspiciatis-ut-dignissimos.html'
+                    example: 'http://harris.com/'
                   authorization_header:
                     type: string
-                    example: f53c18e7136219e5fcb8d48849298e6e
+                    example: 1a6347cb8ca1a092287ed06d73a7dab8
                   name:
                     type: string
-                    example: 'My webhook 7'
+                    example: 'My webhook 6'
                   events:
                     type: array
                     example:
-                      - participant_eum
+                      - participant_enim
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-01-05T18:05:23Z'
+                    example: '2026-01-16T15:15:37Z'
                   updated_at:
                     type: string
-                    example: '2026-01-05T18:05:23Z'
+                    example: '2026-01-16T15:15:37Z'
       tags:
         - Webhooks
     patch:
@@ -12443,39 +13608,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 164ae5c6-06e1-43ea-a22e-cdef4afc283b
-                  endpoint: 'https://halvorson.biz/et-sit-sit-dignissimos-accusamus.html'
-                  authorization_header: 67be71475cb4abc568b3a7262713f497
-                  name: 'My webhook 1'
+                  id: 571eec3a-c4f8-496d-a33f-5d95f5ce6eef
+                  endpoint: 'http://hill.org/eveniet-porro-totam-sequi-aliquam-nesciunt-recusandae-laborum'
+                  authorization_header: 9f6b2b8b0f2aff942f920bdcc7f2b4e0
+                  name: 'My webhook 5'
                   events:
-                    - participant_inventore
-                  created_at: '2026-01-05T18:05:24Z'
-                  updated_at: '2026-01-05T18:05:24Z'
+                    - participant_sint
+                  created_at: '2026-01-16T15:15:38Z'
+                  updated_at: '2026-01-16T15:15:38Z'
                 properties:
                   id:
                     type: string
-                    example: 164ae5c6-06e1-43ea-a22e-cdef4afc283b
+                    example: 571eec3a-c4f8-496d-a33f-5d95f5ce6eef
                   endpoint:
                     type: string
-                    example: 'https://halvorson.biz/et-sit-sit-dignissimos-accusamus.html'
+                    example: 'http://hill.org/eveniet-porro-totam-sequi-aliquam-nesciunt-recusandae-laborum'
                   authorization_header:
                     type: string
-                    example: 67be71475cb4abc568b3a7262713f497
+                    example: 9f6b2b8b0f2aff942f920bdcc7f2b4e0
                   name:
                     type: string
-                    example: 'My webhook 1'
+                    example: 'My webhook 5'
                   events:
                     type: array
                     example:
-                      - participant_inventore
+                      - participant_sint
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-01-05T18:05:24Z'
+                    example: '2026-01-16T15:15:38Z'
                   updated_at:
                     type: string
-                    example: '2026-01-05T18:05:24Z'
+                    example: '2026-01-16T15:15:38Z'
       tags:
         - Webhooks
       requestBody:

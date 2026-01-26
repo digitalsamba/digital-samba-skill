@@ -293,6 +293,116 @@ Delete all polls.
 
 ---
 
+## Quizzes
+
+Create and manage in-meeting quizzes with multiple choice questions.
+
+### GET /api/v1/rooms/{room}/quizzes
+List quizzes for a room.
+
+**Query Parameters**: `limit`, `offset`, `order`, `after`
+
+**Response**:
+```json
+{
+  "total_count": 1,
+  "data": [{
+    "id": "uuid",
+    "title": "My quiz",
+    "time_limit_minutes": 45,
+    "status": "created",
+    "created_at": "2025-12-19T05:33:54Z"
+  }]
+}
+```
+
+### POST /api/v1/rooms/{room}/quizzes
+Create a new quiz.
+
+**Request Body**:
+```json
+{
+  "title": "My quiz",
+  "time_limit_minutes": 60,
+  "questions": [
+    {
+      "text": "Question #1",
+      "multiple": false,
+      "choices": [
+        {"text": "Correct answer", "correct": true},
+        {"text": "Wrong answer", "correct": false}
+      ]
+    },
+    {
+      "text": "Question #2 (multiple choice)",
+      "multiple": true,
+      "choices": [
+        {"text": "Correct answer #1", "correct": true},
+        {"text": "Wrong answer", "correct": false},
+        {"text": "Correct answer #2", "correct": true}
+      ]
+    }
+  ]
+}
+```
+
+**Field Constraints**:
+| Field | Constraint |
+|-------|------------|
+| `title` | Min 1, max 255 characters |
+| `time_limit_minutes` | Min 1, max 1440 (24 hours) |
+
+**Response**: Full quiz object with generated UUIDs for quiz, questions, and choices.
+
+### GET /api/v1/rooms/{room}/quizzes/{quiz}
+Get quiz details including all questions and choices.
+
+### PATCH /api/v1/rooms/{room}/quizzes/{quiz}
+Update a quiz. Include question/choice `id` to update existing items, omit to create new ones.
+
+### DELETE /api/v1/rooms/{room}/quizzes/{quiz}
+Delete a specific quiz.
+
+### DELETE /api/v1/rooms/{room}/quizzes
+Delete all quizzes for a room.
+
+### GET /api/v1/rooms/{room}/quizzes/{quiz}/results
+Get quiz results with participant responses.
+
+**Query Parameters**:
+- `session_id` - Filter by session UUID
+
+**Response**:
+```json
+[{
+  "id": "uuid",
+  "session_id": "uuid",
+  "title": "My quiz",
+  "status": "launched",
+  "started": "2025-12-19T07:29:52Z",
+  "ended": "2025-12-19T07:30:52Z",
+  "questions": [{
+    "id": "uuid",
+    "question": "Question #1",
+    "voted": 4,
+    "votes": [{
+      "id": "uuid",
+      "text": "Answer #1",
+      "voted": 3,
+      "voters": [{"id": "uuid", "name": "John"}]
+    }]
+  }]
+}]
+```
+
+### GET /api/v1/rooms/{room}/quizzes/export
+Export quiz results.
+
+**Query Parameters**:
+- `format` - `csv`, `txt`, or `json`
+
+---
+
 ## Recordings
 
 ### DELETE /api/v1/rooms/{room}/recordings
@@ -332,6 +442,9 @@ Get session statistics.
 ### GET /api/v1/sessions/{session}/transcripts
 Get session transcripts.
 
+### DELETE /api/v1/sessions/{session}/quizzes
+Delete all quizzes for a session.
+
 ---
 
 ## Participants
@@ -356,6 +469,41 @@ Connect the room to the phone bridge (SIP). Enables phone dial-in participants t
 
 ### POST /api/v1/rooms/{room}/phone/disconnect
 Disconnect the room from the phone bridge (SIP).
+
+---
+
+## Restreamers (RTMP)
+
+Stream room video to external platforms like YouTube, Vimeo, or custom RTMP servers.
+
+### POST /api/v1/rooms/{room}/restreamers/start
+Start RTMP restreaming from the room.
+
+**Request Body**:
+```json
+{
+  "type": "youtube",
+  "stream_key": "your-stream-key"
+}
+```
+
+**Or with custom RTMP server**:
+```json
+{
+  "server_url": "rtmps://rtmp-global.cloud.vimeo.com/live",
+  "stream_key": "your-stream-key"
+}
+```
+
+**Parameters**:
+| Field | Description |
+|-------|-------------|
+| `type` | Restreaming provider: `youtube`, `vimeo`, or `cloudflare`. Don't use with `server_url`. |
+| `server_url` | Custom RTMP server URL. Don't use with `type`. |
+| `stream_key` | **(Required)** Unique authentication token for your restreaming destination. |
+
+### POST /api/v1/rooms/{room}/restreamers/stop
+Stop RTMP restreaming from the room.
 
 ---
 

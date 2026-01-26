@@ -1,7 +1,7 @@
 # Digital Samba Embedded SDK Reference
 
 **Package**: `@digitalsamba/embedded-sdk`
-**Version**: 0.0.52
+**Version**: 0.0.53
 **License**: BSD-2-Clause
 
 ## Installation
@@ -319,6 +319,10 @@ sambaFrame.stopScreenshare();
 // Recording
 sambaFrame.startRecording();
 sambaFrame.stopRecording();
+
+// Restreaming (RTMP)
+sambaFrame.startRestreaming();
+sambaFrame.stopRestreaming();
 ```
 
 ### User Management
