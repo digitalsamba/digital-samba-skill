@@ -96,12 +96,26 @@ Assign roles via JWT `role` field. Common roles:
 
 ## Common Errors
 
+### API Errors
+
 | Code | Meaning | Solution |
 |------|---------|----------|
 | 401 | Invalid/missing key | Check Authorization header |
 | 403 | Insufficient permissions | Verify role/permissions |
 | 404 | Room not found | Check room UUID/URL |
-| 422 | Validation error | Check request body |
+| 422 | Validation error | Check request body; see `errors` field for per-field details |
+| 429 | Rate limited | Back off and retry with exponential delay |
+
+### SDK / Client Errors
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| SDK won't load | Not a secure context | Serve over HTTPS (localhost exempt) — check `window.isSecureContext` |
+| `connectionFailure` event | Invalid room URL, network error, or room deleted | Verify room exists and URL is correct |
+| `appError` event | Runtime error (e.g., media permission denied) | Check `e.data.code` and `e.data.message` for details |
+| iframe blank / no video | Missing `allow` attribute | Add `allow="camera; microphone; display-capture; autoplay"` to iframe |
+
+For detailed troubleshooting steps, diagnostic code examples, and API error breakdowns, see the **[Troubleshooting & Diagnostics](patterns.md#troubleshooting--diagnostics)** section in patterns.md.
 
 ## Check for Updates
 
