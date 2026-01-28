@@ -92,7 +92,7 @@ sambaFrame.on('userJoined', (e) => console.log(`${e.data.name} joined`));
 
 ## Pre-Built Integration Patterns
 
-The skill includes ready-to-use code patterns for common use cases. Ask Claude for a pattern by describing your use case (e.g., "build a virtual classroom", "add video to my booking system", "set up a webinar page").
+The skill includes ready-to-use code patterns for common use cases. Ask your AI assistant for a pattern by describing your use case (e.g., "build a virtual classroom", "add video to my booking system", "set up a webinar page").
 
 | Pattern | Best For | Key Features |
 |---------|----------|--------------|

@@ -2,7 +2,7 @@
 
 <img src="assets/embedded-app-icon.png" alt="Digital Samba" width="80">
 
-# Digital Samba Skill for Claude
+# Digital Samba Skill for AI Coding Agents
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude](https://img.shields.io/badge/Claude-Skill-blueviolet)](https://docs.anthropic.com/en/docs/claude-code/skills)
@@ -16,9 +16,9 @@ AI-assisted development for embedding white-label video conferencing into your p
 
 ---
 
-## 🤖 What is a Claude Skill?
+## 🤖 What is an AI Coding Agent Skill?
 
-A **skill** gives Claude domain expertise. It's a set of markdown files that teach Claude about a specific API, SDK, or workflow. When you install this skill, Claude understands Digital Samba's video conferencing platform and can write integration code, explain concepts, and troubleshoot issues—without you having to paste documentation into every conversation.
+A **skill** gives your AI coding agent domain expertise. It's a set of markdown files that teach your AI agent about a specific API, SDK, or workflow. When you install this skill, your AI agent understands Digital Samba's video conferencing platform and can write integration code, explain concepts, and troubleshoot issues—without you having to paste documentation into every conversation.
 
 Works with both **Claude Code** (CLI) and **Claude Desktop**.
 
@@ -30,7 +30,7 @@ Works with both **Claude Code** (CLI) and **Claude Desktop**.
 
 ## ✨ What This Skill Does
 
-Building a telehealth app? Online learning platform? Virtual consultation service? This skill helps Claude assist you with integrating Digital Samba's video conferencing into your product.
+Building a telehealth app? Online learning platform? Virtual consultation service? This skill helps your AI agent assist you with integrating Digital Samba's video conferencing into your product.
 
 - 🏠 **Room Management** - Create and configure video rooms via API
 - 🔐 **User Authentication** - Generate JWT tokens to securely connect your users
@@ -73,7 +73,7 @@ cp /tmp/ds-skill/{SKILL,api-reference,sdk-reference,patterns,jwt-tokens}.md /tmp
 
 ## 💬 Usage
 
-Once installed, Claude understands Digital Samba's entire platform. Invoke the skill explicitly for best results:
+Once installed, your AI agent understands Digital Samba's entire platform. Invoke the skill explicitly for best results:
 
 ### Build Complete Features
 
@@ -186,7 +186,7 @@ The `examples/` directory contains ready-to-use code for common integration scen
 
 We update this skill when Digital Samba releases new API endpoints or SDK features.
 
-**Check for updates:** Ask Claude *"Is my Digital Samba skill up to date?"* - it knows how to check.
+**Check for updates:** Ask your AI agent *"Is my Digital Samba skill up to date?"* - it knows how to check.
 
 **To update:**
 

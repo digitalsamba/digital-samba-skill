@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Version check instructions in SKILL.md - ask Claude "Is my Digital Samba skill up to date?"
+- Version check instructions in SKILL.md - ask your AI agent "Is my Digital Samba skill up to date?"
 
 ## [1.0.8] - 2025-12-17
 
@@ -105,7 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of Digital Samba Claude Code skill
+- Initial release of Digital Samba AI coding agent skill
 - SKILL.md with quick start guide and overview
 - api-reference.md with complete REST API documentation (97 endpoints)
 - sdk-reference.md with SDK methods, events, and properties
