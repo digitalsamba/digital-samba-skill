@@ -5,6 +5,12 @@
 
 ## Authentication
 
+Your **Developer Key** is found in the Digital Samba Dashboard under **Team Settings → Developer**. It serves two purposes:
+1. **API authentication** — pass it in the `Authorization` header for all REST API calls
+2. **JWT signing** — use it as the HMAC-SHA256 secret when generating client-side access tokens
+
+> **Security**: Never expose the developer key in client-side code or browser requests. Use it only on your server.
+
 ```
 Authorization: Bearer {DEVELOPER_KEY}
 ```
@@ -56,46 +62,150 @@ Update default room settings.
 ## Rooms
 
 ### POST /api/v1/rooms
-Create a new room.
+Create a new room. All fields are **optional** — a room can be created with an empty body `{}` and will use your team's default settings.
 
-**Field Constraints**:
-| Field | Constraint |
-|-------|------------|
-| `friendly_url` | Max 32 characters. URL-safe string for room URL path. Must be unique per team. |
-| `default_role` | Must be included in the `roles` array. If specifying `default_role`, you must also provide `roles` containing that role. |
+**Required fields**: None. All fields below are optional.
 
-**Request Body**:
+**Key Optional Fields**:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `friendly_url` | string | auto-generated | URL-safe room path (max 32 chars, must be unique per team) |
+| `description` | string | `null` | Room description |
+| `privacy` | string | `"public"` | `"public"` (anyone with URL) or `"private"` (requires JWT token) |
+| `is_locked` | boolean | `false` | When true, room requires approval to join |
+| `max_participants` | integer | team default | Maximum concurrent participants |
+| `session_length` | integer | team default | Max session duration in minutes (1–1440) |
+| `default_role` | string | team default | Role assigned to users who join without a role in their token. **Must** be included in `roles` array |
+| `roles` | array | team default | Available roles in this room. **Required** when `default_role` is set |
+| `join_screen_enabled` | boolean | `true` | Show name/device entry screen before joining |
+| `chat_enabled` | boolean | `true` | Enable in-room chat |
+| `qa_enabled` | boolean | `false` | Enable Q&A panel |
+| `recordings_enabled` | boolean | `false` | Allow recording |
+| `screenshare_enabled` | boolean | `true` | Allow screen sharing |
+| `raise_hand_enabled` | boolean | `true` | Allow hand raising |
+| `video_on_join_enabled` | boolean | `true` | Auto-enable camera on join |
+| `audio_on_join_enabled` | boolean | `false` | Auto-enable microphone on join |
+| `toolbar` | object | `{"position":"bottom","visible":true}` | Toolbar placement and visibility |
+| `topbar_enabled` | boolean | `true` | Show top bar |
+| `logo_url` | string | `null` | Custom logo URL |
+| `primary_color` | string | `null` | Hex color for UI accent |
+| `background_color` | string | `null` | Hex color for background |
+
+**Validation Rules**:
+- `friendly_url`: Max 32 characters, URL-safe, unique per team
+- `default_role`: When set, `roles` array must also be provided and must contain `default_role`
+- `privacy`: Must be `"public"` or `"private"`
+- `session_length`: Must be between 1 and 1440
+
+**Minimal Request** (curl):
+```bash
+curl -X POST https://api.digitalsamba.com/api/v1/rooms \
+  -H "Authorization: Bearer YOUR_DEVELOPER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"friendly_url": "my-meeting", "privacy": "public"}'
+```
+
+**Full Request** (curl):
+```bash
+curl -X POST https://api.digitalsamba.com/api/v1/rooms \
+  -H "Authorization: Bearer YOUR_DEVELOPER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "friendly_url": "team-standup",
+    "description": "Daily standup meeting",
+    "privacy": "private",
+    "max_participants": 50,
+    "session_length": 60,
+    "default_role": "attendee",
+    "roles": ["moderator", "speaker", "attendee"],
+    "chat_enabled": true,
+    "recordings_enabled": true,
+    "screenshare_enabled": true,
+    "raise_hand_enabled": true
+  }'
+```
+
+**Node.js Example**:
+```javascript
+const response = await fetch('https://api.digitalsamba.com/api/v1/rooms', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.DS_DEVELOPER_KEY}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    friendly_url: 'team-standup',
+    privacy: 'private',
+    max_participants: 50,
+    default_role: 'attendee',
+    roles: ['moderator', 'speaker', 'attendee'],
+    chat_enabled: true,
+    recordings_enabled: true
+  })
+});
+
+if (!response.ok) {
+  const err = await response.json();
+  throw new Error(`${response.status}: ${err.message}`);
+}
+
+const room = await response.json();
+console.log(`Room created: ${room.id}`);
+console.log(`Room URL: ${room.room_url}`);
+```
+
+**Python Example**:
+```python
+import requests
+
+response = requests.post(
+    'https://api.digitalsamba.com/api/v1/rooms',
+    headers={
+        'Authorization': f'Bearer {DEVELOPER_KEY}',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'friendly_url': 'team-standup',
+        'privacy': 'private',
+        'max_participants': 50,
+        'default_role': 'attendee',
+        'roles': ['moderator', 'speaker', 'attendee'],
+        'chat_enabled': True,
+        'recordings_enabled': True
+    }
+)
+response.raise_for_status()
+room = response.json()
+print(f'Room created: {room["id"]}')
+print(f'Room URL: {room["room_url"]}')
+```
+
+**Response** (`201 Created`):
 ```json
 {
-  "friendly_url": "my-meeting",
-  "description": "Team standup",
-  "privacy": "public",
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "friendly_url": "team-standup",
+  "description": "Daily standup meeting",
+  "privacy": "private",
   "is_locked": false,
-  "join_screen_enabled": true,
+  "room_url": "https://yourteam.digitalsamba.com/team-standup",
   "max_participants": 50,
   "session_length": 60,
   "default_role": "attendee",
   "roles": ["moderator", "speaker", "attendee"],
+  "join_screen_enabled": true,
   "chat_enabled": true,
   "qa_enabled": false,
   "recordings_enabled": true,
-  "recording_bookmarks_enabled": true,
   "screenshare_enabled": true,
   "raise_hand_enabled": true,
   "video_on_join_enabled": true,
   "audio_on_join_enabled": false,
-  "toolbar": {
-    "position": "bottom",
-    "visible": true
-  },
   "topbar_enabled": true,
-  "logo_url": "https://example.com/logo.png",
-  "primary_color": "#007bff",
-  "background_color": "#ffffff"
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z"
 }
-```
-
-**Response**: Room object with UUID, URLs, and all settings.
 
 ### GET /api/v1/rooms
 List all team rooms.

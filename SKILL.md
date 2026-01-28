@@ -68,13 +68,30 @@ sambaFrame.load();
 | Manage participants | REST API |
 | Customize UI | Room settings API |
 
+## Pre-Built Integration Patterns
+
+The skill includes ready-to-use code patterns for common use cases. Ask Claude for a pattern by describing your use case (e.g., "build a virtual classroom", "add video to my booking system", "set up a webinar page").
+
+| Pattern | Best For | Key Features |
+|---------|----------|--------------|
+| **Simple Public Room** | Quick demos, open meetings | Minimal setup, public access, no auth required |
+| **Authenticated Users** | SaaS integrations, known users | JWT tokens, role-based access, error handling |
+| **SDK-Controlled Room** | Custom UIs, programmatic control | Event handling, mute/unmute, custom buttons |
+| **Scheduled Meetings** | Calendar integrations, booking systems | Time constraints, invite tokens, email invites |
+| **Webinar Mode** | One-to-many broadcasts | Presenter/attendee roles, Q&A, raise hand |
+| **Recording & Playback** | Content archiving, compliance | Start/stop recording, download, playback |
+| **Online Learning Platform** | LMS, virtual classrooms, tutoring | Instructor/student roles, attendance tracking, lesson recordings, per-course rooms |
+| **Playwright E2E Testing** | Automated testing, CI/CD | Iframe testing, SDK events, demo recordings |
+
+Each pattern includes complete server-side and client-side code. See **[patterns.md](patterns.md)** for full implementations.
+
 ## Reference Documentation
 
 For detailed information, see these reference files:
 
 - **[api-reference.md](api-reference.md)** - Complete REST API endpoints
 - **[sdk-reference.md](sdk-reference.md)** - SDK methods, events, properties
-- **[patterns.md](patterns.md)** - Common integration patterns with examples
+- **[patterns.md](patterns.md)** - Pre-built integration patterns with full code examples
 - **[jwt-tokens.md](jwt-tokens.md)** - Authentication deep-dive
 
 ## Key Concepts
@@ -90,9 +107,9 @@ Assign roles via JWT `role` field. Common roles:
 - `attendee` - View/listen only (configurable)
 
 ### Authentication Flow
-1. **Developer key** → Server-side API calls only
-2. **JWT tokens** → Client-side room access
-3. **Never expose developer key to browsers**
+1. **Developer key** → Server-side API calls only (find it in **Dashboard → Team Settings → Developer**)
+2. **JWT tokens** → Client-side room access (signed with the developer key using HS256)
+3. **Never expose developer key to browsers** — use it only on your server
 
 ## Common Errors
 

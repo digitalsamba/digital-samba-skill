@@ -257,7 +257,220 @@ for (const rec of recordings.data) {
 }
 ```
 
-## Pattern 7: Playwright E2E Testing
+## Pattern 7: Online Learning Platform
+
+Best for: LMS integrations, virtual classrooms, tutoring platforms, training systems
+
+This pattern covers a complete online learning flow: creating per-class virtual rooms, assigning instructor/student roles, recording lessons for later playback, and tracking attendance via webhooks.
+
+### Server-side: Course Room Management (Node.js/Express)
+
+```javascript
+const jwt = require('jsonwebtoken');
+
+const DEVELOPER_KEY = process.env.DS_DEVELOPER_KEY;
+const TEAM_ID = process.env.DS_TEAM_ID;
+const TEAM_DOMAIN = process.env.DS_TEAM_DOMAIN; // e.g., "myschool"
+
+// Create a virtual classroom for a course
+app.post('/api/courses/:courseId/classroom', async (req, res) => {
+  const { courseId } = req.params;
+  const course = await db.courses.findById(courseId);
+
+  const roomRes = await fetch('https://api.digitalsamba.com/api/v1/rooms', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${DEVELOPER_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      friendly_url: `class-${courseId}`,
+      privacy: 'private',
+      description: `Virtual classroom: ${course.title}`,
+      max_participants: course.maxStudents + 5, // students + instructors + buffer
+      session_length: course.durationMinutes,
+      default_role: 'attendee',
+      roles: ['moderator', 'speaker', 'attendee'],
+      // Classroom settings
+      chat_enabled: true,
+      qa_enabled: true,
+      recordings_enabled: true,
+      screenshare_enabled: true,
+      raise_hand_enabled: true,
+      // Students join with camera/mic off to reduce noise
+      video_on_join_enabled: false,
+      audio_on_join_enabled: false
+    })
+  });
+
+  if (!roomRes.ok) {
+    const err = await roomRes.json();
+    return res.status(roomRes.status).json({ error: err.message, details: err.errors });
+  }
+
+  const room = await roomRes.json();
+
+  // Store room ID in your database
+  await db.courses.update(courseId, { digitalSambaRoomId: room.id });
+
+  res.json({ roomId: room.id, roomUrl: room.room_url });
+});
+
+// Generate join token based on user role in the course
+app.get('/api/courses/:courseId/join', async (req, res) => {
+  const { courseId } = req.params;
+  const user = req.user; // From your auth middleware
+  const course = await db.courses.findById(courseId);
+  const enrollment = await db.enrollments.findOne({ courseId, userId: user.id });
+
+  if (!enrollment) {
+    return res.status(403).json({ error: 'Not enrolled in this course' });
+  }
+
+  // Map your app roles to Digital Samba roles
+  const dsRole = enrollment.role === 'instructor' ? 'moderator'
+               : enrollment.role === 'ta' ? 'speaker'
+               : 'attendee';
+
+  const token = jwt.sign({
+    td: TEAM_ID,
+    rd: course.digitalSambaRoomId,
+    ud: user.id,
+    u: user.displayName,
+    role: dsRole,
+    exp: Math.floor(Date.now() / 1000) + (course.durationMinutes * 60) + 900 // session + 15 min buffer
+  }, DEVELOPER_KEY, { algorithm: 'HS256' });
+
+  const roomUrl = `https://${TEAM_DOMAIN}.digitalsamba.com/class-${courseId}`;
+  res.json({ token, joinUrl: `${roomUrl}?token=${token}` });
+});
+```
+
+### Client-side: Embedded Virtual Classroom (React)
+
+```jsx
+import { useEffect, useRef, useState } from 'react';
+import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
+
+function VirtualClassroom({ courseId }) {
+  const containerRef = useRef(null);
+  const sambaRef = useRef(null);
+  const [status, setStatus] = useState('loading');
+  const [participants, setParticipants] = useState([]);
+
+  useEffect(() => {
+    async function joinClassroom() {
+      // Fetch join token from your backend
+      const res = await fetch(`/api/courses/${courseId}/join`);
+      if (!res.ok) {
+        setStatus('error');
+        return;
+      }
+      const { joinUrl } = await res.json();
+
+      // Initialize SDK
+      const sambaFrame = DigitalSambaEmbedded.createControl({
+        url: joinUrl,
+        frame: containerRef.current
+      });
+
+      // Track attendance
+      sambaFrame.on('userJoined', (e) => {
+        setParticipants(prev => [...prev, { id: e.data.id, name: e.data.name }]);
+      });
+      sambaFrame.on('userLeft', (e) => {
+        setParticipants(prev => prev.filter(p => p.id !== e.data.id));
+      });
+
+      // Connection status
+      sambaFrame.on('frameLoaded', () => setStatus('connected'));
+      sambaFrame.on('connectionFailure', () => setStatus('error'));
+
+      sambaFrame.load();
+      sambaRef.current = sambaFrame;
+    }
+
+    joinClassroom();
+    return () => sambaRef.current?.destroy();
+  }, [courseId]);
+
+  return (
+    <div style={{ display: 'flex', height: '100vh' }}>
+      {/* Video area */}
+      <div
+        ref={containerRef}
+        style={{ flex: 1, position: 'relative' }}
+      />
+      {/* Attendance sidebar */}
+      <aside style={{ width: 250, padding: 16, borderLeft: '1px solid #ddd' }}>
+        <h3>Participants ({participants.length})</h3>
+        <ul>
+          {participants.map(p => <li key={p.id}>{p.name}</li>)}
+        </ul>
+      </aside>
+    </div>
+  );
+}
+```
+
+### Server-side: Attendance Tracking via Webhooks
+
+```javascript
+// Set up a webhook to track student attendance automatically
+// First, register the webhook via API:
+// POST /api/v1/webhooks { endpoint: "https://yourschool.com/ds-webhook", events: ["participant.joined", "participant.left"] }
+
+app.post('/ds-webhook', (req, res) => {
+  const event = req.body;
+
+  switch (event.event) {
+    case 'participant.joined':
+      db.attendance.create({
+        sessionId: event.data.session_id,
+        participantId: event.data.external_id, // Maps to your user ID (from JWT 'ud' claim)
+        joinedAt: event.timestamp
+      });
+      break;
+
+    case 'participant.left':
+      db.attendance.update(
+        { sessionId: event.data.session_id, participantId: event.data.external_id },
+        { leftAt: event.timestamp }
+      );
+      break;
+  }
+
+  res.sendStatus(200);
+});
+```
+
+### Retrieving Lesson Recordings
+
+```javascript
+// After class ends, fetch recordings for student playback
+app.get('/api/courses/:courseId/recordings', async (req, res) => {
+  const course = await db.courses.findById(req.params.courseId);
+
+  const recordings = await fetch(
+    `https://api.digitalsamba.com/api/v1/recordings?limit=50`,
+    { headers: { 'Authorization': `Bearer ${DEVELOPER_KEY}` } }
+  ).then(r => r.json());
+
+  // Filter to this room's recordings
+  const courseRecordings = recordings.data.filter(r => r.room_id === course.digitalSambaRoomId);
+
+  res.json(courseRecordings.map(r => ({
+    id: r.id,
+    duration: r.duration,
+    createdAt: r.created_at,
+    downloadUrl: `https://api.digitalsamba.com/api/v1/recordings/${r.id}/download`
+  })));
+});
+```
+
+---
+
+## Pattern 8: Playwright E2E Testing
 
 Best for: Automated testing, demo recordings, CI/CD validation
 
