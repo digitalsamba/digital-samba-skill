@@ -889,7 +889,46 @@ function inspectToken(token) {
 }
 ```
 
-**5. Room doesn't exist** — Deleted or wrong ID returns 404 on the room URL
+**5. Room doesn't exist** — Verify the room exists before loading the SDK
+
+```javascript
+// Server-side: Verify room exists via API before generating a token
+async function verifyRoomExists(roomId) {
+  const response = await fetch(`https://api.digitalsamba.com/api/v1/rooms/${roomId}`, {
+    headers: { 'Authorization': `Bearer ${process.env.DS_DEVELOPER_KEY}` }
+  });
+
+  if (response.status === 404) {
+    console.error(`Room ${roomId} not found — it may have been deleted`);
+    return null;
+  }
+  if (!response.ok) {
+    console.error(`API error checking room: ${response.status}`);
+    return null;
+  }
+
+  return response.json(); // Room exists, return details
+}
+```
+
+**6. Network / firewall blocking** — Verify connectivity to Digital Samba servers
+
+```javascript
+// Client-side: Check if the Digital Samba domain is reachable
+async function checkConnectivity(teamDomain) {
+  try {
+    const response = await fetch(`https://${teamDomain}.digitalsamba.com`, {
+      method: 'HEAD',
+      mode: 'no-cors'
+    });
+    console.log('Digital Samba domain is reachable');
+    return true;
+  } catch (e) {
+    console.error('Cannot reach Digital Samba servers — check network/firewall:', e.message);
+    return false;
+  }
+}
+```
 
 ### SDK Diagnostic Event Listeners
 
@@ -972,6 +1011,109 @@ const frame = await initializeRoom({
   onError: (msg) => console.error('Room init failed:', msg)
 });
 ```
+
+### Programmatic Failure Diagnosis
+
+When initialization fails, run this diagnostic function to identify the root cause:
+
+```javascript
+async function diagnoseRoomFailure({ url, token, containerId, teamDomain }) {
+  const issues = [];
+
+  // 1. Check secure context
+  if (typeof window !== 'undefined' && !window.isSecureContext) {
+    issues.push({
+      check: 'secure_context',
+      status: 'FAIL',
+      message: `Page is not served over HTTPS. Origin: ${location.origin}`,
+      fix: 'Serve your app over HTTPS (localhost is exempt)'
+    });
+  }
+
+  // 2. Check container element
+  const container = document.getElementById(containerId);
+  if (!container) {
+    issues.push({
+      check: 'container',
+      status: 'FAIL',
+      message: `Element #${containerId} not found in DOM`,
+      fix: 'Ensure the container element exists before initializing the SDK'
+    });
+  } else if (container.offsetHeight === 0 || container.offsetWidth === 0) {
+    issues.push({
+      check: 'container_size',
+      status: 'WARN',
+      message: `Container #${containerId} has zero dimensions (${container.offsetWidth}x${container.offsetHeight})`,
+      fix: 'Set explicit width and height on the container element via CSS'
+    });
+  }
+
+  // 3. Check token validity (client-side decode only, no signature verification)
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
+
+      if (!payload.td) {
+        issues.push({ check: 'token_td', status: 'FAIL', message: 'Token missing "td" (team ID) claim', fix: 'Include team ID in JWT payload' });
+      }
+      if (!payload.rd) {
+        issues.push({ check: 'token_rd', status: 'FAIL', message: 'Token missing "rd" (room ID) claim', fix: 'Include room ID in JWT payload' });
+      }
+      if (payload.exp && payload.exp < now) {
+        issues.push({ check: 'token_exp', status: 'FAIL', message: `Token expired at ${new Date(payload.exp * 1000).toISOString()}`, fix: 'Generate a fresh token with a future expiration' });
+      }
+      if (payload.nbf && payload.nbf > now) {
+        issues.push({ check: 'token_nbf', status: 'FAIL', message: `Token not valid until ${new Date(payload.nbf * 1000).toISOString()}`, fix: 'Wait until the nbf time, or remove the nbf claim' });
+      }
+    } catch (e) {
+      issues.push({ check: 'token_format', status: 'FAIL', message: 'Token is malformed — cannot decode JWT', fix: 'Verify the token is a valid JWT string' });
+    }
+  }
+
+  // 4. Check network connectivity
+  if (teamDomain) {
+    try {
+      await fetch(`https://${teamDomain}.digitalsamba.com`, { method: 'HEAD', mode: 'no-cors' });
+    } catch (e) {
+      issues.push({ check: 'network', status: 'FAIL', message: `Cannot reach ${teamDomain}.digitalsamba.com`, fix: 'Check network connectivity and firewall rules' });
+    }
+  }
+
+  // 5. Check room exists via API (server-side only)
+  // This check requires the developer key — call from your backend
+
+  // Report
+  if (issues.length === 0) {
+    console.log('All diagnostic checks passed — issue may be server-side or transient');
+  } else {
+    console.group('Digital Samba Initialization Diagnosis');
+    issues.forEach(i => {
+      const icon = i.status === 'FAIL' ? '✗' : '⚠';
+      console.error(`${icon} [${i.check}] ${i.message}\n  Fix: ${i.fix}`);
+    });
+    console.groupEnd();
+  }
+
+  return issues;
+}
+
+// Usage: Call when initialization fails
+// diagnoseRoomFailure({ url: roomUrl, token, containerId: 'video-container', teamDomain: 'myteam' });
+```
+
+### Known Error Codes
+
+Error codes returned by SDK events:
+
+| Event | Code | Meaning | Solution |
+|-------|------|---------|----------|
+| `connectionFailure` | `room_not_found` | Room URL or ID is invalid | Verify room exists via `GET /api/v1/rooms/{room}` |
+| `connectionFailure` | `network_error` | Cannot reach Digital Samba servers | Check network/firewall, verify HTTPS |
+| `connectionFailure` | `token_invalid` | JWT signature or claims rejected | Regenerate token, verify developer key matches |
+| `appError` | `MEDIA_ACCESS_DENIED` | Browser denied camera/mic access | Check permissions policy, user must grant access |
+| `appError` | `MEDIA_NOT_FOUND` | No camera or microphone detected | Check device connections and browser device settings |
+| `appError` | `SCREEN_SHARE_DENIED` | Screen share permission denied | User cancelled the browser screen share prompt |
 
 ### API Error Handling Wrapper
 

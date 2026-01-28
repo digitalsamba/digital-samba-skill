@@ -77,7 +77,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `max_participants` | integer | team default | Maximum concurrent participants |
 | `session_length` | integer | team default | Max session duration in minutes (1–1440) |
 | `default_role` | string | team default | Role assigned to users who join without a role in their token. **Must** be included in `roles` array |
-| `roles` | array | team default | Available roles in this room. **Required** when `default_role` is set |
+| `roles` | array | team default | Available roles in this room. Must be provided when `default_role` is set |
 | `join_screen_enabled` | boolean | `true` | Show name/device entry screen before joining |
 | `chat_enabled` | boolean | `true` | Enable in-room chat |
 | `qa_enabled` | boolean | `false` | Enable Q&A panel |
@@ -181,7 +181,7 @@ print(f'Room created: {room["id"]}')
 print(f'Room URL: {room["room_url"]}')
 ```
 
-**Response** (`201 Created`):
+**Response** (`200 OK`):
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -206,13 +206,106 @@ print(f'Room URL: {room["room_url"]}')
   "created_at": "2024-01-15T10:30:00Z",
   "updated_at": "2024-01-15T10:30:00Z"
 }
+```
 
 ### GET /api/v1/rooms
-List all team rooms.
+List all team rooms. Returns a paginated response.
 
 **Query Parameters**:
-- `limit`, `offset`, `order`, `after`
-- `tag` - Filter by tag (string or array)
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | integer | 100 | Max records to return (max 100) |
+| `offset` | integer | 0 | Starting position for pagination |
+| `order` | string | `"desc"` | Sort order: `"asc"` or `"desc"` |
+| `after` | string | - | Room UUID or friendly_url for cursor-based pagination |
+| `tag` | string/array | - | Filter by tag(s) |
+
+**curl Example**:
+```bash
+curl https://api.digitalsamba.com/api/v1/rooms?limit=10&order=desc \
+  -H "Authorization: Bearer YOUR_DEVELOPER_KEY"
+```
+
+**Node.js Example** (with pagination):
+```javascript
+async function listAllRooms() {
+  const allRooms = [];
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const response = await fetch(
+      `https://api.digitalsamba.com/api/v1/rooms?limit=${limit}&offset=${offset}`,
+      { headers: { 'Authorization': `Bearer ${process.env.DS_DEVELOPER_KEY}` } }
+    );
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(`${response.status}: ${err.message}`);
+    }
+
+    const { data, total_count } = await response.json();
+    allRooms.push(...data);
+
+    if (allRooms.length >= total_count) break;
+    offset += limit;
+  }
+
+  return allRooms;
+}
+
+// Usage
+const rooms = await listAllRooms();
+rooms.forEach(r => console.log(`${r.friendly_url} (${r.privacy}) — ${r.id}`));
+```
+
+**Python Example** (with pagination):
+```python
+def list_all_rooms():
+    all_rooms = []
+    offset = 0
+    limit = 100
+
+    while True:
+        response = requests.get(
+            f'https://api.digitalsamba.com/api/v1/rooms?limit={limit}&offset={offset}',
+            headers={'Authorization': f'Bearer {DEVELOPER_KEY}'}
+        )
+        response.raise_for_status()
+        data = response.json()
+        all_rooms.extend(data['data'])
+
+        if len(all_rooms) >= data['total_count']:
+            break
+        offset += limit
+
+    return all_rooms
+
+# Usage
+rooms = list_all_rooms()
+for r in rooms:
+    print(f'{r["friendly_url"]} ({r["privacy"]}) — {r["id"]}')
+```
+
+**Response** (`200 OK`):
+```json
+{
+  "total_count": 42,
+  "data": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "friendly_url": "team-standup",
+      "description": "Daily standup meeting",
+      "privacy": "private",
+      "max_participants": 50,
+      "is_locked": false,
+      "room_url": "https://yourteam.digitalsamba.com/team-standup",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
 
 ### GET /api/v1/rooms/{room}
 Get room details. `{room}` can be UUID or friendly_url.
