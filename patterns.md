@@ -45,6 +45,222 @@ The Digital Samba SDK injects an iframe into the container element. **The iframe
 
 ---
 
+## Embedding Into Your Application
+
+Three approaches to embed a Digital Samba video room into your UI, from simplest to most control. All assume you have a `roomUrl` (e.g., `https://yourteam.digitalsamba.com/room-slug?token=xxx`) from your server.
+
+### Approach 1: Plain HTML iframe (No SDK)
+
+Simplest embedding — no JavaScript required:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .video-wrapper {
+      width: 100%;
+      height: calc(100vh - 60px); /* Full height minus header */
+    }
+    .video-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <header style="height: 60px; padding: 16px;">My App</header>
+  <div class="video-wrapper">
+    <iframe
+      allow="camera; microphone; display-capture; autoplay"
+      src="https://yourteam.digitalsamba.com/my-room?token=YOUR_TOKEN"
+      allowfullscreen="true">
+    </iframe>
+  </div>
+</body>
+</html>
+```
+
+### Approach 2: SDK-Managed iframe (Recommended)
+
+The SDK creates an iframe inside your container and gives you full control via events and methods:
+
+```javascript
+import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
+
+// 1. SDK injects an iframe into this container element
+const sambaFrame = DigitalSambaEmbedded.createControl({
+  url: 'https://yourteam.digitalsamba.com/my-room?token=YOUR_TOKEN',
+  root: document.getElementById('video-container')
+});
+
+// 2. Set up event listeners BEFORE loading
+sambaFrame.on('frameLoaded', () => {
+  console.log('iframe loaded, waiting for user to join...');
+});
+
+sambaFrame.on('userJoined', (e) => {
+  console.log(`Joined as ${e.data.name} (${e.data.role})`);
+  // Now safe to call control methods
+  document.getElementById('mute-btn').onclick = () => sambaFrame.toggleAudio();
+  document.getElementById('camera-btn').onclick = () => sambaFrame.toggleVideo();
+  document.getElementById('leave-btn').onclick = () => sambaFrame.leaveSession();
+});
+
+sambaFrame.on('userLeft', (e) => {
+  console.log(`${e.data.name} left`);
+});
+
+sambaFrame.on('connectionFailure', (e) => {
+  console.error('Connection failed:', e.data);
+});
+
+// 3. Load the iframe (triggers 'frameLoaded' → user sees join screen → 'userJoined')
+sambaFrame.load();
+```
+
+### Approach 3: Wrap an Existing iframe with SDK
+
+If you already have an iframe in your HTML and want to add SDK control:
+
+```html
+<iframe
+  id="existing-video"
+  allow="camera; microphone; display-capture; autoplay"
+  src="https://yourteam.digitalsamba.com/my-room?token=YOUR_TOKEN"
+  style="width: 100%; height: 600px; border: none;"
+  allowfullscreen="true">
+</iframe>
+
+<script type="module">
+import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
+
+// Wrap the existing iframe to add SDK control
+const sambaFrame = DigitalSambaEmbedded.createControl({
+  frame: document.getElementById('existing-video')
+});
+
+// Now you can listen to events and call methods
+sambaFrame.on('userJoined', (e) => {
+  console.log(`${e.data.name} joined as ${e.data.role}`);
+});
+
+sambaFrame.on('recordingStarted', () => {
+  console.log('Recording in progress');
+});
+</script>
+```
+
+### Self-Contained React Component
+
+A complete, single-file React component for embedding Digital Samba. No external hook dependencies:
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
+
+interface EmbeddedRoomProps {
+  roomUrl: string;  // Full URL with token, e.g. "https://team.digitalsamba.com/room?token=xxx"
+  height?: string;  // Container height (default: "100vh")
+  onJoined?: (user: { id: string; name: string; role: string }) => void;
+  onLeft?: () => void;
+  onError?: (message: string) => void;
+}
+
+export function EmbeddedRoom({ roomUrl, height = '100vh', onJoined, onLeft, onError }: EmbeddedRoomProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sambaRef = useRef<DigitalSambaEmbedded | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'joined' | 'error'>('loading');
+  const [participants, setParticipants] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    if (!containerRef.current || !roomUrl) return;
+
+    // Create SDK instance — this injects an iframe into the container
+    const sambaFrame = DigitalSambaEmbedded.createControl({
+      url: roomUrl,
+      root: containerRef.current
+    });
+    sambaRef.current = sambaFrame;
+
+    // Connection lifecycle
+    sambaFrame.on('frameLoaded', () => setStatus('ready'));
+
+    sambaFrame.on('userJoined', (e) => {
+      setStatus('joined');
+      onJoined?.(e.data);
+    });
+
+    sambaFrame.on('userLeft', (e) => {
+      setParticipants(prev => prev.filter(p => p.id !== e.data.id));
+      onLeft?.();
+    });
+
+    sambaFrame.on('usersUpdated', (e) => {
+      setParticipants(e.data.map((u: any) => ({ id: u.id, name: u.name })));
+    });
+
+    // Error handling
+    sambaFrame.on('connectionFailure', (e) => {
+      setStatus('error');
+      onError?.(e.data?.error || 'Connection failed');
+    });
+
+    sambaFrame.on('appError', (e) => {
+      onError?.(e.data?.message || 'Application error');
+    });
+
+    // Load the iframe
+    sambaFrame.load();
+
+    // Cleanup on unmount
+    return () => {
+      sambaRef.current?.leaveSession();
+      sambaRef.current = null;
+    };
+  }, [roomUrl]);
+
+  return (
+    <div style={{ width: '100%', height, display: 'flex', flexDirection: 'column' }}>
+      {/* SDK injects iframe here — container MUST have explicit dimensions */}
+      <div
+        ref={containerRef}
+        style={{ flex: 1, position: 'relative', backgroundColor: '#1a1a1a', borderRadius: 8, overflow: 'hidden' }}
+      />
+
+      {/* Status bar */}
+      <div style={{ padding: '8px 12px', fontSize: 14, backgroundColor: '#f5f5f5' }}>
+        {status === 'loading' && 'Connecting...'}
+        {status === 'ready' && 'Ready to join'}
+        {status === 'joined' && `In call — ${participants.length} participant${participants.length !== 1 ? 's' : ''}`}
+        {status === 'error' && 'Connection failed'}
+      </div>
+
+      {/* Controls — only available after joining */}
+      {status === 'joined' && (
+        <div style={{ display: 'flex', gap: 8, padding: 8 }}>
+          <button onClick={() => sambaRef.current?.toggleAudio()}>Toggle Mic</button>
+          <button onClick={() => sambaRef.current?.toggleVideo()}>Toggle Camera</button>
+          <button onClick={() => sambaRef.current?.startScreenshare()}>Share Screen</button>
+          <button onClick={() => sambaRef.current?.leaveSession()}>Leave</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Usage:
+// <EmbeddedRoom
+//   roomUrl="https://yourteam.digitalsamba.com/my-room?token=xxx"
+//   height="calc(100vh - 60px)"
+//   onJoined={(user) => console.log(`Joined as ${user.name}`)}
+//   onError={(msg) => alert(msg)}
+// />
+```
+
+---
+
 ## Pattern 1: Simple Public Room
 
 Best for: Quick demos, open meetings

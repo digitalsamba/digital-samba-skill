@@ -35,26 +35,48 @@ const token = jwt.sign({
 ```
 
 ### 3. Embed the Room (Client-side)
+
+**Option A: Plain iframe** — simplest, no SDK needed:
 ```html
-<iframe 
-  allow="camera; microphone; display-capture; autoplay;" 
+<iframe
+  id="video-frame"
+  allow="camera; microphone; display-capture; autoplay;"
   src="https://yourteam.digitalsamba.com/my-meeting?token={jwt}"
+  style="width: 100%; height: 100vh; border: none;"
   allowfullscreen="true">
 </iframe>
 ```
 
-### 4. Control with SDK (Optional)
+**Option B: SDK creates the iframe** — lets you add event listeners before loading:
 ```javascript
 import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
 
-const sambaFrame = DigitalSambaEmbedded.createControl({ 
-  url: roomUrl,
-  frame: document.getElementById('video-frame')
+// SDK injects an iframe into this container element
+const sambaFrame = DigitalSambaEmbedded.createControl({
+  url: 'https://yourteam.digitalsamba.com/my-meeting?token={jwt}',
+  root: document.getElementById('video-container') // Container div, not an iframe
+});
+
+// Set up events before the iframe loads
+sambaFrame.on('userJoined', (e) => console.log(`${e.data.name} joined`));
+sambaFrame.on('connectionFailure', (e) => console.error('Failed:', e.data));
+
+sambaFrame.load(); // Now create and load the iframe
+```
+
+**Option C: SDK wraps an existing iframe** — control an iframe you already placed in HTML:
+```javascript
+import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
+
+// Wrap the iframe from Option A to add SDK control
+const sambaFrame = DigitalSambaEmbedded.createControl({
+  frame: document.getElementById('video-frame') // Existing iframe element
 });
 
 sambaFrame.on('userJoined', (e) => console.log(`${e.data.name} joined`));
-sambaFrame.load();
 ```
+
+> **Important**: The SDK iframe container must have explicit CSS dimensions (width + height). The iframe does **not** auto-size. See [Iframe Sizing](patterns.md#iframe-sizing-important) in patterns.md.
 
 ## When to Use What
 
