@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-02-10
+
+### Added
+
+- `auto_pip_enabled` room setting — automatic Picture-in-Picture when participants switch tabs/apps (fixes #8)
+- `room_reactions_enabled` room setting — emoji reactions in rooms
+- `emoji_reactions` role permission
+
 ## [1.1.2] - 2026-01-26
 
 ### Added
