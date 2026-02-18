@@ -1,7 +1,7 @@
 # Digital Samba Embedded SDK Reference
 
 **Package**: `@digitalsamba/embedded-sdk`
-**Version**: 0.0.53
+**Version**: 0.0.54
 **License**: BSD-2-Clause
 
 ## Installation
@@ -71,6 +71,15 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 | `team` | string | Team identifier (alternative to url) |
 | `room` | string | Room identifier (alternative to url) |
 | `token` | string | JWT token (alternative to url) |
+| `roomSettings` | object | Room settings overrides (see below) |
+
+**roomSettings options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `baseDomain` | string | Override base domain |
+| `publicRoomUrl` | string | Override public room URL used for invitation links |
+| `mobileScreenshare` | boolean | Enable mobile screenshare |
 
 ---
 
@@ -122,6 +131,7 @@ Current room state.
 ```typescript
 interface RoomState {
   appLanguage: string;
+  audioOnly: boolean;
   frameMuted: boolean;
   media: {
     videoEnabled: boolean;
@@ -135,6 +145,7 @@ interface RoomState {
   layout: {
     mode: 'auto' | 'tiled';
     showToolbar: boolean;
+    showTopbar: boolean;
     toolbarPosition: 'left' | 'right' | 'bottom';
     localTileMinimized: boolean;
     contentMode?: 'maximize' | 'pin';
@@ -429,8 +440,9 @@ sambaFrame.hideCaptions();
 sambaFrame.toggleCaptions();
 
 sambaFrame.configureCaptions({
-  fontSize: 'large',        // 'small' | 'medium' | 'large'
-  spokenLanguage: 'en-US'
+  fontSize: 'large',            // 'small' | 'medium' | 'large'
+  spokenLanguage: 'en-US',
+  applySpokenLanguageToAll: true // Apply spoken language to all participants (moderator only)
 });
 ```
 

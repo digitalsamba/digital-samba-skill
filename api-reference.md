@@ -88,6 +88,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `audio_on_join_enabled` | boolean | `false` | Auto-enable microphone on join |
 | `auto_pip_enabled` | boolean | team default | When enabled, Picture-in-Picture opens automatically when participants switch away from the main tab or app |
 | `room_reactions_enabled` | boolean | team default | When enabled, all participants can use emoji reactions in the room |
+| `invite_participants_advanced_enabled` | boolean | team default | Controls whether the "Invite people" UI is shown by default for users who can invite participants. Invitations are shared via copyable links or in-app actions, without opening an email client |
 | `toolbar` | object | `{"position":"bottom","visible":true}` | Toolbar placement and visibility |
 | `topbar_enabled` | boolean | `true` | Show top bar |
 | `logo_url` | string | `null` | Custom logo URL |
@@ -207,6 +208,7 @@ print(f'Room URL: {room["room_url"]}')
   "topbar_enabled": true,
   "auto_pip_enabled": false,
   "room_reactions_enabled": true,
+  "invite_participants_advanced_enabled": false,
   "created_at": "2024-01-15T10:30:00Z",
   "updated_at": "2024-01-15T10:30:00Z"
 }
