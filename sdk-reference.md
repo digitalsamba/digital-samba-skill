@@ -80,6 +80,21 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 | `baseDomain` | string | Override base domain |
 | `publicRoomUrl` | string | Override public room URL used for invitation links |
 | `mobileScreenshare` | boolean | Enable mobile screenshare |
+| `videoEnabled` | boolean | Start with camera on/off |
+| `audioEnabled` | boolean | Start with mic on/off |
+| `username` | string | Override display name |
+| `initials` | string | Override avatar initials |
+| `layoutMode` | `'auto' \| 'tiled'` | Starting layout mode |
+| `showToolbar` | boolean | Show/hide toolbar |
+| `showTopbar` | boolean | Show/hide topbar |
+| `showCaptions` | boolean | Show captions initially |
+| `virtualBackground` | object | Pre-configure virtual background |
+| `virtualBackgrounds` | array | Custom background options |
+| `replaceVirtualBackgrounds` | boolean | Replace default backgrounds |
+| `appLanguage` | string | UI language |
+| `muteFrame` | boolean | Start with frame muted |
+| `mediaDevices` | object | Pre-select audio/video devices |
+| `requireRemoveUserConfirmation` | boolean | Confirm before removing users |
 
 ---
 
@@ -123,6 +138,10 @@ console.log(sambaFrame.features.screenshare); // true
 - `virtualBackgrounds`
 - `raiseHand`
 - `invite`
+- `qa`
+- `contentLibrary`
+- `whiteboard`
+- `captions`
 
 ### sambaFrame.roomState
 
@@ -201,6 +220,10 @@ const moderatorCanRecord = sambaFrame.permissionManager.hasPermissions(
 - `askRemoteUnmute` - Request unmute
 - `raiseHand` - Raise hand
 - `manageRoles` - Change user roles
+- `inviteParticipant` - Invite users to room
+- `seeParticipantsPanel` - View participants list
+- `controlRoomEntry` - Control room entry (lobby)
+- `editWhiteboard` - Edit whiteboard content
 
 ---
 
@@ -238,7 +261,6 @@ sambaFrame.on('*', (event) => {
 | `userJoined` | `{ id, name, role }` | Local user joined room |
 | `userLeft` | `{ id, name }` | User left room |
 | `usersUpdated` | `User[]` | Participant list changed |
-| `connectionFailure` | `{ error }` | Connection failed |
 | `sessionEnded` | - | Meeting ended |
 
 #### Media Events
@@ -272,6 +294,14 @@ sambaFrame.on('*', (event) => {
 | `roomStateUpdated` | `RoomState` | Any room state changed |
 | `featureSetUpdated` | `FeatureSet` | Available features changed |
 
+#### Layout Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `localTileMaximized` | - | Local tile was maximized |
+| `localTileMinimized` | - | Local tile was minimized |
+| `userMaximized` | `{ userId, type, mode }` | User tile maximized/pinned |
+
 #### Caption Events
 
 | Event | Payload | Description |
@@ -303,6 +333,7 @@ sambaFrame.on('*', (event) => {
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `appError` | `{ code, message }` | Application error |
+| `mediaPermissionsFailed` | - | Browser denied media device access |
 
 ---
 
@@ -475,7 +506,7 @@ sambaFrame.configureVirtualBackground({ type: 'blur' });
 
 ```javascript
 // Create new whiteboard
-sambaFrame.createWhiteboard({ name: 'Brainstorm' });
+sambaFrame.createWhiteboard({ personal: false, folderId: 'folder-id' });
 
 // Open/close whiteboard
 sambaFrame.openWhiteboard('whiteboard-id');
@@ -544,9 +575,9 @@ sambaFrame.removeTileAction('sendEmail');
 ```
 
 **Scope values:**
+- `'all'` - All tiles
 - `'remote'` - Other users' tiles
 - `'local'` - Current user's tile
-- `'custom'` - Custom tiles (from addCustomTile)
 - `'screenshare-local'` - Local screen share
 - `'screenshare-remote'` - Remote screen share
 
