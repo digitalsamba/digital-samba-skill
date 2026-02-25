@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2026-02-25
+
+### Fixed
+
+- `createWhiteboard` signature — correct parameters are `{ personal, folderId }` not `{ name }` (fixes #12)
+- `TileActionScope` — replaced non-existent `'custom'` with correct `'all'` value
+- Removed `connectionFailure` event (not present in SDK source)
+
+### Added
+
+- 4 missing events: `localTileMaximized`, `localTileMinimized`, `userMaximized`, `mediaPermissionsFailed`
+- 4 missing permission types: `inviteParticipant`, `seeParticipantsPanel`, `controlRoomEntry`, `editWhiteboard`
+- 4 missing feature flags: `qa`, `contentLibrary`, `whiteboard`, `captions`
+- 15 `roomSettings` options documenting full `InitialRoomSettings` interface
+
 ## [1.1.4] - 2026-02-18
 
 ### Added
