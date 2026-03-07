@@ -337,7 +337,91 @@ sambaFrame.on('*', (event) => {
 
 ---
 
-## Methods
+## Method Quick Reference
+
+Every SDK method at a glance. Use exact names below — see detailed docs in sections that follow.
+
+| Category | Method | Description |
+|----------|--------|-------------|
+| **Lifecycle** | `load()` | Load the iframe (deferred mode) |
+| **Lifecycle** | `leaveSession()` | Leave the session |
+| **Lifecycle** | `endSession(showConfirm?)` | End session for all participants |
+| **Video** | `enableVideo()` | Turn camera on |
+| **Video** | `disableVideo()` | Turn camera off |
+| **Video** | `toggleVideo(force?)` | Toggle or force camera state |
+| **Audio** | `enableAudio()` | Turn mic on |
+| **Audio** | `disableAudio()` | Turn mic off |
+| **Audio** | `toggleAudio(force?)` | Toggle or force mic state |
+| **Screenshare** | `startScreenshare()` | Start screen sharing |
+| **Screenshare** | `stopScreenshare()` | Stop screen sharing |
+| **Recording** | `startRecording()` | Start recording |
+| **Recording** | `stopRecording()` | Stop recording |
+| **Restreaming** | `startRestreaming()` | Start RTMP restreaming |
+| **Restreaming** | `stopRestreaming()` | Stop RTMP restreaming |
+| **Users** | `listUsers()` | Get all participants |
+| **Users** | `getUser(userId)` | Get specific participant |
+| **Users** | `removeUser(userId)` | Remove participant from room |
+| **Users** | `changeRole(userId, role)` | Change participant's role |
+| **Moderation** | `requestMute(userId)` | Request user mute |
+| **Moderation** | `requestUnmute(userId)` | Request user unmute |
+| **Moderation** | `requestToggleAudio(userId, force?)` | Toggle user's audio |
+| **Broadcast** | `allowBroadcast(userId\|options)` | Grant broadcast permission |
+| **Broadcast** | `disallowBroadcast(userId)` | Revoke broadcast permission |
+| **Broadcast** | `allowScreenshare(userId)` | Grant screenshare permission |
+| **Broadcast** | `disallowScreenshare(userId)` | Revoke screenshare permission |
+| **Hand Raise** | `raiseHand()` | Raise own hand |
+| **Hand Raise** | `lowerHand(userId?)` | Lower hand (own or other's) |
+| **Toolbar** | `showToolbar()` | Show toolbar |
+| **Toolbar** | `hideToolbar()` | Hide toolbar |
+| **Toolbar** | `toggleToolbar()` | Toggle toolbar visibility |
+| **Toolbar** | `changeToolbarPosition(pos)` | Move toolbar: `'left'\|'right'\|'bottom'` |
+| **Topbar** | `showTopbar()` | Show topbar |
+| **Topbar** | `hideTopbar()` | Hide topbar |
+| **Topbar** | `toggleTopbar()` | Toggle topbar visibility |
+| **Layout** | `changeLayoutMode(mode)` | Set layout: `'auto'\|'tiled'` |
+| **Tiles** | `pinUser(userId, type?)` | Pin user's video tile |
+| **Tiles** | `unpinUser()` | Unpin current pinned tile |
+| **Tiles** | `maximizeUser(userId, type?)` | Maximize user's video tile |
+| **Tiles** | `minimizeUser()` | Minimize maximized tile |
+| **Tiles** | `minimizeLocalTile()` | Minimize own tile |
+| **Tiles** | `maximizeLocalTile()` | Maximize own tile |
+| **Tiles** | `minimizeContent()` | Minimize pinned/maximized content |
+| **Frame Audio** | `muteFrame()` | Mute all iframe audio output |
+| **Frame Audio** | `unmuteFrame()` | Unmute iframe audio output |
+| **Frame Audio** | `toggleMuteFrame()` | Toggle iframe audio mute |
+| **Captions** | `showCaptions()` | Show captions |
+| **Captions** | `hideCaptions()` | Hide captions |
+| **Captions** | `toggleCaptions()` | Toggle captions |
+| **Captions** | `configureCaptions(options)` | Set font size, language, apply to all |
+| **Virtual BG** | `enableVirtualBackground(options)` | Enable blur, image, or imageUrl background |
+| **Virtual BG** | `disableVirtualBackground()` | Disable virtual background |
+| **Virtual BG** | `configureVirtualBackground(options)` | Configure without enabling |
+| **Whiteboard** | `createWhiteboard(options)` | Create new whiteboard |
+| **Whiteboard** | `openWhiteboard(id)` | Open whiteboard |
+| **Whiteboard** | `closeWhiteboard(id)` | Close whiteboard |
+| **Whiteboard** | `toggleWhiteboard()` | Toggle whiteboard |
+| **Whiteboard** | `addImageToWhiteboard(options)` | Add image via URL or base64 |
+| **Library** | `openLibraryFile(fileId)` | Open library file |
+| **Library** | `closeLibraryFile(fileId)` | Close library file |
+| **Library** | `toggleLibraryFile(fileId)` | Toggle library file |
+| **Features** | `featureEnabled(name)` | Check if feature is enabled |
+| **Custom Tiles** | `addCustomTile(options)` | Add custom HTML tile |
+| **Custom Tiles** | `removeCustomTile(name)` | Remove custom tile |
+| **Custom Tiles** | `sendMessageToCustomTile(options)` | Send data to custom tile |
+| **Tile Actions** | `addTileAction(id, props, callback)` | Add custom tile menu action |
+| **Tile Actions** | `removeTileAction(id)` | Remove custom tile action |
+| **UI Callbacks** | `addUICallback(event, callback)` | Override UI interaction |
+| **UI Callbacks** | `removeUICallback(event, callback)` | Remove UI override |
+| **Frame Events** | `addFrameEventListener(event, target, handler)` | Listen to iframe JS events |
+| **Frame Events** | `removeFrameEventListener(event, target, handler)` | Remove iframe listener |
+| **Branding** | `changeBrandingOptions(options)` | Change theme/colors at runtime |
+| **Events** | `on(event, handler)` | Subscribe to event |
+| **Events** | `once(event, handler)` | One-time event subscription |
+| **Events** | `off(event, handler)` | Unsubscribe from event |
+
+---
+
+## Methods (Detailed)
 
 ### Media Control
 
