@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2026-03-07
+
+### Added
+
+- `POST /rooms/{room}/chat` endpoint — send chat messages to active sessions (fixes #13)
+- `POST /rooms/{room}/questions` endpoint — create Q&A questions via API
+- `POST /rooms/{room}/quizzes/import` endpoint — import quizzes from CSV
+- `GET /rooms/{room}/quizzes/template` endpoint — download quiz CSV template
+- `chat_reactions_enabled` room setting — emoji reactions on chat messages
+- `chat_persistence_enabled` room setting — retain chat across sessions
+- `watermark_enabled` and `watermark_text` room settings — screen watermark to discourage unauthorized recording
+- `default_language` room setting with 2 new languages: `ca-ES` (Catalan), `nb-NO` (Norwegian Bokmål)
+- `timing_mode` and `time_limit_seconds` quiz fields — per-question or whole-quiz timing
+
 ## [1.1.6] - 2026-03-07
 
 ### Added

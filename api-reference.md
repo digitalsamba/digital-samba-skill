@@ -89,6 +89,11 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `auto_pip_enabled` | boolean | team default | When enabled, Picture-in-Picture opens automatically when participants switch away from the main tab or app |
 | `room_reactions_enabled` | boolean | team default | When enabled, all participants can use emoji reactions in the room |
 | `invite_participants_advanced_enabled` | boolean | team default | Controls whether the "Invite people" UI is shown by default for users who can invite participants. Invitations are shared via copyable links or in-app actions, without opening an email client |
+| `chat_reactions_enabled` | boolean | team default | When enabled, participants can react to chat messages with emojis |
+| `chat_persistence_enabled` | boolean | `false` | When enabled, public chat messages from previous sessions are retained and reloaded when rooms are reopened |
+| `watermark_enabled` | boolean | `false` | When enabled, a repeated text watermark is displayed across the screen to discourage unauthorized recording or sharing |
+| `watermark_text` | string | `null` | Custom watermark text. Latin characters, numbers, and basic punctuation only. Min 3, max 50 characters |
+| `default_language` | string | `"en"` | Room UI language. One of: `ar-SA`, `ca-ES`, `en`, `es-ES`, `de-DE`, `it-IT`, `nb-NO`, `nl-NL`, `pt-PT`, `ro-RO`, `zh-CN`, `zh-TW` |
 | `toolbar` | object | `{"position":"bottom","visible":true}` | Toolbar placement and visibility |
 | `topbar_enabled` | boolean | `true` | Show top bar |
 | `logo_url` | string | `null` | Custom logo URL |
@@ -209,6 +214,11 @@ print(f'Room URL: {room["room_url"]}')
   "auto_pip_enabled": false,
   "room_reactions_enabled": true,
   "invite_participants_advanced_enabled": false,
+  "chat_reactions_enabled": true,
+  "chat_persistence_enabled": false,
+  "watermark_enabled": false,
+  "watermark_text": null,
+  "default_language": "en",
   "created_at": "2024-01-15T10:30:00Z",
   "updated_at": "2024-01-15T10:30:00Z"
 }
@@ -384,6 +394,16 @@ Export chat as file.
 - `session_id`
 - `format` - `txt` or `json`
 
+### POST /api/v1/rooms/{room}/chat
+Send a chat message to an active session.
+
+**Request Body**:
+```json
+{
+  "message": "Hello!"
+}
+```
+
 ### DELETE /api/v1/rooms/{room}/chat
 Delete all chat messages for a room.
 
@@ -411,6 +431,29 @@ Retrieve Q&A content.
   }]
 }
 ```
+
+### POST /api/v1/rooms/{room}/questions
+Create a question in the room.
+
+**Request Body**:
+```json
+{
+  "participant": {
+    "name": "John Doe",
+    "external_id": "ABCDEF123"
+  },
+  "question": "My question?",
+  "anonymous": true,
+  "breakout_id": null
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of existing participant) |
+| `question` | string | yes | The question text |
+| `anonymous` | boolean | no | Whether to show as anonymous |
+| `breakout_id` | string | no | UUID of breakout room (nullable) |
 
 ### GET /api/v1/rooms/{room}/questions/export
 Export Q&A as `txt` or `json`.
@@ -560,6 +603,8 @@ Create a new quiz.
 |-------|------------|
 | `title` | Min 1, max 255 characters |
 | `time_limit_minutes` | Min 1, max 1440 (24 hours) |
+| `time_limit_seconds` | Min 1, max 86400 (alternative to minutes) |
+| `timing_mode` | `"quiz"` (whole quiz) or `"question"` (per question), nullable |
 
 **Response**: Full quiz object with generated UUIDs for quiz, questions, and choices.
 
@@ -603,6 +648,19 @@ Get quiz results with participant responses.
   }]
 }]
 ```
+
+### POST /api/v1/rooms/{room}/quizzes/import
+Import quizzes from a CSV file.
+
+**Request** (`multipart/form-data`):
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | binary | yes | CSV or TXT file, max 2MB |
+
+Use `GET /api/v1/rooms/{room}/quizzes/template` to download the CSV template.
+
+### GET /api/v1/rooms/{room}/quizzes/template
+Download a CSV template for quiz import.
 
 ### GET /api/v1/rooms/{room}/quizzes/export
 Export quiz results.
