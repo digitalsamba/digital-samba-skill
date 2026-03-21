@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.8] - 2026-03-21
+
+### Added
+
+- `GET /sessions/{session}/summary` endpoint — retrieve AI-generated session summary (async, poll until READY) (fixes #16)
+- `POST /sessions/{session}/end` endpoint — end a live session
+- `GET /sessions/{session}/transcripts/export` endpoint — export session transcripts with locale support
+- `DELETE /sessions/{session}/chat` endpoint — delete session chat messages
+- `DELETE /sessions/{session}/questions` endpoint — delete session Q&A
+- `DELETE /sessions/{session}/summaries` endpoint — delete session summaries
+- `DELETE /sessions/{session}/transcripts` endpoint — delete session transcripts
+- `DELETE /sessions/{session}/polls` endpoint — delete session polls
+- `DELETE /sessions/{session}/recordings` endpoint — delete session recordings
+- `DELETE /sessions/{session}/resources` endpoint — delete all session resources with optional PII anonymisation
+- `DELETE /rooms/tags` endpoint — bulk delete rooms by tag
+- `POST /rooms/{room}/phone-participants/{callId}/mute` endpoint — mute phone participant
+- `POST /rooms/{room}/phone-participants/{callId}/unmute` endpoint — unmute phone participant
+- `chat_reactions_extended_enabled` room setting — expanded emoji set for chat reactions
+- `virtual_backgrounds_v2_enabled` room setting — new virtual background engine
+- `locale`/`lang` parameters on transcript export endpoints — export in en, it, de, es
+
 ## [1.1.7] - 2026-03-07
 
 ### Added

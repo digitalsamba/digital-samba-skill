@@ -722,7 +722,7 @@ paths:
                 domain:
                   type: string
                   description: 'Must contain only letters, numbers, dashes and underscores. Must not be one of docs, api, dev-api, staging-api, you, or dashboard Must be at least 3 characters. Must not be greater than 32 characters.'
-                  example: ratione
+                  example: nesciunt
                 default_role:
                   type: string
                   description: 'Select a role to be assigned to participants who join with no token (shared link to public room) or with a token without a role. Role ID or name.'
@@ -802,6 +802,10 @@ paths:
                   type: boolean
                   description: 'When enabled, participants can react to chat messages with emojis in this room.'
                   example: true
+                chat_reactions_extended_enabled:
+                  type: boolean
+                  description: 'When enabled, participants can react to chat messages using an expanded set of emojis in rooms.'
+                  example: false
                 audio_on_join_enabled:
                   type: boolean
                   description: 'When disabled, users will join the session with muted microphones.'
@@ -948,15 +952,15 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in rooms and its recordings. Image URL or base64 encoded file source.'
-                  example: amet
+                  example: exercitationem
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: accusantium
+                  example: sequi
                 favicon:
                   type: string
                   description: 'You may add custom favicon to be displayed in rooms. Image URL or base64 encoded file source.'
-                  example: non
+                  example: et
                 recording_logo_enabled:
                   type: boolean
                   description: 'When enabled, the logo will be shown in recordings.'
@@ -965,6 +969,10 @@ paths:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
                   example: true
+                virtual_backgrounds_v2_enabled:
+                  type: boolean
+                  description: 'When enabled, participants will use the new virtual background engine.'
+                  example: false
                 raise_hand_enabled:
                   type: boolean
                   description: 'Allow participants to raise hand to take turns to speak without disrupting sessions.'
@@ -1343,6 +1351,31 @@ paths:
                 example: 'Text file - Chat messages'
       tags:
         - Rooms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: ''
+                  example: en
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
+                lang:
+                  type: string
+                  description: ''
+                  example: it
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
     parameters:
       -
         in: path
@@ -1585,7 +1618,7 @@ paths:
                     id:
                       type: string
                       description: 'UUID of existing participant (required when name/external_id not set).'
-                      example: est
+                      example: nihil
                     name:
                       type: string
                       description: 'Name (required when participant.id is not set).'
@@ -1605,7 +1638,7 @@ paths:
                 breakout_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: dc11a88e-8485-3b48-af18-fa77e00f06af
+                  example: ca166614-37a1-339e-87c6-911ab6ee80d0
                   nullable: true
               required:
                 - participant
@@ -1671,6 +1704,31 @@ paths:
                 example: 'Text file - Questions and answers'
       tags:
         - Rooms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: ''
+                  example: es
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
+                lang:
+                  type: string
+                  description: ''
+                  example: en
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
     parameters:
       -
         in: path
@@ -1684,7 +1742,7 @@ paths:
     get:
       summary: 'Get room transcripts.'
       operationId: getRoomTranscripts
-      description: "Closed Captioning.\n\n<small class=\"badge badge-blue\">Paginated</small>"
+      description: '<small class="badge badge-blue">Paginated</small>'
       parameters:
         -
           in: query
@@ -1828,7 +1886,7 @@ paths:
     get:
       summary: 'Export room transcripts.'
       operationId: exportRoomTranscripts
-      description: 'Closed Captioning.'
+      description: ''
       parameters:
         -
           in: query
@@ -1850,6 +1908,31 @@ paths:
                 example: 'Text file - Transcripts'
       tags:
         - Rooms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: ''
+                  example: de
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
+                lang:
+                  type: string
+                  description: ''
+                  example: en
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
     parameters:
       -
         in: path
@@ -1936,7 +2019,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: '---w-'
+        example: '-ww'
         required: true
         schema:
           type: string
@@ -2167,7 +2250,7 @@ paths:
                 anonymous:
                   type: boolean
                   description: ''
-                  example: true
+                  example: false
                   nullable: true
                 type:
                   type: string
@@ -2188,12 +2271,12 @@ paths:
                     id:
                       type: string
                       description: 'Must be a valid UUID.'
-                      example: 8e6918f4-5b6a-3439-8b49-1de219c3ca0b
+                      example: 8a4d2698-557c-3a03-adf1-0e55eba24a6f
                       nullable: true
                     text:
                       type: string
                       description: 'Must be at least 1 character. Must not be greater than 255 characters.'
-                      example: tcqvbjvcy
+                      example: agbhobpj
                   required:
                     - text
                   nullable: true
@@ -2480,7 +2563,7 @@ paths:
                 time_limit_seconds:
                   type: integer
                   description: 'Must be at least 1. Must not be greater than 86400.'
-                  example: 23
+                  example: 2
                 questions:
                   type: object
                   description: 'Must be an array of quiz questions.'
@@ -2493,7 +2576,7 @@ paths:
                     multiple:
                       type: boolean
                       description: 'Multiple flag'
-                      example: true
+                      example: false
                     choices:
                       type: object
                       description: 'Must be an array of question choices.'
@@ -2514,7 +2597,7 @@ paths:
                     - choices
                 time_limit_minutes:
                   type: integer
-                  description: 'Quiz time limit in minutes. Min: 1, Max 1440 .'
+                  description: 'Quiz time limit in minutes. Min: 1, Max 1440.'
                   example: 60
               required:
                 - title
@@ -2603,12 +2686,12 @@ paths:
         -
           in: query
           name: tag
-          description: 'string|array Filter room by tags.'
+          description: 'string|array Filter rooms by tags.'
           example: 'tag1,tag2,tag3 or tag[]=tag1&tag=tag2&tag[]=tag3'
           required: false
           schema:
             type: string
-            description: 'string|array Filter room by tags.'
+            description: 'string|array Filter rooms by tags.'
             example: 'tag1,tag2,tag3 or tag[]=tag1&tag=tag2&tag[]=tag3'
       responses:
         200:
@@ -2620,10 +2703,10 @@ paths:
                 example:
                   data:
                     -
-                      id: c6b6eaa3-ef3d-3ca4-a4c7-7341b1cb7bc0
-                      description: 'Deserunt et.'
-                      topic: 'Deserunt et.'
-                      friendly_url: '-Q120iYBfNJsDAgERVKEh6kwaaUxCZby'
+                      id: c30c197b-b888-3b17-8223-d2954fffc0ad
+                      description: 'Rerum adipisci.'
+                      topic: 'Rerum adipisci.'
+                      friendly_url: xxkNt6yDelrmgYfSNUqAQyAcfouB08BX
                       privacy: public
                       max_participants: 100
                       max_broadcasters: 100
@@ -2694,17 +2777,17 @@ paths:
                       consent_message_type: generic
                       recordings_layout_mode: tiled
                       layout_mode_on_join: tiled
-                      room_url: 'https://c1659bfe01336469e5ba05b66d934339.digitalsamba.com/-Q120iYBfNJsDAgERVKEh6kwaaUxCZby'
-                      external_id: EXTID65182882
+                      room_url: 'https://960e2f8ecf7ff4ffd091ac4ec991f119.digitalsamba.com/xxkNt6yDelrmgYfSNUqAQyAcfouB08BX'
+                      external_id: EXTID2091219417
                       transcription_auto_start_enabled: true
                       captions_language: en
-                      created_at: '2026-02-27T21:35:00Z'
-                      updated_at: '2026-02-27T21:35:00Z'
+                      created_at: '2026-03-13T19:52:52Z'
+                      updated_at: '2026-03-13T19:52:52Z'
                     -
-                      id: cdf163c8-18b3-36d2-9a71-f2b12b6a325c
-                      description: 'Dolores et sit.'
-                      topic: 'Dolores et sit.'
-                      friendly_url: RpnaifEXvoXOGhlINbjuBSmdP9CjxkYf
+                      id: 40bc0afd-aab2-3ab8-bf98-b1d1d50847b6
+                      description: 'Quia velit et et.'
+                      topic: 'Quia velit et et.'
+                      friendly_url: rTbePCJfobuIfbe37fNhFly-0kTr6Vd7
                       privacy: public
                       max_participants: 100
                       max_broadcasters: 100
@@ -2775,22 +2858,22 @@ paths:
                       consent_message_type: generic
                       recordings_layout_mode: tiled
                       layout_mode_on_join: tiled
-                      room_url: 'https://b40df11fb5685acd429e4b278fa14d51.digitalsamba.com/RpnaifEXvoXOGhlINbjuBSmdP9CjxkYf'
-                      external_id: EXTID708907974
+                      room_url: 'https://e1429042833e1d3c0f22dc414f774503.digitalsamba.com/rTbePCJfobuIfbe37fNhFly-0kTr6Vd7'
+                      external_id: EXTID1032546215
                       transcription_auto_start_enabled: true
                       captions_language: en
-                      created_at: '2026-02-27T21:35:00Z'
-                      updated_at: '2026-02-27T21:35:00Z'
+                      created_at: '2026-03-13T19:52:53Z'
+                      updated_at: '2026-03-13T19:52:53Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: c6b6eaa3-ef3d-3ca4-a4c7-7341b1cb7bc0
-                        description: 'Deserunt et.'
-                        topic: 'Deserunt et.'
-                        friendly_url: '-Q120iYBfNJsDAgERVKEh6kwaaUxCZby'
+                        id: c30c197b-b888-3b17-8223-d2954fffc0ad
+                        description: 'Rerum adipisci.'
+                        topic: 'Rerum adipisci.'
+                        friendly_url: xxkNt6yDelrmgYfSNUqAQyAcfouB08BX
                         privacy: public
                         max_participants: 100
                         max_broadcasters: 100
@@ -2861,17 +2944,17 @@ paths:
                         consent_message_type: generic
                         recordings_layout_mode: tiled
                         layout_mode_on_join: tiled
-                        room_url: 'https://c1659bfe01336469e5ba05b66d934339.digitalsamba.com/-Q120iYBfNJsDAgERVKEh6kwaaUxCZby'
-                        external_id: EXTID65182882
+                        room_url: 'https://960e2f8ecf7ff4ffd091ac4ec991f119.digitalsamba.com/xxkNt6yDelrmgYfSNUqAQyAcfouB08BX'
+                        external_id: EXTID2091219417
                         transcription_auto_start_enabled: true
                         captions_language: en
-                        created_at: '2026-02-27T21:35:00Z'
-                        updated_at: '2026-02-27T21:35:00Z'
+                        created_at: '2026-03-13T19:52:52Z'
+                        updated_at: '2026-03-13T19:52:52Z'
                       -
-                        id: cdf163c8-18b3-36d2-9a71-f2b12b6a325c
-                        description: 'Dolores et sit.'
-                        topic: 'Dolores et sit.'
-                        friendly_url: RpnaifEXvoXOGhlINbjuBSmdP9CjxkYf
+                        id: 40bc0afd-aab2-3ab8-bf98-b1d1d50847b6
+                        description: 'Quia velit et et.'
+                        topic: 'Quia velit et et.'
+                        friendly_url: rTbePCJfobuIfbe37fNhFly-0kTr6Vd7
                         privacy: public
                         max_participants: 100
                         max_broadcasters: 100
@@ -2942,27 +3025,27 @@ paths:
                         consent_message_type: generic
                         recordings_layout_mode: tiled
                         layout_mode_on_join: tiled
-                        room_url: 'https://b40df11fb5685acd429e4b278fa14d51.digitalsamba.com/RpnaifEXvoXOGhlINbjuBSmdP9CjxkYf'
-                        external_id: EXTID708907974
+                        room_url: 'https://e1429042833e1d3c0f22dc414f774503.digitalsamba.com/rTbePCJfobuIfbe37fNhFly-0kTr6Vd7'
+                        external_id: EXTID1032546215
                         transcription_auto_start_enabled: true
                         captions_language: en
-                        created_at: '2026-02-27T21:35:00Z'
-                        updated_at: '2026-02-27T21:35:00Z'
+                        created_at: '2026-03-13T19:52:53Z'
+                        updated_at: '2026-03-13T19:52:53Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: c6b6eaa3-ef3d-3ca4-a4c7-7341b1cb7bc0
+                          example: c30c197b-b888-3b17-8223-d2954fffc0ad
                         description:
                           type: string
-                          example: 'Deserunt et.'
+                          example: 'Rerum adipisci.'
                         topic:
                           type: string
-                          example: 'Deserunt et.'
+                          example: 'Rerum adipisci.'
                         friendly_url:
                           type: string
-                          example: '-Q120iYBfNJsDAgERVKEh6kwaaUxCZby'
+                          example: xxkNt6yDelrmgYfSNUqAQyAcfouB08BX
                         privacy:
                           type: string
                           example: public
@@ -3149,10 +3232,10 @@ paths:
                           example: tiled
                         room_url:
                           type: string
-                          example: 'https://c1659bfe01336469e5ba05b66d934339.digitalsamba.com/-Q120iYBfNJsDAgERVKEh6kwaaUxCZby'
+                          example: 'https://960e2f8ecf7ff4ffd091ac4ec991f119.digitalsamba.com/xxkNt6yDelrmgYfSNUqAQyAcfouB08BX'
                         external_id:
                           type: string
-                          example: EXTID65182882
+                          example: EXTID2091219417
                         transcription_auto_start_enabled:
                           type: boolean
                           example: true
@@ -3161,10 +3244,10 @@ paths:
                           example: en
                         created_at:
                           type: string
-                          example: '2026-02-27T21:35:00Z'
+                          example: '2026-03-13T19:52:52Z'
                         updated_at:
                           type: string
-                          example: '2026-02-27T21:35:00Z'
+                          example: '2026-03-13T19:52:52Z'
                   total_count:
                     type: string
                     example: '2'
@@ -3642,7 +3725,7 @@ paths:
                   example: true
                 toolbar_position:
                   type: string
-                  description: 'Choose your desired position for the toolbar or desktop devices. Must be one of left, right or bottom.'
+                  description: 'Choose your desired position for the toolbar for desktop devices. Must be one of left, right or bottom.'
                   example: bottom
                 toolbar_color:
                   type: string
@@ -3738,7 +3821,7 @@ paths:
                   example: false
                 broadcaster_tile_visibility:
                   type: string
-                  description: 'Set the visibility of tiles containing broadcaster’s initials depending or cam and mic state. Must be one of all, cam_mic or cam.'
+                  description: 'Set the visibility of tiles containing broadcaster’s initials depending on cam and mic state. Must be one of all, cam_mic or cam.'
                   example: all
                 end_session_enabled:
                   type: boolean
@@ -3768,7 +3851,7 @@ paths:
                     type: string
                 breakout_free_movement_enabled:
                   type: boolean
-                  description: 'Allow All users to move independently between rooms.'
+                  description: 'Allow all users to move independently between rooms.'
                   example: false
                 breakout_return_to_main_room_enabled:
                   type: boolean
@@ -3810,6 +3893,10 @@ paths:
                   type: boolean
                   description: 'When enabled, participants can react to chat messages with emojis in this room.'
                   example: true
+                chat_reactions_extended_enabled:
+                  type: boolean
+                  description: 'When enabled, participants can react to chat messages using an expanded set of emojis in rooms.'
+                  example: false
                 private_group_chat_roles:
                   type: array
                   description: 'Must be an array of role IDs or names.'
@@ -3928,15 +4015,19 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in this room and its recordings. Image URL or base64 encoded file source.'
-                  example: cupiditate
+                  example: totam
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: molestiae
+                  example: reprehenderit
                 virtual_backgrounds_enabled:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
                   example: true
+                virtual_backgrounds_v2_enabled:
+                  type: boolean
+                  description: 'When enabled, participants will use the new virtual background engine.'
+                  example: false
                 raise_hand_enabled:
                   type: boolean
                   description: 'Allow participants to raise hand to take turns to speak without disrupting this session.'
@@ -4077,6 +4168,51 @@ paths:
                 - privacy
                 - roles
                 - private_group_chat_roles
+    delete:
+      summary: 'Delete rooms by tag'
+      operationId: deleteRoomsByTag
+      description: 'Delete all rooms that have any of the specified tags. Rooms with active sessions are skipped.'
+      parameters: []
+      responses:
+        202:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {  }
+                properties: {  }
+      tags:
+        - Rooms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tags:
+                  type: array
+                  description: 'One tag name or an array of tag names. Tags must exist for the team.'
+                  example:
+                    - tag1
+                    - tag2
+                  items:
+                    type: string|string
+                delete_resources:
+                  type: boolean
+                  description: 'Hard delete all stored resource data for matching rooms.'
+                  example: false
+                delete_history:
+                  type: boolean
+                  description: 'Anonymise all participants PII for matching rooms.'
+                  example: false
+                delete_library:
+                  type: boolean
+                  description: 'Delete content library for matching rooms.'
+                  example: false
+              required:
+                - tags
   '/api/v1/rooms/{room}':
     get:
       summary: 'Get the specified room.'
@@ -4939,7 +5075,7 @@ paths:
                   example: true
                 toolbar_position:
                   type: string
-                  description: 'Choose your desired position for the toolbar or desktop devices. Must be one of left, right or bottom.'
+                  description: 'Choose your desired position for the toolbar for desktop devices. Must be one of left, right or bottom.'
                   example: bottom
                 toolbar_color:
                   type: string
@@ -5027,7 +5163,7 @@ paths:
                   example: false
                 broadcaster_tile_visibility:
                   type: string
-                  description: 'Set the visibility of tiles containing broadcaster’s initials depending or cam and mic state. Must be one of all, cam_mic or cam.'
+                  description: 'Set the visibility of tiles containing broadcaster’s initials depending on cam and mic state. Must be one of all, cam_mic or cam.'
                   example: all
                 end_session_enabled:
                   type: boolean
@@ -5057,7 +5193,7 @@ paths:
                     type: string
                 breakout_free_movement_enabled:
                   type: boolean
-                  description: 'Allow All users to move independently between rooms.'
+                  description: 'Allow all users to move independently between rooms.'
                   example: false
                 breakout_return_to_main_room_enabled:
                   type: boolean
@@ -5099,6 +5235,10 @@ paths:
                   type: boolean
                   description: 'When enabled, participants can react to chat messages with emojis in this room.'
                   example: true
+                chat_reactions_extended_enabled:
+                  type: boolean
+                  description: 'When enabled, participants can react to chat messages using an expanded set of emojis in rooms.'
+                  example: false
                 private_group_chat_roles:
                   type: array
                   description: 'Must be an array of role IDs or names.'
@@ -5217,15 +5357,19 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in this room and its recordings. Image URL or base64 encoded file source.'
-                  example: laborum
+                  example: voluptate
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: illo
+                  example: quisquam
                 virtual_backgrounds_enabled:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
                   example: true
+                virtual_backgrounds_v2_enabled:
+                  type: boolean
+                  description: 'When enabled, participants will use the new virtual background engine.'
+                  example: false
                 invite_participants_enabled:
                   type: boolean
                   description: 'When enabled, users allowed to ‘Invite participants’ will see an ‘Invite people’ button in the participants panel.'
@@ -5368,7 +5512,7 @@ paths:
     delete:
       summary: 'Delete room'
       operationId: deleteRoom
-      description: ''
+      description: "NOTE: Resources can't be deleted while room has a live session."
       parameters: []
       responses:
         204:
@@ -5391,6 +5535,14 @@ paths:
                 delete_resources:
                   type: boolean
                   description: 'Hard delete all of stored resource data for this room.'
+                  example: false
+                delete_history:
+                  type: boolean
+                  description: 'Anonymise all participants PII for this room.'
+                  example: false
+                delete_library:
+                  type: boolean
+                  description: 'Delete content library.'
                   example: false
     parameters:
       -
@@ -5418,6 +5570,21 @@ paths:
                 properties: {  }
       tags:
         - Rooms
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delete_history:
+                  type: boolean
+                  description: 'Anonymise all participants PII for this room.'
+                  example: false
+                delete_library:
+                  type: boolean
+                  description: 'Delete content library.'
+                  example: false
     parameters:
       -
         in: path
@@ -5525,7 +5692,7 @@ paths:
     get:
       summary: 'Get session transcripts.'
       operationId: getSessionTranscripts
-      description: "Closed Captioning.\n\n<small class=\"badge badge-blue\">Paginated</small>"
+      description: '<small class="badge badge-blue">Paginated</small>'
       parameters:
         -
           in: query
@@ -5734,6 +5901,17 @@ paths:
                 properties: {  }
       tags:
         - Sessions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delete_history:
+                  type: boolean
+                  description: 'Anonymise all participants PII for this session.'
+                  example: false
     parameters:
       -
         in: path
@@ -5752,12 +5930,12 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d. .'
+          description: 'Period start date. Must be a valid date in the format Y-m-d.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d. .'
+            description: 'Period start date. Must be a valid date in the format Y-m-d.'
             example: null
         -
           in: query
@@ -5932,7 +6110,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: '-'
+        example: '--ww'
         required: true
         schema:
           type: string
@@ -5945,12 +6123,12 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d. .'
+          description: 'Period start date. Must be a valid date in the format Y-m-d.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d. .'
+            description: 'Period start date. Must be a valid date in the format Y-m-d.'
             example: null
         -
           in: query
@@ -6330,7 +6508,7 @@ paths:
         in: path
         name: session
         description: 'The session.'
-        example: maiores
+        example: voluptatem
         required: true
         schema:
           type: string
@@ -6396,7 +6574,7 @@ paths:
     get:
       summary: 'Export session transcripts.'
       operationId: exportSessionTranscripts
-      description: 'Closed Captioning.'
+      description: ''
       parameters:
         -
           in: query
@@ -6418,6 +6596,31 @@ paths:
                 example: 'Text file - Transcripts'
       tags:
         - Sessions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: ''
+                  example: it
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
+                lang:
+                  type: string
+                  description: ''
+                  example: it
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
     parameters:
       -
         in: path
@@ -6756,7 +6959,7 @@ paths:
         in: path
         name: participant
         description: 'The participant.'
-        example: molestiae
+        example: minima
         required: true
         schema:
           type: string
@@ -6961,7 +7164,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: w
+        example: '-w-'
         required: true
         schema:
           type: string
@@ -7227,11 +7430,11 @@ paths:
                 date_start:
                   type: string
                   description: 'Must be a valid date in the format <code>Y-m-d</code>.'
-                  example: '2026-02-27'
+                  example: '2026-03-13'
                 date_end:
                   type: string
                   description: 'Must be a valid date in the format <code>Y-m-d</code>.'
-                  example: '2026-02-27'
+                  example: '2026-03-13'
     parameters:
       -
         in: path
@@ -7301,7 +7504,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: ww-
+        example: w
         required: true
         schema:
           type: string
@@ -7339,7 +7542,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: w-
+        example: '---w-'
         required: true
         schema:
           type: string
@@ -7381,6 +7584,72 @@ paths:
       summary: 'Lower hand'
       operationId: lowerHand
       description: 'Lowers the hand of the phone participant'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'HTTP/1.1 200 OK'
+      tags:
+        - 'Phone participants'
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room.'
+        example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: callId
+        description: 'The call ID.'
+        example: 074f23f1-6a8e-4856-8779-5cc888456d5c
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/phone-participants/{callId}/mute':
+    post:
+      summary: Mute
+      operationId: mute
+      description: 'Mute phone participant'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'HTTP/1.1 200 OK'
+      tags:
+        - 'Phone participants'
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room.'
+        example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: callId
+        description: 'The call ID.'
+        example: 074f23f1-6a8e-4856-8779-5cc888456d5c
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/phone-participants/{callId}/unmute':
+    post:
+      summary: Unmute
+      operationId: unmute
+      description: 'Unmute phone participant'
       parameters: []
       responses:
         200:
@@ -7545,101 +7814,101 @@ paths:
                 example:
                   data:
                     -
-                      id: 12abca6c-28e5-3be5-b94f-200a2ec97bbd
-                      name: 'Tempore voluptatem.'
+                      id: 5ec83bdf-84f6-39b0-8252-0b84420f07ce
+                      name: 'Ratione quia aut.'
                       status: AWAITING_START
-                      room_id: b5db06b5-437f-3175-b860-4437d8eda950
-                      external_room_id: EXTID2091977707
-                      friendly_url: QRKAO1wUM7AewqzFKNgtQsT1YysXyK_M
+                      room_id: ebcfb3ad-d4f2-327f-ba7c-b39be610641b
+                      external_room_id: EXTID1113244732
+                      friendly_url: _WiAtd-ZZ6lG6ppn3v7Z-GeeuW4B0gwT
                       privacy: public
-                      participant_id: d33530e5-e320-4d88-b4de-720cc7c8e296
-                      participant_name: boyer.sam
-                      participant_external_id: EXTID31
-                      created_at: '2026-02-27T21:35:01Z'
-                      updated_at: '2026-02-27T21:35:01Z'
+                      participant_id: 8d0724d7-52de-4b27-b110-e9d4013878a4
+                      participant_name: tillman.clare
+                      participant_external_id: EXTID8
+                      created_at: '2026-03-13T19:52:53Z'
+                      updated_at: '2026-03-13T19:52:53Z'
                     -
-                      id: 8519f219-f4de-33cb-b413-43b29a4a49a5
-                      name: 'Corrupti fuga.'
+                      id: 84e8a562-a3f5-31d8-a6a1-ab9008bf40b9
+                      name: 'Assumenda nisi.'
                       status: AWAITING_START
-                      room_id: 74da501c-57f7-39b3-abf9-ef75879c92b4
-                      external_room_id: EXTID344630282
-                      friendly_url: ODrvAGBqzXCZmnXkothZP0c8SxiCOT9s
+                      room_id: fe7f2eb9-56b7-3c1c-8df5-89b28c26f92c
+                      external_room_id: EXTID449416825
+                      friendly_url: 5w3ED3j1yUpEgGl3pbegnzJeWu-Hykag
                       privacy: public
-                      participant_id: 607fedec-6e1a-400f-9535-86bbbd254695
-                      participant_name: frances08
-                      participant_external_id: EXTID41
-                      created_at: '2026-02-27T21:35:01Z'
-                      updated_at: '2026-02-27T21:35:01Z'
+                      participant_id: 651dd3bf-28c3-44e0-9e61-b3c479288304
+                      participant_name: kelsie.dicki
+                      participant_external_id: EXTID83
+                      created_at: '2026-03-13T19:52:54Z'
+                      updated_at: '2026-03-13T19:52:54Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: 12abca6c-28e5-3be5-b94f-200a2ec97bbd
-                        name: 'Tempore voluptatem.'
+                        id: 5ec83bdf-84f6-39b0-8252-0b84420f07ce
+                        name: 'Ratione quia aut.'
                         status: AWAITING_START
-                        room_id: b5db06b5-437f-3175-b860-4437d8eda950
-                        external_room_id: EXTID2091977707
-                        friendly_url: QRKAO1wUM7AewqzFKNgtQsT1YysXyK_M
+                        room_id: ebcfb3ad-d4f2-327f-ba7c-b39be610641b
+                        external_room_id: EXTID1113244732
+                        friendly_url: _WiAtd-ZZ6lG6ppn3v7Z-GeeuW4B0gwT
                         privacy: public
-                        participant_id: d33530e5-e320-4d88-b4de-720cc7c8e296
-                        participant_name: boyer.sam
-                        participant_external_id: EXTID31
-                        created_at: '2026-02-27T21:35:01Z'
-                        updated_at: '2026-02-27T21:35:01Z'
+                        participant_id: 8d0724d7-52de-4b27-b110-e9d4013878a4
+                        participant_name: tillman.clare
+                        participant_external_id: EXTID8
+                        created_at: '2026-03-13T19:52:53Z'
+                        updated_at: '2026-03-13T19:52:53Z'
                       -
-                        id: 8519f219-f4de-33cb-b413-43b29a4a49a5
-                        name: 'Corrupti fuga.'
+                        id: 84e8a562-a3f5-31d8-a6a1-ab9008bf40b9
+                        name: 'Assumenda nisi.'
                         status: AWAITING_START
-                        room_id: 74da501c-57f7-39b3-abf9-ef75879c92b4
-                        external_room_id: EXTID344630282
-                        friendly_url: ODrvAGBqzXCZmnXkothZP0c8SxiCOT9s
+                        room_id: fe7f2eb9-56b7-3c1c-8df5-89b28c26f92c
+                        external_room_id: EXTID449416825
+                        friendly_url: 5w3ED3j1yUpEgGl3pbegnzJeWu-Hykag
                         privacy: public
-                        participant_id: 607fedec-6e1a-400f-9535-86bbbd254695
-                        participant_name: frances08
-                        participant_external_id: EXTID41
-                        created_at: '2026-02-27T21:35:01Z'
-                        updated_at: '2026-02-27T21:35:01Z'
+                        participant_id: 651dd3bf-28c3-44e0-9e61-b3c479288304
+                        participant_name: kelsie.dicki
+                        participant_external_id: EXTID83
+                        created_at: '2026-03-13T19:52:54Z'
+                        updated_at: '2026-03-13T19:52:54Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: 12abca6c-28e5-3be5-b94f-200a2ec97bbd
+                          example: 5ec83bdf-84f6-39b0-8252-0b84420f07ce
                         name:
                           type: string
-                          example: 'Tempore voluptatem.'
+                          example: 'Ratione quia aut.'
                         status:
                           type: string
                           example: AWAITING_START
                         room_id:
                           type: string
-                          example: b5db06b5-437f-3175-b860-4437d8eda950
+                          example: ebcfb3ad-d4f2-327f-ba7c-b39be610641b
                         external_room_id:
                           type: string
-                          example: EXTID2091977707
+                          example: EXTID1113244732
                         friendly_url:
                           type: string
-                          example: QRKAO1wUM7AewqzFKNgtQsT1YysXyK_M
+                          example: _WiAtd-ZZ6lG6ppn3v7Z-GeeuW4B0gwT
                         privacy:
                           type: string
                           example: public
                         participant_id:
                           type: string
-                          example: d33530e5-e320-4d88-b4de-720cc7c8e296
+                          example: 8d0724d7-52de-4b27-b110-e9d4013878a4
                         participant_name:
                           type: string
-                          example: boyer.sam
+                          example: tillman.clare
                         participant_external_id:
                           type: string
-                          example: EXTID31
+                          example: EXTID8
                         created_at:
                           type: string
-                          example: '2026-02-27T21:35:01Z'
+                          example: '2026-03-13T19:52:53Z'
                         updated_at:
                           type: string
-                          example: '2026-02-27T21:35:01Z'
+                          example: '2026-03-13T19:52:53Z'
                   total_count:
                     type: string
                     example: '2'
@@ -7711,101 +7980,101 @@ paths:
                 example:
                   data:
                     -
-                      id: 49044823-b441-39e2-a322-8c49bbbdcbdf
-                      name: 'Facilis minima.'
+                      id: 9b3bf9bb-3dbb-3798-ba07-7a32a913a50e
+                      name: 'Dolores eveniet at.'
                       status: AWAITING_START
-                      room_id: 6c33078c-ab77-3206-ad00-ad423f5475a7
-                      external_room_id: EXTID670038995
-                      friendly_url: 5CjqU_x3M7AiWbt_3uY5To89To8KzOap
+                      room_id: 2d0375b5-4e6c-3f15-ac98-ec4f7dde7456
+                      external_room_id: EXTID624485150
+                      friendly_url: OBs-MvpsUdyIVRg26UfvB_8Ua7txhiJB
                       privacy: public
-                      participant_id: d86a0dc3-3786-42eb-a990-c2b1099ca14f
-                      participant_name: rodriguez.carissa
-                      participant_external_id: EXTID98
-                      created_at: '2026-02-27T21:35:02Z'
-                      updated_at: '2026-02-27T21:35:02Z'
-                    -
-                      id: 47a63f5e-42cf-3b30-9f43-796697221632
-                      name: 'Eos ratione aperiam.'
-                      status: AWAITING_START
-                      room_id: 4bc66de0-1c08-3edd-a187-baf6284723ce
-                      external_room_id: EXTID1776120147
-                      friendly_url: 03U5uPFSARVRS27e50yhaFuSHCAq7VrC
-                      privacy: public
-                      participant_id: 76383cde-5377-4b19-a2a3-bddcd5c3d905
-                      participant_name: prudence56
+                      participant_id: c9ec7a2e-b098-41db-81b9-eb8bccf1e078
+                      participant_name: zachery17
                       participant_external_id: EXTID22
-                      created_at: '2026-02-27T21:35:02Z'
-                      updated_at: '2026-02-27T21:35:02Z'
+                      created_at: '2026-03-13T19:52:54Z'
+                      updated_at: '2026-03-13T19:52:54Z'
+                    -
+                      id: c5c98aeb-0669-384c-90bf-082f598c21a6
+                      name: 'Quasi occaecati.'
+                      status: AWAITING_START
+                      room_id: 21d13b4e-b336-39f7-9bfa-2d871871a0c0
+                      external_room_id: EXTID429314777
+                      friendly_url: FRgt4AA5JV4wc0tQytBheeOB4zmw3osI
+                      privacy: public
+                      participant_id: a283ad80-9b82-4367-8fb6-6269f6bec7c4
+                      participant_name: myrtice.corkery
+                      participant_external_id: EXTID2
+                      created_at: '2026-03-13T19:52:55Z'
+                      updated_at: '2026-03-13T19:52:55Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: 49044823-b441-39e2-a322-8c49bbbdcbdf
-                        name: 'Facilis minima.'
+                        id: 9b3bf9bb-3dbb-3798-ba07-7a32a913a50e
+                        name: 'Dolores eveniet at.'
                         status: AWAITING_START
-                        room_id: 6c33078c-ab77-3206-ad00-ad423f5475a7
-                        external_room_id: EXTID670038995
-                        friendly_url: 5CjqU_x3M7AiWbt_3uY5To89To8KzOap
+                        room_id: 2d0375b5-4e6c-3f15-ac98-ec4f7dde7456
+                        external_room_id: EXTID624485150
+                        friendly_url: OBs-MvpsUdyIVRg26UfvB_8Ua7txhiJB
                         privacy: public
-                        participant_id: d86a0dc3-3786-42eb-a990-c2b1099ca14f
-                        participant_name: rodriguez.carissa
-                        participant_external_id: EXTID98
-                        created_at: '2026-02-27T21:35:02Z'
-                        updated_at: '2026-02-27T21:35:02Z'
-                      -
-                        id: 47a63f5e-42cf-3b30-9f43-796697221632
-                        name: 'Eos ratione aperiam.'
-                        status: AWAITING_START
-                        room_id: 4bc66de0-1c08-3edd-a187-baf6284723ce
-                        external_room_id: EXTID1776120147
-                        friendly_url: 03U5uPFSARVRS27e50yhaFuSHCAq7VrC
-                        privacy: public
-                        participant_id: 76383cde-5377-4b19-a2a3-bddcd5c3d905
-                        participant_name: prudence56
+                        participant_id: c9ec7a2e-b098-41db-81b9-eb8bccf1e078
+                        participant_name: zachery17
                         participant_external_id: EXTID22
-                        created_at: '2026-02-27T21:35:02Z'
-                        updated_at: '2026-02-27T21:35:02Z'
+                        created_at: '2026-03-13T19:52:54Z'
+                        updated_at: '2026-03-13T19:52:54Z'
+                      -
+                        id: c5c98aeb-0669-384c-90bf-082f598c21a6
+                        name: 'Quasi occaecati.'
+                        status: AWAITING_START
+                        room_id: 21d13b4e-b336-39f7-9bfa-2d871871a0c0
+                        external_room_id: EXTID429314777
+                        friendly_url: FRgt4AA5JV4wc0tQytBheeOB4zmw3osI
+                        privacy: public
+                        participant_id: a283ad80-9b82-4367-8fb6-6269f6bec7c4
+                        participant_name: myrtice.corkery
+                        participant_external_id: EXTID2
+                        created_at: '2026-03-13T19:52:55Z'
+                        updated_at: '2026-03-13T19:52:55Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: 49044823-b441-39e2-a322-8c49bbbdcbdf
+                          example: 9b3bf9bb-3dbb-3798-ba07-7a32a913a50e
                         name:
                           type: string
-                          example: 'Facilis minima.'
+                          example: 'Dolores eveniet at.'
                         status:
                           type: string
                           example: AWAITING_START
                         room_id:
                           type: string
-                          example: 6c33078c-ab77-3206-ad00-ad423f5475a7
+                          example: 2d0375b5-4e6c-3f15-ac98-ec4f7dde7456
                         external_room_id:
                           type: string
-                          example: EXTID670038995
+                          example: EXTID624485150
                         friendly_url:
                           type: string
-                          example: 5CjqU_x3M7AiWbt_3uY5To89To8KzOap
+                          example: OBs-MvpsUdyIVRg26UfvB_8Ua7txhiJB
                         privacy:
                           type: string
                           example: public
                         participant_id:
                           type: string
-                          example: d86a0dc3-3786-42eb-a990-c2b1099ca14f
+                          example: c9ec7a2e-b098-41db-81b9-eb8bccf1e078
                         participant_name:
                           type: string
-                          example: rodriguez.carissa
+                          example: zachery17
                         participant_external_id:
                           type: string
-                          example: EXTID98
+                          example: EXTID22
                         created_at:
                           type: string
-                          example: '2026-02-27T21:35:02Z'
+                          example: '2026-03-13T19:52:54Z'
                         updated_at:
                           type: string
-                          example: '2026-02-27T21:35:02Z'
+                          example: '2026-03-13T19:52:54Z'
                   total_count:
                     type: string
                     example: '2'
@@ -7825,28 +8094,28 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 2acf37c7-6197-3e78-b04d-719eba787642
-                  name: 'Iusto incidunt aut.'
+                  id: b1b4620f-d11e-3f46-b928-5d6c57dc0f5b
+                  name: 'Architecto facere.'
                   duration: 0
                   status: AWAITING_START
-                  room_id: b194f199-ed1e-34a6-b386-2fd6c3cd4a31
-                  external_room_id: EXTID797292788
-                  friendly_url: VTcOiUqzvt2QV4uxr4ksQ9GMHQuzzgXw
+                  room_id: c9ca0256-cafd-357f-b41f-50fc8334a667
+                  external_room_id: EXTID1520094836
+                  friendly_url: egFdbpIGWK5KAwoBPyemE1k4DFB_pUa5
                   room_is_deleted: false
                   privacy: public
                   session_id: null
-                  participant_id: a94e1f5c-65fe-43a5-a6b1-796950435033
-                  participant_name: madaline.morissette
-                  participant_external_id: EXTID22
-                  created_at: '2026-02-27T21:35:03Z'
-                  updated_at: '2026-02-27T21:35:03Z'
+                  participant_id: 758c1bb7-9939-4dbc-9f08-51b8f1714f91
+                  participant_name: koss.francis
+                  participant_external_id: EXTID63
+                  created_at: '2026-03-13T19:52:55Z'
+                  updated_at: '2026-03-13T19:52:55Z'
                 properties:
                   id:
                     type: string
-                    example: 2acf37c7-6197-3e78-b04d-719eba787642
+                    example: b1b4620f-d11e-3f46-b928-5d6c57dc0f5b
                   name:
                     type: string
-                    example: 'Iusto incidunt aut.'
+                    example: 'Architecto facere.'
                   duration:
                     type: integer
                     example: 0
@@ -7855,13 +8124,13 @@ paths:
                     example: AWAITING_START
                   room_id:
                     type: string
-                    example: b194f199-ed1e-34a6-b386-2fd6c3cd4a31
+                    example: c9ca0256-cafd-357f-b41f-50fc8334a667
                   external_room_id:
                     type: string
-                    example: EXTID797292788
+                    example: EXTID1520094836
                   friendly_url:
                     type: string
-                    example: VTcOiUqzvt2QV4uxr4ksQ9GMHQuzzgXw
+                    example: egFdbpIGWK5KAwoBPyemE1k4DFB_pUa5
                   room_is_deleted:
                     type: boolean
                     example: false
@@ -7873,19 +8142,19 @@ paths:
                     example: null
                   participant_id:
                     type: string
-                    example: a94e1f5c-65fe-43a5-a6b1-796950435033
+                    example: 758c1bb7-9939-4dbc-9f08-51b8f1714f91
                   participant_name:
                     type: string
-                    example: madaline.morissette
+                    example: koss.francis
                   participant_external_id:
                     type: string
-                    example: EXTID22
+                    example: EXTID63
                   created_at:
                     type: string
-                    example: '2026-02-27T21:35:03Z'
+                    example: '2026-03-13T19:52:55Z'
                   updated_at:
                     type: string
-                    example: '2026-02-27T21:35:03Z'
+                    example: '2026-03-13T19:52:55Z'
       tags:
         - Recordings
     delete:
@@ -9774,7 +10043,7 @@ paths:
         in: path
         name: library
         description: 'The library.'
-        example: dolores
+        example: quibusdam
         required: true
         schema:
           type: string
@@ -9888,7 +10157,7 @@ paths:
         in: path
         name: libraryFolder
         description: ''
-        example: amet
+        example: qui
         required: true
         schema:
           type: string
@@ -10046,14 +10315,14 @@ paths:
                 initiator_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: d2071d64-d2ec-37a6-b130-edc8d874c15b
+                  example: 2dcd8dbe-e81e-3f64-8df5-886ef1ed137d
                   nullable: true
     parameters:
       -
         in: path
         name: library
         description: 'The library.'
-        example: quis
+        example: ducimus
         required: true
         schema:
           type: string
@@ -10165,7 +10434,7 @@ paths:
                 initiator_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: 86427d08-4a17-35aa-a0c2-0263b3d1ef5a
+                  example: 7eba2540-e734-3fab-8095-31bd07e01df6
                   nullable: true
     delete:
       summary: 'Delete the specified file.'
@@ -10196,7 +10465,7 @@ paths:
         in: path
         name: libraryFile
         description: ''
-        example: repudiandae
+        example: velit
         required: true
         schema:
           type: string
@@ -10273,7 +10542,7 @@ paths:
         in: path
         name: library
         description: 'The library.'
-        example: dolorum
+        example: inventore
         required: true
         schema:
           type: string
@@ -10281,7 +10550,7 @@ paths:
         in: path
         name: libraryFile
         description: ''
-        example: consequatur
+        example: aut
         required: true
         schema:
           type: string
@@ -10353,14 +10622,14 @@ paths:
                 initiator_id:
                   type: string
                   description: 'Must be a valid UUID.'
-                  example: 3ddcbbbd-25b5-3b4f-8ab5-13c5a15cb4d4
+                  example: feabd5bf-d774-32cc-9a46-56958a3d4bf8
                   nullable: true
     parameters:
       -
         in: path
         name: library
         description: 'The library.'
-        example: minima
+        example: nihil
         required: true
         schema:
           type: string
@@ -10439,7 +10708,7 @@ paths:
         in: path
         name: library
         description: 'The library.'
-        example: ea
+        example: ipsa
         required: true
         schema:
           type: string
@@ -10479,6 +10748,31 @@ paths:
                 example: 'Text file - Polls'
       tags:
         - Polls
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: ''
+                  example: it
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
+                lang:
+                  type: string
+                  description: ''
+                  example: de
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
     parameters:
       -
         in: path
@@ -10645,7 +10939,7 @@ paths:
                 anonymous:
                   type: boolean
                   description: ''
-                  example: true
+                  example: false
                   nullable: true
                 type:
                   type: string
@@ -10663,12 +10957,12 @@ paths:
                     id:
                       type: string
                       description: 'Must be a valid UUID.'
-                      example: 83bb3b79-91a5-3368-b999-e40fc832d440
+                      example: 52714a47-267e-3291-8791-3f72e4ad99fd
                       nullable: true
                     text:
                       type: string
                       description: 'Must be at least 1 character. Must not be greater than 255 characters.'
-                      example: hynfkalnmxpyvs
+                      example: uvhflxbnpd
                   required:
                     - text
                   nullable: true
@@ -10995,6 +11289,16 @@ paths:
             type: string
             description: 'Export format (csv, txt, json or zip).'
             example: txt
+        -
+          in: query
+          name: locale
+          description: 'Export language (en, es, de, it).'
+          example: it
+          required: false
+          schema:
+            type: string
+            description: 'Export language (en, es, de, it).'
+            example: it
       responses:
         404:
           description: ''
@@ -11030,6 +11334,31 @@ paths:
                         example: not-found
       tags:
         - Quizzes
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  description: ''
+                  example: de
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
+                lang:
+                  type: string
+                  description: ''
+                  example: it
+                  enum:
+                    - en
+                    - it
+                    - de
+                    - es
     parameters:
       -
         in: path
@@ -11332,7 +11661,7 @@ paths:
                 time_limit_seconds:
                   type: integer
                   description: 'Must be at least 1. Must not be greater than 86400.'
-                  example: 4
+                  example: 22
                 questions:
                   type: object
                   description: 'Must be an array of quiz questions.'
@@ -11345,7 +11674,7 @@ paths:
                     multiple:
                       type: boolean
                       description: 'Multiple flag'
-                      example: false
+                      example: true
                     choices:
                       type: object
                       description: 'Must be an array of question choices.'
@@ -12888,8 +13217,8 @@ paths:
         - Statistics
   /api/v1/statistics/participants/started-sessions:
     get:
-      summary: 'Get started sessions number by participant UUIDs'
-      operationId: getStartedSessionsNumberByParticipantUUIDs
+      summary: 'Get started sessions by participant UUIDs'
+      operationId: getStartedSessionsByParticipantUUIDs
       description: '<small class="badge badge-blue">Paginated</small>'
       parameters:
         -
@@ -13206,7 +13535,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: w
+        example: '-www'
         required: true
         schema:
           type: string
@@ -13406,7 +13735,7 @@ paths:
         in: path
         name: room
         description: 'The room.'
-        example: w
+        example: '--ww'
         required: true
         schema:
           type: string
@@ -13610,7 +13939,7 @@ paths:
         in: path
         name: session
         description: 'The session.'
-        example: in
+        example: est
         required: true
         schema:
           type: string
@@ -13712,7 +14041,7 @@ paths:
         in: path
         name: participant
         description: 'The participant.'
-        example: saepe
+        example: numquam
         required: true
         schema:
           type: string
@@ -13842,59 +14171,59 @@ paths:
                 example:
                   data:
                     -
-                      id: 04f6314c-51b9-403b-b748-feabda2d8083
-                      endpoint: 'http://nienow.org/voluptatum-aut-id-esse-quas.html'
-                      authorization_header: 3ccba038ebe8f9f76251c426eeedc65d
-                      name: 'My webhook 7'
-                      created_at: '2026-02-27T21:35:03Z'
-                      updated_at: '2026-02-27T21:35:03Z'
+                      id: ed437814-db6c-42d7-ab73-b45d34571a92
+                      endpoint: 'http://www.harber.info/dolor-minima-vitae-nihil-est-ea-animi-omnis-sint.html'
+                      authorization_header: bb40823e38bb492d926a027abf98818e
+                      name: 'My webhook 8'
+                      created_at: '2026-03-13T19:52:56Z'
+                      updated_at: '2026-03-13T19:52:56Z'
                     -
-                      id: 2fc88152-862b-4847-bd4c-b19d4dfc7e91
-                      endpoint: 'https://www.shields.com/ut-adipisci-dolorem-nihil-est-laborum-dolores-distinctio-praesentium'
-                      authorization_header: 6000654ddc889ae5fdc1c0a6c535071b
-                      name: 'My webhook 7'
-                      created_at: '2026-02-27T21:35:03Z'
-                      updated_at: '2026-02-27T21:35:03Z'
+                      id: 9e47df12-a3f5-4157-8576-3388a34ba855
+                      endpoint: 'https://www.medhurst.com/minus-ex-velit-aspernatur'
+                      authorization_header: ffa23641241c3dc9ed876ac36e004481
+                      name: 'My webhook 2'
+                      created_at: '2026-03-13T19:52:56Z'
+                      updated_at: '2026-03-13T19:52:56Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: 04f6314c-51b9-403b-b748-feabda2d8083
-                        endpoint: 'http://nienow.org/voluptatum-aut-id-esse-quas.html'
-                        authorization_header: 3ccba038ebe8f9f76251c426eeedc65d
-                        name: 'My webhook 7'
-                        created_at: '2026-02-27T21:35:03Z'
-                        updated_at: '2026-02-27T21:35:03Z'
+                        id: ed437814-db6c-42d7-ab73-b45d34571a92
+                        endpoint: 'http://www.harber.info/dolor-minima-vitae-nihil-est-ea-animi-omnis-sint.html'
+                        authorization_header: bb40823e38bb492d926a027abf98818e
+                        name: 'My webhook 8'
+                        created_at: '2026-03-13T19:52:56Z'
+                        updated_at: '2026-03-13T19:52:56Z'
                       -
-                        id: 2fc88152-862b-4847-bd4c-b19d4dfc7e91
-                        endpoint: 'https://www.shields.com/ut-adipisci-dolorem-nihil-est-laborum-dolores-distinctio-praesentium'
-                        authorization_header: 6000654ddc889ae5fdc1c0a6c535071b
-                        name: 'My webhook 7'
-                        created_at: '2026-02-27T21:35:03Z'
-                        updated_at: '2026-02-27T21:35:03Z'
+                        id: 9e47df12-a3f5-4157-8576-3388a34ba855
+                        endpoint: 'https://www.medhurst.com/minus-ex-velit-aspernatur'
+                        authorization_header: ffa23641241c3dc9ed876ac36e004481
+                        name: 'My webhook 2'
+                        created_at: '2026-03-13T19:52:56Z'
+                        updated_at: '2026-03-13T19:52:56Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: 04f6314c-51b9-403b-b748-feabda2d8083
+                          example: ed437814-db6c-42d7-ab73-b45d34571a92
                         endpoint:
                           type: string
-                          example: 'http://nienow.org/voluptatum-aut-id-esse-quas.html'
+                          example: 'http://www.harber.info/dolor-minima-vitae-nihil-est-ea-animi-omnis-sint.html'
                         authorization_header:
                           type: string
-                          example: 3ccba038ebe8f9f76251c426eeedc65d
+                          example: bb40823e38bb492d926a027abf98818e
                         name:
                           type: string
-                          example: 'My webhook 7'
+                          example: 'My webhook 8'
                         created_at:
                           type: string
-                          example: '2026-02-27T21:35:03Z'
+                          example: '2026-03-13T19:52:56Z'
                         updated_at:
                           type: string
-                          example: '2026-02-27T21:35:03Z'
+                          example: '2026-03-13T19:52:56Z'
                   total_count:
                     type: string
                     example: '2'
@@ -13903,7 +14232,7 @@ paths:
     post:
       summary: 'Create a new webhook.'
       operationId: createANewWebhook
-      description: 'This endpoint allows you to create a new webhook'
+      description: ''
       parameters: []
       responses:
         200:
@@ -13913,39 +14242,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 43cb53db-8e35-495d-8356-142a9fb59469
-                  endpoint: 'http://www.klocko.net/'
-                  authorization_header: 42da3e489e75a199f5ca477134e60bdf
-                  name: 'My webhook 1'
+                  id: 23e9a7b0-2c51-4a4d-8680-4d4e32a15616
+                  endpoint: 'http://www.davis.com/rem-et-voluptates-expedita-dolorem-deleniti-commodi'
+                  authorization_header: e8685d33c8d65298ba5641003b9823f5
+                  name: 'My webhook 8'
                   events:
-                    - participant_officia
-                  created_at: '2026-02-27T21:35:04Z'
-                  updated_at: '2026-02-27T21:35:04Z'
+                    - participant_facilis
+                  created_at: '2026-03-13T19:52:56Z'
+                  updated_at: '2026-03-13T19:52:56Z'
                 properties:
                   id:
                     type: string
-                    example: 43cb53db-8e35-495d-8356-142a9fb59469
+                    example: 23e9a7b0-2c51-4a4d-8680-4d4e32a15616
                   endpoint:
                     type: string
-                    example: 'http://www.klocko.net/'
+                    example: 'http://www.davis.com/rem-et-voluptates-expedita-dolorem-deleniti-commodi'
                   authorization_header:
                     type: string
-                    example: 42da3e489e75a199f5ca477134e60bdf
+                    example: e8685d33c8d65298ba5641003b9823f5
                   name:
                     type: string
-                    example: 'My webhook 1'
+                    example: 'My webhook 8'
                   events:
                     type: array
                     example:
-                      - participant_officia
+                      - participant_facilis
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-02-27T21:35:04Z'
+                    example: '2026-03-13T19:52:56Z'
                   updated_at:
                     type: string
-                    example: '2026-02-27T21:35:04Z'
+                    example: '2026-03-13T19:52:56Z'
       tags:
         - Webhooks
       requestBody:
@@ -13993,39 +14322,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 37433d5f-e2e1-4007-a5e0-4f1f9ead89b2
-                  endpoint: 'http://gutkowski.com/voluptatem-labore-aspernatur-eos-repudiandae-blanditiis-animi'
-                  authorization_header: 41f900ddb78f604fa00aca7540e39398
-                  name: 'My webhook 4'
+                  id: 0fe1f1b2-f22f-4342-9b6d-b4cff41639a4
+                  endpoint: 'http://www.hettinger.com/omnis-odit-eaque-debitis-quidem-ut-voluptatem'
+                  authorization_header: c348028be742e073a2ec8e3f23fa5c22
+                  name: 'My webhook 8'
                   events:
-                    - participant_ipsum
-                  created_at: '2026-02-27T21:35:04Z'
-                  updated_at: '2026-02-27T21:35:04Z'
+                    - participant_dolores
+                  created_at: '2026-03-13T19:52:56Z'
+                  updated_at: '2026-03-13T19:52:56Z'
                 properties:
                   id:
                     type: string
-                    example: 37433d5f-e2e1-4007-a5e0-4f1f9ead89b2
+                    example: 0fe1f1b2-f22f-4342-9b6d-b4cff41639a4
                   endpoint:
                     type: string
-                    example: 'http://gutkowski.com/voluptatem-labore-aspernatur-eos-repudiandae-blanditiis-animi'
+                    example: 'http://www.hettinger.com/omnis-odit-eaque-debitis-quidem-ut-voluptatem'
                   authorization_header:
                     type: string
-                    example: 41f900ddb78f604fa00aca7540e39398
+                    example: c348028be742e073a2ec8e3f23fa5c22
                   name:
                     type: string
-                    example: 'My webhook 4'
+                    example: 'My webhook 8'
                   events:
                     type: array
                     example:
-                      - participant_ipsum
+                      - participant_dolores
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-02-27T21:35:04Z'
+                    example: '2026-03-13T19:52:56Z'
                   updated_at:
                     type: string
-                    example: '2026-02-27T21:35:04Z'
+                    example: '2026-03-13T19:52:56Z'
       tags:
         - Webhooks
     patch:
@@ -14041,39 +14370,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 8fc73698-4987-4552-bc44-7a90653b88d5
-                  endpoint: 'http://weissnat.com/et-est-rem-aut-culpa-ex-veniam.html'
-                  authorization_header: b252ee68d66469f578a959d4f1fa3b6e
-                  name: 'My webhook 2'
+                  id: 97bfea91-d413-4c08-93f7-18b1a6529a6e
+                  endpoint: 'http://www.feest.net/non-vel-assumenda-ut'
+                  authorization_header: b555a7188a6027a06aaa71c1530a264d
+                  name: 'My webhook 5'
                   events:
-                    - participant_qui
-                  created_at: '2026-02-27T21:35:04Z'
-                  updated_at: '2026-02-27T21:35:04Z'
+                    - participant_quia
+                  created_at: '2026-03-13T19:52:56Z'
+                  updated_at: '2026-03-13T19:52:56Z'
                 properties:
                   id:
                     type: string
-                    example: 8fc73698-4987-4552-bc44-7a90653b88d5
+                    example: 97bfea91-d413-4c08-93f7-18b1a6529a6e
                   endpoint:
                     type: string
-                    example: 'http://weissnat.com/et-est-rem-aut-culpa-ex-veniam.html'
+                    example: 'http://www.feest.net/non-vel-assumenda-ut'
                   authorization_header:
                     type: string
-                    example: b252ee68d66469f578a959d4f1fa3b6e
+                    example: b555a7188a6027a06aaa71c1530a264d
                   name:
                     type: string
-                    example: 'My webhook 2'
+                    example: 'My webhook 5'
                   events:
                     type: array
                     example:
-                      - participant_qui
+                      - participant_quia
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-02-27T21:35:04Z'
+                    example: '2026-03-13T19:52:56Z'
                   updated_at:
                     type: string
-                    example: '2026-02-27T21:35:04Z'
+                    example: '2026-03-13T19:52:56Z'
       tags:
         - Webhooks
       requestBody:
