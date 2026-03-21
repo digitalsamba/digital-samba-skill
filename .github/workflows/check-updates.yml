@@ -28,7 +28,80 @@ jobs:
 
           if ! diff -q openapi-stored.yaml openapi-new.yaml > /dev/null 2>&1; then
             echo "api_changed=true" >> $GITHUB_OUTPUT
-            echo "API spec has changed"
+
+            # Extract new/removed endpoints
+            grep -E '^\s{2}/.+:$' openapi-stored.yaml | sed 's/[: ]//g' | sed "s/'//g" | sort > /tmp/old-paths.txt
+            grep -E '^\s{2}/.+:$' openapi-new.yaml | sed 's/[: ]//g' | sed "s/'//g" | sort > /tmp/new-paths.txt
+
+            NEW_ENDPOINTS=$(comm -13 /tmp/old-paths.txt /tmp/new-paths.txt)
+            REMOVED_ENDPOINTS=$(comm -23 /tmp/old-paths.txt /tmp/new-paths.txt)
+
+            # Extract new operationIds (proxy for new methods on existing paths)
+            grep 'operationId:' openapi-stored.yaml | sed 's/.*operationId: //' | sed "s/'//g" | sort > /tmp/old-ops.txt
+            grep 'operationId:' openapi-new.yaml | sed 's/.*operationId: //' | sed "s/'//g" | sort > /tmp/new-ops.txt
+
+            NEW_OPS=$(comm -13 /tmp/old-ops.txt /tmp/new-ops.txt)
+            REMOVED_OPS=$(comm -23 /tmp/old-ops.txt /tmp/new-ops.txt)
+
+            # Extract new properties (boolean settings etc)
+            grep -B0 'type: boolean' openapi-new.yaml | grep -v 'type:' | sed 's/://g' | awk '{$1=$1};1' | sort -u > /tmp/new-bools.txt
+            grep -B0 'type: boolean' openapi-stored.yaml | grep -v 'type:' | sed 's/://g' | awk '{$1=$1};1' | sort -u > /tmp/old-bools.txt
+
+            NEW_PROPS=$(comm -13 /tmp/old-bools.txt /tmp/new-bools.txt)
+
+            # Build summary
+            {
+              echo "CHANGE_SUMMARY<<SUMMARY_EOF"
+
+              if [ -n "$NEW_ENDPOINTS" ]; then
+                echo "### New Endpoints"
+                echo ""
+                echo "$NEW_ENDPOINTS" | while read -r ep; do
+                  # Find the HTTP methods for this endpoint
+                  METHODS=$(awk "/^  '$ep':|^  $ep:/{found=1; next} /^  ['\\/]/{found=0} found && /summary:/{print}" openapi-new.yaml | head -5 | sed "s/.*summary: '/- /;s/'$//")
+                  echo "**\`$ep\`**"
+                  if [ -n "$METHODS" ]; then
+                    echo "$METHODS"
+                  fi
+                  echo ""
+                done
+              fi
+
+              if [ -n "$NEW_OPS" ]; then
+                echo "### New Operations"
+                echo ""
+                echo "$NEW_OPS" | while read -r op; do echo "- \`$op\`"; done
+                echo ""
+              fi
+
+              if [ -n "$NEW_PROPS" ]; then
+                echo "### New Properties"
+                echo ""
+                echo "$NEW_PROPS" | while read -r prop; do echo "- \`$prop\`"; done
+                echo ""
+              fi
+
+              if [ -n "$REMOVED_ENDPOINTS" ]; then
+                echo "### ⚠️ Removed Endpoints"
+                echo ""
+                echo "$REMOVED_ENDPOINTS" | while read -r ep; do echo "- \`$ep\`"; done
+                echo ""
+              fi
+
+              if [ -n "$REMOVED_OPS" ]; then
+                echo "### ⚠️ Removed Operations"
+                echo ""
+                echo "$REMOVED_OPS" | while read -r op; do echo "- \`$op\`"; done
+                echo ""
+              fi
+
+              if [ -z "$NEW_ENDPOINTS" ] && [ -z "$NEW_OPS" ] && [ -z "$NEW_PROPS" ] && [ -z "$REMOVED_ENDPOINTS" ] && [ -z "$REMOVED_OPS" ]; then
+                echo "Changes detected in parameter details, descriptions, or examples. Run a diff for full details."
+              fi
+
+              echo "SUMMARY_EOF"
+            } >> $GITHUB_OUTPUT
+
           else
             echo "api_changed=false" >> $GITHUB_OUTPUT
             echo "API spec unchanged"
@@ -47,7 +120,58 @@ jobs:
             echo "sdk_changed=true" >> $GITHUB_OUTPUT
             echo "old_version=$STORED_VERSION" >> $GITHUB_OUTPUT
             echo "new_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-            echo "SDK version changed: $STORED_VERSION -> $LATEST_VERSION"
+
+            # Download both versions and diff the type definitions
+            npm pack @digitalsamba/embedded-sdk@${STORED_VERSION} --quiet 2>/dev/null
+            npm pack @digitalsamba/embedded-sdk@${LATEST_VERSION} --quiet 2>/dev/null
+
+            mkdir -p /tmp/sdk-old /tmp/sdk-new
+            tar -xzf digitalsamba-embedded-sdk-${STORED_VERSION}.tgz -C /tmp/sdk-old
+            tar -xzf digitalsamba-embedded-sdk-${LATEST_VERSION}.tgz -C /tmp/sdk-new
+
+            # Diff the type definitions for meaningful changes
+            TYPE_DIFF=$(diff /tmp/sdk-old/package/dist/types/types.d.ts /tmp/sdk-new/package/dist/types/types.d.ts 2>/dev/null || true)
+
+            {
+              echo "TYPE_CHANGES<<TYPE_EOF"
+
+              if [ -n "$TYPE_DIFF" ]; then
+                # New send message types (methods)
+                NEW_METHODS=$(diff <(grep "SendMessageType" /tmp/sdk-old/package/dist/types/types.d.ts | tr '|' '\n' | sed "s/[' ;]//g" | awk '{$1=$1};1' | sort) \
+                                   <(grep "SendMessageType" /tmp/sdk-new/package/dist/types/types.d.ts | tr '|' '\n' | sed "s/[' ;]//g" | awk '{$1=$1};1' | sort) \
+                              2>/dev/null | grep '^>' | sed 's/^> //' || true)
+
+                # New receive message types (events)
+                NEW_EVENTS=$(diff <(grep "receiveMessagesTypes" /tmp/sdk-old/package/dist/types/types.d.ts | tr ',' '\n' | sed 's/["\[\] ]//g' | awk '{$1=$1};1' | sort) \
+                                   <(grep "receiveMessagesTypes" /tmp/sdk-new/package/dist/types/types.d.ts | tr ',' '\n' | sed 's/["\[\] ]//g' | awk '{$1=$1};1' | sort) \
+                              2>/dev/null | grep '^>' | sed 's/^> //' || true)
+
+                if [ -n "$NEW_METHODS" ]; then
+                  echo "### New SDK Methods"
+                  echo ""
+                  echo "$NEW_METHODS" | while read -r m; do echo "- \`$m\`"; done
+                  echo ""
+                fi
+
+                if [ -n "$NEW_EVENTS" ]; then
+                  echo "### New SDK Events"
+                  echo ""
+                  echo "$NEW_EVENTS" | while read -r e; do echo "- \`$e\`"; done
+                  echo ""
+                fi
+
+                echo "### Type Definition Diff"
+                echo ""
+                echo '```diff'
+                echo "$TYPE_DIFF"
+                echo '```'
+              else
+                echo "No type definition changes detected (may be internal/build changes only)."
+              fi
+
+              echo "TYPE_EOF"
+            } >> $GITHUB_OUTPUT
+
           else
             echo "sdk_changed=false" >> $GITHUB_OUTPUT
             echo "SDK version unchanged"
@@ -57,6 +181,7 @@ jobs:
         if: steps.api-check.outputs.api_changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          CHANGE_SUMMARY: ${{ steps.api-check.outputs.CHANGE_SUMMARY }}
         run: |
           EXISTING=$(gh issue list --label "api-update" --state open --json number --jq 'length')
           if [ "$EXISTING" -gt 0 ]; then
@@ -65,28 +190,24 @@ jobs:
           fi
 
           DATE=$(date +%Y-%m-%d)
-          cat << 'ISSUE_BODY' > /tmp/issue-body.md
+          cat > /tmp/issue-body.md << 'HEADER'
           The Digital Samba OpenAPI specification has changed.
+
+          ## Changes Detected
+
+          HEADER
+
+          echo "$CHANGE_SUMMARY" >> /tmp/issue-body.md
+
+          cat >> /tmp/issue-body.md << 'FOOTER'
 
           ## Next Steps
 
           1. Start a Claude Code session in this repo
-          2. Run `/session-start`
-          3. Ask Claude to analyze the API changes and update the skill
+          2. Review the changes above and update `api-reference.md`
+          3. Update `openapi-stored.yaml`: `curl -s https://developer.digitalsamba.com/rest-api/openapi.yaml -o openapi-stored.yaml`
+          FOOTER
 
-          ## Quick Command
-
-          ```
-          Compare openapi-stored.yaml with the current spec at https://developer.digitalsamba.com/rest-api/openapi.yaml
-
-          Identify:
-          - New endpoints
-          - Changed parameters
-          - Removed endpoints (flag for review)
-
-          Update api-reference.md accordingly.
-          ```
-          ISSUE_BODY
           echo "" >> /tmp/issue-body.md
           echo "---" >> /tmp/issue-body.md
           echo "*Detected by automated check on ${DATE}*" >> /tmp/issue-body.md
@@ -103,6 +224,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           OLD_VERSION: ${{ steps.sdk-check.outputs.old_version }}
           NEW_VERSION: ${{ steps.sdk-check.outputs.new_version }}
+          TYPE_CHANGES: ${{ steps.sdk-check.outputs.TYPE_CHANGES }}
         run: |
           EXISTING=$(gh issue list --label "sdk-update" --state open --json number --jq 'length')
           if [ "$EXISTING" -gt 0 ]; then
@@ -111,7 +233,7 @@ jobs:
           fi
 
           DATE=$(date +%Y-%m-%d)
-          cat << ISSUE_BODY > /tmp/issue-body.md
+          cat > /tmp/issue-body.md << HEADER
           The Digital Samba Embedded SDK has been updated.
 
           ## Version Change
@@ -119,21 +241,29 @@ jobs:
           - **Previous**: ${OLD_VERSION}
           - **Latest**: ${NEW_VERSION}
 
-          ## Resources
+          ## Changes Detected
 
-          - [NPM Package](https://www.npmjs.com/package/@digitalsamba/embedded-sdk)
-          - [SDK GitHub](https://github.com/digitalsamba/embedded-sdk)
-          - [SDK Docs](https://docs.digitalsamba.com/reference/sdk)
+          HEADER
+
+          echo "$TYPE_CHANGES" >> /tmp/issue-body.md
+
+          cat >> /tmp/issue-body.md << 'FOOTER'
 
           ## Next Steps
 
           1. Start a Claude Code session in this repo
-          2. Run \`/session-start\`
-          3. Ask Claude to check for new methods/events and update sdk-reference.md
+          2. Review the changes above and update `sdk-reference.md`
+          3. Update the `**Version**:` line in `sdk-reference.md` to match
 
-          ---
-          *Detected by automated check on ${DATE}*
-          ISSUE_BODY
+          ## Resources
+
+          - [NPM Package](https://www.npmjs.com/package/@digitalsamba/embedded-sdk)
+          - [SDK Docs](https://docs.digitalsamba.com/reference/sdk)
+          FOOTER
+
+          echo "" >> /tmp/issue-body.md
+          echo "---" >> /tmp/issue-body.md
+          echo "*Detected by automated check on ${DATE}*" >> /tmp/issue-body.md
 
           gh issue create \
             --title "SDK Update Detected: ${OLD_VERSION} to ${NEW_VERSION}" \
