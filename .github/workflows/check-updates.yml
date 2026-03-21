@@ -37,7 +37,7 @@ jobs:
       - name: Check SDK version for changes
         id: sdk-check
         run: |
-          STORED_VERSION=$(cat .sdk-version | tr -d '\n')
+          STORED_VERSION=$(grep '^\*\*Version\*\*:' sdk-reference.md | sed 's/.*: //' | tr -d '\n')
           LATEST_VERSION=$(npm view @digitalsamba/embedded-sdk version)
 
           echo "Stored: $STORED_VERSION"
