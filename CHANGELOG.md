@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.9] - 2026-05-21
+
+### Added
+
+- 12 new Q&A endpoints for fine-grained question and answer management (fixes #17):
+  - `PATCH /rooms/{room}/questions/{question}` — update question text
+  - `DELETE /rooms/{room}/questions/{question}` — delete a single question
+  - `POST /rooms/{room}/questions/{question}/dismiss` — dismiss a question
+  - `POST /rooms/{room}/questions/{question}/reopen` — reopen a dismissed question
+  - `POST` / `DELETE /rooms/{room}/questions/{question}/vote` — add/remove a participant's upvote
+  - `POST /rooms/{room}/questions/{question}/answers` — post an answer (with optional `private` flag)
+  - `PATCH` / `DELETE /rooms/{room}/questions/{question}/answers/{answer}` — update/delete an answer
+  - `POST /rooms/{room}/questions/{question}/live-answers/{start,stop,cancel}` — manage live in-session answers
+- `connection_quality_indicator_enabled` room setting — show participants their local connection quality indicator
+- `pin_panels_enabled` room setting — allow roles with permission to force-pin tiles for everyone
+- `mediaConnectionFailed` SDK event — fired when media connection to the SFU fails (fixes #18)
+- `joinScreenEnabled` roomSettings option — show/hide the pre-join name/device screen
+- SDK reference version bumped to 0.0.55
+
 ## [1.1.8] - 2026-03-21
 
 ### Added

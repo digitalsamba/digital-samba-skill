@@ -1,7 +1,7 @@
 # Digital Samba Embedded SDK Reference
 
 **Package**: `@digitalsamba/embedded-sdk`
-**Version**: 0.0.54
+**Version**: 0.0.55
 **License**: BSD-2-Clause
 
 ## Installation
@@ -87,6 +87,7 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 | `layoutMode` | `'auto' \| 'tiled'` | Starting layout mode |
 | `showToolbar` | boolean | Show/hide toolbar |
 | `showTopbar` | boolean | Show/hide topbar |
+| `joinScreenEnabled` | boolean | Show/hide the join screen (name/device entry) before entering the room |
 | `showCaptions` | boolean | Show captions initially |
 | `virtualBackground` | object | Pre-configure virtual background |
 | `virtualBackgrounds` | array | Custom background options |
@@ -333,6 +334,7 @@ sambaFrame.on('*', (event) => {
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `appError` | `{ code, message }` | Application error |
+| `mediaConnectionFailed` | - | Media connection to the SFU could not be established (e.g. network/firewall issue) |
 | `mediaPermissionsFailed` | - | Browser denied media device access |
 
 ---

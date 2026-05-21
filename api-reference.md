@@ -92,6 +92,8 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `chat_reactions_enabled` | boolean | team default | When enabled, participants can react to chat messages with emojis |
 | `chat_reactions_extended_enabled` | boolean | team default | When enabled, participants can react to chat messages using an expanded set of emojis |
 | `virtual_backgrounds_v2_enabled` | boolean | team default | When enabled, participants will use the new virtual background engine |
+| `connection_quality_indicator_enabled` | boolean | `false` | When enabled, participants can see their local connection quality indicator in the room |
+| `pin_panels_enabled` | boolean | team default | When enabled, roles with the relevant permission can force-pin tiles for everyone in the room |
 | `chat_persistence_enabled` | boolean | `false` | When enabled, public chat messages from previous sessions are retained and reloaded when rooms are reopened |
 | `watermark_enabled` | boolean | `false` | When enabled, a repeated text watermark is displayed across the screen to discourage unauthorized recording or sharing |
 | `watermark_text` | string | `null` | Custom watermark text. Latin characters, numbers, and basic punctuation only. Min 3, max 50 characters |
@@ -482,6 +484,78 @@ Export Q&A as `txt` or `json`.
 
 ### DELETE /api/v1/rooms/{room}/questions
 Delete all Q&A content.
+
+### PATCH /api/v1/rooms/{room}/questions/{question}
+Update an existing question's text.
+
+**Request Body**:
+```json
+{
+  "participant": { "id": "uuid" },
+  "question": "Updated question text"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of existing participant) |
+| `question` | string | yes | Updated question text |
+
+### DELETE /api/v1/rooms/{room}/questions/{question}
+Delete a single question. Requires a `participant` object in the request body identifying the actor.
+
+### POST /api/v1/rooms/{room}/questions/{question}/dismiss
+Mark a question as dismissed. Body: `{ "participant": { ... } }`.
+
+### POST /api/v1/rooms/{room}/questions/{question}/reopen
+Reopen a previously dismissed question. Body: `{ "participant": { ... } }`.
+
+### POST /api/v1/rooms/{room}/questions/{question}/vote
+Upvote a question on behalf of a participant. Body: `{ "participant": { ... } }`.
+
+### DELETE /api/v1/rooms/{room}/questions/{question}/vote
+Remove a participant's vote from a question. Body: `{ "participant": { ... } }`.
+
+### POST /api/v1/rooms/{room}/questions/{question}/answers
+Post an answer to a question.
+
+**Request Body**:
+```json
+{
+  "participant": { "id": "uuid" },
+  "answer": "My answer",
+  "private": false
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of existing participant) |
+| `answer` | string | yes | The answer text |
+| `private` | boolean | no | When `true`, the answer is private to the asker |
+
+### PATCH /api/v1/rooms/{room}/questions/{question}/answers/{answer}
+Update an existing answer.
+
+**Request Body**:
+```json
+{
+  "participant": { "id": "uuid" },
+  "answer": "Updated answer text"
+}
+```
+
+### DELETE /api/v1/rooms/{room}/questions/{question}/answers/{answer}
+Delete a single answer. Body: `{ "participant": { ... } }`.
+
+### POST /api/v1/rooms/{room}/questions/{question}/live-answers/start
+Start a live (in-session) answer for a question. Body: `{ "participant": { ... } }`.
+
+### POST /api/v1/rooms/{room}/questions/{question}/live-answers/stop
+Stop the currently active live answer for a question. Body: `{ "participant": { ... } }`.
+
+### POST /api/v1/rooms/{room}/questions/{question}/live-answers/cancel
+Cancel an in-progress live answer for a question. Body: `{ "participant": { ... } }`.
 
 ---
 
