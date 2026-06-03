@@ -705,7 +705,8 @@ Create a new quiz.
 **Field Constraints**:
 | Field | Constraint |
 |-------|------------|
-| `title` | Min 1, max 255 characters |
+| `title` | Min 1, max 512 characters |
+| `questions[].text` | Min 1, max 512 characters |
 | `time_limit_minutes` | Min 1, max 1440 (24 hours) |
 | `time_limit_seconds` | Min 1, max 86400 (alternative to minutes) |
 | `timing_mode` | `"quiz"` (whole quiz) or `"question"` (per question), nullable |
