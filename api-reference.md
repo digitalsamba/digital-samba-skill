@@ -647,6 +647,19 @@ Create a new poll.
 ### DELETE /api/v1/rooms/{room}/polls
 Delete all polls.
 
+### POST /api/v1/rooms/{room}/polls/import
+Import polls from a CSV file.
+
+**Request** (`multipart/form-data`):
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | binary | yes | CSV or TXT file, max 2MB |
+
+Use `GET /api/v1/rooms/{room}/polls/template` to download the CSV template.
+
+### GET /api/v1/rooms/{room}/polls/template
+Download a CSV template for poll import.
+
 ---
 
 ## Quizzes
