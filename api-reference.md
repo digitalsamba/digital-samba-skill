@@ -92,6 +92,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `chat_reactions_enabled` | boolean | team default | When enabled, participants can react to chat messages with emojis |
 | `chat_reactions_extended_enabled` | boolean | team default | When enabled, participants can react to chat messages using an expanded set of emojis |
 | `virtual_backgrounds_v2_enabled` | boolean | team default | When enabled, participants will use the new virtual background engine |
+| `video_fit_mode_enabled` | boolean | team default | When enabled, participant video streams display in full without cropping. Participants can override this from the in-room settings menu, but only for their own view and only for that session |
 | `connection_quality_indicator_enabled` | boolean | `false` | When enabled, participants can see their local connection quality indicator in the room |
 | `pin_panels_enabled` | boolean | team default | When enabled, roles with the relevant permission can force-pin tiles for everyone in the room |
 | `chat_persistence_enabled` | boolean | `false` | When enabled, public chat messages from previous sessions are retained and reloaded when rooms are reopened |
