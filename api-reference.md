@@ -94,7 +94,12 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `virtual_backgrounds_v2_enabled` | boolean | team default | When enabled, participants will use the new virtual background engine |
 | `video_fit_mode_enabled` | boolean | team default | When enabled, participant video streams display in full without cropping. Participants can override this from the in-room settings menu, but only for their own view and only for that session |
 | `video_tile_layout_mode` | string | team default | Where the participant name and status icons appear on each video tile. `"top"`: name centered at the top, status icons grouped in the bottom left. `"bottom"`: name at the bottom left, status icons grouped in the top right |
+| `transcription_enabled` | boolean | team default | When enabled, the speech of participants in the room is transcribed into text (incompatible with E2EE) |
+| `transcription_auto_start_enabled` | boolean | team default | Transcription starts automatically when the first participant joins |
 | `transcription_store_enabled` | boolean | team default | Store transcripts & summaries |
+| `captions_enabled` | boolean | team default | Allow participants to enable or disable captions on their end |
+| `captions_language` | string | team default | Default input language to be transcribed. One of: `bg`, `ca`, `da`, `de`, `en`, `es`, `fi`, `fr`, `it`, `nl`, `pt`, `ro`, `sv`, `tr` |
+| `captions_in_recordings_enabled` | boolean | team default | Display session transcriptions as subtitles in the room's recordings |
 | `connection_quality_indicator_enabled` | boolean | `false` | When enabled, participants can see their local connection quality indicator in the room |
 | `pin_panels_enabled` | boolean | team default | When enabled, roles with the relevant permission can force-pin tiles for everyone in the room |
 | `chat_persistence_enabled` | boolean | `false` | When enabled, public chat messages from previous sessions are retained and reloaded when rooms are reopened |

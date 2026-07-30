@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.14] - 2026-07-30
+
+### Added
+
+- Documented the transcription/captions room settings group, previously missing from the room settings table: `transcription_enabled`, `transcription_auto_start_enabled`, `captions_enabled`, `captions_language`, `captions_in_recordings_enabled`
+- `captions_language` documented with the expanded 14-language list from the latest OpenAPI spec (`bg`, `ca`, `da`, `fi`, `sv`, `tr` added to the previous 8)
+
 ## [1.1.13] - 2026-07-30
 
 ### Added
