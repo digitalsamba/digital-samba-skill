@@ -21,8 +21,11 @@ node basic-room.js
 
 Simple HTTP server for receiving Digital Samba webhooks.
 
+Set `DS_WEBHOOK_TOKEN` to the same value you pass as `authorization_header` when
+registering the webhook — the handler rejects deliveries that don't match.
+
 ```bash
-WEBHOOK_SECRET="your-secret" node webhook-handler.js
+DS_WEBHOOK_TOKEN="your-token" node webhook-handler.js
 ```
 
 ## Dependencies

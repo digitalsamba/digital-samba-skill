@@ -1,75 +1,58 @@
 /**
- * Digital Samba - Webhook Handler (Node.js/Express)
+ * Digital Samba - Webhook Handler (Node.js)
  *
  * Demonstrates:
- * - Setting up webhook endpoints
- * - Verifying webhook signatures
+ * - Setting up a webhook endpoint
+ * - Authenticating incoming webhooks
  * - Handling different event types
  *
+ * Uses only Node.js built-in modules — no dependencies to install.
+ *
  * Usage:
- *   npm install express
- *   WEBHOOK_SECRET=your-secret node webhook-handler.js
+ *   DS_WEBHOOK_TOKEN=your-token node webhook-handler.js
  */
 
 const http = require('http');
 const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-webhook-secret';
 
-// Verify webhook signature
-function verifySignature(payload, signature) {
-  const expectedSignature = crypto
-    .createHmac('sha256', WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
+// The bearer token you set as `authorization_header` when creating the webhook.
+// Digital Samba sends it verbatim in the Authorization header of every delivery.
+const WEBHOOK_TOKEN = process.env.DS_WEBHOOK_TOKEN || 'your-webhook-token';
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
+// Constant-time comparison. timingSafeEqual throws when lengths differ,
+// so compare lengths first and keep the comparison itself constant-time.
+function verifyAuthorization(headerValue) {
+  if (typeof headerValue !== 'string') return false;
+
+  const received = Buffer.from(headerValue);
+  const expected = Buffer.from(WEBHOOK_TOKEN);
+
+  if (received.length !== expected.length) return false;
+  return crypto.timingSafeEqual(received, expected);
 }
 
-// Event handlers
+// Event handlers.
+//
+// `participant_joined` and `participant_left` are the two event names confirmed
+// by the API docs. Event names are snake_case. For the authoritative list of
+// events available to your team, call:
+//   GET https://api.digitalsamba.com/api/v1/events
+// Any event you subscribe to but do not handle here falls through to the
+// default branch below, which logs the name and payload.
 const eventHandlers = {
-  'session.started': (data) => {
-    console.log(`Meeting started in room ${data.room_id}`);
-    console.log(`Session ID: ${data.session_id}`);
-  },
-
-  'session.ended': (data) => {
-    console.log(`Meeting ended in room ${data.room_id}`);
-    console.log(`Duration: ${data.duration} seconds`);
-  },
-
-  'participant.joined': (data) => {
+  participant_joined: (data) => {
     console.log(`${data.name} joined room ${data.room_id}`);
     console.log(`Participant ID: ${data.participant_id}`);
     if (data.external_id) {
+      // Maps to your own user ID — the JWT 'ud' claim
       console.log(`External ID: ${data.external_id}`);
     }
   },
 
-  'participant.left': (data) => {
+  participant_left: (data) => {
     console.log(`${data.name} left room ${data.room_id}`);
-  },
-
-  'recording.started': (data) => {
-    console.log(`Recording started in room ${data.room_id}`);
-  },
-
-  'recording.stopped': (data) => {
-    console.log(`Recording stopped in room ${data.room_id}`);
-  },
-
-  'recording.ready': (data) => {
-    console.log(`Recording ready: ${data.recording_id}`);
-    console.log(`Download URL available via API`);
-    // Fetch download URL: GET /api/v1/recordings/{recording_id}/download
-  },
-
-  'transcript.ready': (data) => {
-    console.log(`Transcript ready for session ${data.session_id}`);
   }
 };
 
@@ -83,12 +66,11 @@ const server = http.createServer((req, res) => {
     });
 
     req.on('end', () => {
-      // Verify signature
-      const signature = req.headers['x-signature'];
-      if (signature && !verifySignature(body, signature)) {
-        console.error('Invalid webhook signature');
+      // Authenticate the delivery before trusting anything in the body
+      if (!verifyAuthorization(req.headers['authorization'])) {
+        console.error('Rejected webhook: Authorization header did not match');
         res.writeHead(401);
-        res.end('Invalid signature');
+        res.end('Unauthorized');
         return;
       }
 
@@ -130,23 +112,21 @@ server.listen(PORT, () => {
   console.log(`Webhook handler listening on port ${PORT}`);
   console.log(`Webhook endpoint: POST http://localhost:${PORT}/webhook`);
   console.log(`Health check: GET http://localhost:${PORT}/health`);
-  console.log('\nTo register this webhook with Digital Samba:');
+  console.log('\nList the event names available to your team:');
+  console.log(`
+curl https://api.digitalsamba.com/api/v1/events \\
+  -H "Authorization: Bearer YOUR_DEVELOPER_KEY"
+`);
+  console.log('To register this webhook with Digital Samba:');
   console.log(`
 curl -X POST https://api.digitalsamba.com/api/v1/webhooks \\
   -H "Authorization: Bearer YOUR_DEVELOPER_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "endpoint": "https://your-domain.com/webhook",
-    "events": [
-      "session.started",
-      "session.ended",
-      "participant.joined",
-      "participant.left",
-      "recording.started",
-      "recording.stopped",
-      "recording.ready"
-    ],
-    "secret": "${WEBHOOK_SECRET}"
+    "name": "My webhook",
+    "events": ["participant_joined", "participant_left"],
+    "authorization_header": "${WEBHOOK_TOKEN}"
   }'
 `);
 });

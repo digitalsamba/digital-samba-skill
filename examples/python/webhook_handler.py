@@ -3,53 +3,48 @@
 Digital Samba - Webhook Handler (Python/FastAPI)
 
 Demonstrates:
-- Setting up webhook endpoints
-- Verifying webhook signatures
+- Setting up a webhook endpoint
+- Authenticating incoming webhooks
 - Handling different event types
 
 Usage:
     pip install fastapi uvicorn
-    WEBHOOK_SECRET=your-secret uvicorn webhook_handler:app --reload
+    DS_WEBHOOK_TOKEN=your-token uvicorn webhook_handler:app --reload
 """
 
 import os
 import hmac
-import hashlib
 from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, Request, HTTPException, Header
 
 app = FastAPI(title='Digital Samba Webhook Handler')
 
-WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET', 'your-webhook-secret')
+# The bearer token you set as `authorization_header` when creating the webhook.
+# Digital Samba sends it verbatim in the Authorization header of every delivery.
+WEBHOOK_TOKEN = os.environ.get('DS_WEBHOOK_TOKEN', 'your-webhook-token')
 
 
-def verify_signature(payload: bytes, signature: str) -> bool:
-    """Verify the webhook signature using HMAC-SHA256."""
-    expected = hmac.new(
-        WEBHOOK_SECRET.encode(),
-        payload,
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac.compare_digest(signature, expected)
+def verify_authorization(header_value: Optional[str]) -> bool:
+    """Constant-time check of the Authorization header against our token."""
+    if not header_value:
+        return False
+    return hmac.compare_digest(header_value, WEBHOOK_TOKEN)
 
 
-# Event handlers
-def handle_session_started(data: dict):
-    print(f'Meeting started in room {data.get("room_id")}')
-    print(f'Session ID: {data.get("session_id")}')
-
-
-def handle_session_ended(data: dict):
-    print(f'Meeting ended in room {data.get("room_id")}')
-    print(f'Duration: {data.get("duration")} seconds')
-
-
+# Event handlers.
+#
+# 'participant_joined' and 'participant_left' are the two event names confirmed
+# by the API docs. Event names are snake_case. For the authoritative list of
+# events available to your team, call:
+#     GET https://api.digitalsamba.com/api/v1/events
+# Any event you subscribe to but do not handle here falls through to the
+# default branch in the endpoint below, which logs the name and payload.
 def handle_participant_joined(data: dict):
     print(f'{data.get("name")} joined room {data.get("room_id")}')
     print(f'Participant ID: {data.get("participant_id")}')
     if data.get('external_id'):
+        # Maps to your own user ID — the JWT 'ud' claim
         print(f'External ID: {data.get("external_id")}')
 
 
@@ -57,47 +52,21 @@ def handle_participant_left(data: dict):
     print(f'{data.get("name")} left room {data.get("room_id")}')
 
 
-def handle_recording_started(data: dict):
-    print(f'Recording started in room {data.get("room_id")}')
-
-
-def handle_recording_stopped(data: dict):
-    print(f'Recording stopped in room {data.get("room_id")}')
-
-
-def handle_recording_ready(data: dict):
-    print(f'Recording ready: {data.get("recording_id")}')
-    print('Download URL available via API')
-
-
-def handle_transcript_ready(data: dict):
-    print(f'Transcript ready for session {data.get("session_id")}')
-
-
 EVENT_HANDLERS = {
-    'session.started': handle_session_started,
-    'session.ended': handle_session_ended,
-    'participant.joined': handle_participant_joined,
-    'participant.left': handle_participant_left,
-    'recording.started': handle_recording_started,
-    'recording.stopped': handle_recording_stopped,
-    'recording.ready': handle_recording_ready,
-    'transcript.ready': handle_transcript_ready,
+    'participant_joined': handle_participant_joined,
+    'participant_left': handle_participant_left,
 }
 
 
 @app.post('/webhook')
 async def webhook(
     request: Request,
-    x_signature: Optional[str] = Header(None)
+    authorization: Optional[str] = Header(None)
 ):
     """Handle incoming webhooks from Digital Samba."""
-    body = await request.body()
-
-    # Verify signature if provided
-    if x_signature:
-        if not verify_signature(body, x_signature):
-            raise HTTPException(status_code=401, detail='Invalid signature')
+    # Authenticate the delivery before trusting anything in the body
+    if not verify_authorization(authorization):
+        raise HTTPException(status_code=401, detail='Unauthorized')
 
     try:
         event = await request.json()
@@ -136,6 +105,11 @@ async def root():
         'webhook_endpoint': '/webhook',
         'health_endpoint': '/health',
         'setup': '''
+List the event names available to your team:
+
+curl https://api.digitalsamba.com/api/v1/events \\
+  -H "Authorization: Bearer YOUR_DEVELOPER_KEY"
+
 To register this webhook with Digital Samba:
 
 curl -X POST https://api.digitalsamba.com/api/v1/webhooks \\
@@ -143,16 +117,9 @@ curl -X POST https://api.digitalsamba.com/api/v1/webhooks \\
   -H "Content-Type: application/json" \\
   -d '{
     "endpoint": "https://your-domain.com/webhook",
-    "events": [
-      "session.started",
-      "session.ended",
-      "participant.joined",
-      "participant.left",
-      "recording.started",
-      "recording.stopped",
-      "recording.ready"
-    ],
-    "secret": "your-webhook-secret"
+    "name": "My webhook",
+    "events": ["participant_joined", "participant_left"],
+    "authorization_header": "your-webhook-token"
   }'
 '''
     }

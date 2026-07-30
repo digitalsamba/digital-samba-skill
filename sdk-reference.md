@@ -1,7 +1,7 @@
 # Digital Samba Embedded SDK Reference
 
 **Package**: `@digitalsamba/embedded-sdk`
-**Version**: 0.0.56
+**Version**: 0.0.57
 **License**: BSD-2-Clause
 
 ## Installation
@@ -69,9 +69,11 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 | `root` | HTMLElement | Container element for iframe |
 | `frame` | HTMLIFrameElement | Existing iframe to control |
 | `team` | string | Team identifier (alternative to url) |
+| `cname` | string | Custom domain (alternative to `team`); combined with `room` to build `https://<cname>/<room>` |
 | `room` | string | Room identifier (alternative to url) |
 | `token` | string | JWT token (alternative to url) |
 | `roomSettings` | object | Room settings overrides (see below) |
+| `templateParams` | object | `Record<string, string>` of template parameters, sent to the room once the frame connects |
 
 **roomSettings options:**
 
@@ -89,13 +91,32 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 | `showTopbar` | boolean | Show/hide topbar |
 | `joinScreenEnabled` | boolean | Show/hide the join screen (name/device entry) before entering the room |
 | `showCaptions` | boolean | Show captions initially |
-| `virtualBackground` | object | Pre-configure virtual background |
+| `virtualBackground` | object | Pre-configure virtual background (same shape as `enableVirtualBackground` — see [Virtual Background](#virtual-background)) |
 | `virtualBackgrounds` | array | Custom background options |
 | `replaceVirtualBackgrounds` | boolean | Replace default backgrounds |
 | `appLanguage` | string | UI language |
 | `muteFrame` | boolean | Start with frame muted |
 | `mediaDevices` | object | Pre-select audio/video devices |
 | `requireRemoveUserConfirmation` | boolean | Confirm before removing users |
+
+### InstanceProperties (second argument)
+
+Both the constructor and `createControl()` take an optional second argument controlling the iframe element and error handling. `load()` accepts the same object.
+
+```javascript
+const sambaFrame = DigitalSambaEmbedded.createControl(
+  { url: roomUrl, root: container },
+  {
+    frameAttributes: { class: 'ds-frame', width: '100%', height: '600' },
+    reportErrors: true
+  }
+);
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `frameAttributes` | object | Attributes applied to the generated iframe. Accepts `class` plus any `HTMLIFrameElement` property |
+| `reportErrors` | boolean | When `true`, configuration errors are thrown instead of logged to the console. Defaults to `false` |
 
 ---
 
@@ -156,10 +177,12 @@ interface RoomState {
   media: {
     videoEnabled: boolean;
     audioEnabled: boolean;
+    // Partial<Record<MediaDeviceKind, string>> — starts empty, keys appear
+    // as devices are selected. Values are device LABELS, not device IDs.
     activeDevices: {
-      videoinput: string;
-      audioinput: string;
-      audiooutput: string;
+      videoinput?: string;
+      audioinput?: string;
+      audiooutput?: string;
     }
   };
   layout: {
@@ -190,14 +213,16 @@ interface RoomState {
 
 Check user permissions.
 
+> **Permission strings are `snake_case`.** The `PermissionTypes` enum has camelCase *keys* but snake_case *values*, and the values are what the lookup uses — `PermissionTypes.remoteMuting` is the string `'remote_muting'`. Passing `'remoteMuting'` silently returns `false`. In TypeScript, import the enum rather than writing string literals.
+
 ```javascript
 // Check single permission
 const canBroadcast = sambaFrame.permissionManager.hasPermissions('broadcast');
 
-// Check multiple permissions
-const canModerate = sambaFrame.permissionManager.hasPermissions([
-  'remoteMuting',
-  'removeParticipant'
+// Check multiple permissions — returns true if ANY of them is granted
+const canDoSomeModeration = sambaFrame.permissionManager.hasPermissions([
+  'remote_muting',
+  'remove_participant'
 ]);
 
 // Check for specific role
@@ -205,26 +230,57 @@ const moderatorCanRecord = sambaFrame.permissionManager.hasPermissions(
   'recording',
   { targetRole: 'moderator' }
 );
+
+// Check another participant's permissions
+const theyCanShare = sambaFrame.permissionManager.hasPermissions(
+  'screenshare',
+  { userId: 'other-user-id' }
+);
 ```
 
-**Permission Types**:
-- `broadcast` - Send audio/video
-- `manageBroadcast` - Control others' broadcast
-- `endSession` - End meeting for all
-- `startSession` - Start meeting
-- `removeParticipant` - Kick users
-- `screenshare` - Share screen
-- `manageScreenshare` - Control others' screenshare
-- `recording` - Start/stop recording
-- `generalChat` - Send chat messages
-- `remoteMuting` - Mute other users
-- `askRemoteUnmute` - Request unmute
-- `raiseHand` - Raise hand
-- `manageRoles` - Change user roles
-- `inviteParticipant` - Invite users to room
-- `seeParticipantsPanel` - View participants list
-- `controlRoomEntry` - Control room entry (lobby)
-- `editWhiteboard` - Edit whiteboard content
+In TypeScript:
+
+```typescript
+import { PermissionTypes } from '@digitalsamba/embedded-sdk/dist/esm/utils/vars';
+
+sambaFrame.permissionManager.hasPermissions(PermissionTypes.remoteMuting);
+```
+
+`PermissionTypes` is a real enum, so it must come from a path with a runtime module — `dist/esm/` (or `dist/cjs/` for CommonJS builds). The declaration-only `dist/types/` tree has no `.js` files and will fail to resolve at runtime.
+
+**Options** (second argument, all optional):
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `targetRole` | string | Check the permission *against* another role (e.g. can I mute a moderator?) |
+| `role` | string | Check as if the local user held this role instead |
+| `userId` | string | Check another participant's permissions rather than the local user's |
+
+**Behaviour notes**:
+- Passing an array returns `true` if **any** listed permission is granted, not all of them.
+- Returns `false` while the local user is not yet resolved (before joining).
+
+**Permission Types** (enum key → string value to pass):
+
+| Enum key | String value | Description |
+|----------|--------------|-------------|
+| `broadcast` | `broadcast` | Send audio/video |
+| `manageBroadcast` | `manage_broadcast` | Control others' broadcast |
+| `endSession` | `end_session` | End meeting for all |
+| `startSession` | `start_session` | Start meeting |
+| `removeParticipant` | `remove_participant` | Kick users |
+| `screenshare` | `screenshare` | Share screen |
+| `manageScreenshare` | `manage_screenshare` | Control others' screenshare |
+| `recording` | `recording` | Start/stop recording |
+| `generalChat` | `general_chat` | Send chat messages |
+| `remoteMuting` | `remote_muting` | Mute other users |
+| `askRemoteUnmute` | `ask_remote_unmute` | Request unmute |
+| `raiseHand` | `raise_hand` | Raise hand |
+| `manageRoles` | `manage_roles` | Change user roles |
+| `inviteParticipant` | `invite_participant` | Invite users to room |
+| `seeParticipantsPanel` | `see_participants_panel` | View participants list |
+| `controlRoomEntry` | `control_room_entry` | Control room entry (lobby) |
+| `editWhiteboard` | `edit_whiteboard` | Edit whiteboard content |
 
 ---
 
@@ -232,10 +288,12 @@ const moderatorCanRecord = sambaFrame.permissionManager.hasPermissions(
 
 ### Subscribing to Events
 
+Every handler receives the whole message object, `{ type, data }` — the payloads listed below are the contents of `event.data`.
+
 ```javascript
 // Subscribe to recurring events
 sambaFrame.on('userJoined', (event) => {
-  console.log(`${event.data.name} joined`);
+  console.log(`${event.data.user.name} joined`);
 });
 
 // One-time subscription
@@ -252,6 +310,8 @@ sambaFrame.on('*', (event) => {
 });
 ```
 
+> **Note on `'*'`**: the wildcard also fires for the SDK's synthetic emissions behind `addFrameEventListener`, `addUICallback`, and `addTileAction`. Those pass a raw payload with no `type` or `data` field, so `event.type` is `undefined` for them.
+
 ### Event Reference
 
 #### Connection Events
@@ -259,9 +319,11 @@ sambaFrame.on('*', (event) => {
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `frameLoaded` | - | iframe loaded and ready |
-| `userJoined` | `{ id, name, role }` | Local user joined room |
-| `userLeft` | `{ id, name }` | User left room |
-| `usersUpdated` | `User[]` | Participant list changed |
+| `connected` | - | Handshake with the room completed. Until this fires, SDK method calls are dropped |
+| `roomJoined` | - | Local user is in the room and `localUser`, `roomState`, `features`, and permissions are all populated. No `data` payload |
+| `userJoined` | `{ user: User, type }` | A user joined. Fires for **local and remote** users — `type` is `'local'` or `'remote'` |
+| `userLeft` | `{ user: User }` | User left room |
+| `usersUpdated` | `{ users: User[] }` | Participant list changed |
 | `sessionEnded` | - | Meeting ended |
 
 > **Note**: When many users leave at once, the room sends a single internal `userLeftBatch` message; the SDK expands it into individual `userLeft` events, so no separate handling is needed.
@@ -277,15 +339,15 @@ sambaFrame.on('*', (event) => {
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| `audioEnabled` | - | Local mic turned on |
-| `audioDisabled` | - | Local mic turned off |
-| `videoEnabled` | - | Local camera turned on |
-| `videoDisabled` | - | Local camera turned off |
+| `audioEnabled` | `{ type }` | Mic turned on. Fires for remote users too — check `type === 'local'` |
+| `audioDisabled` | `{ type }` | Mic turned off. Fires for remote users too — check `type === 'local'` |
+| `videoEnabled` | `{ type }` | Camera turned on. Fires for remote users too — check `type === 'local'` |
+| `videoDisabled` | `{ type }` | Camera turned off. Fires for remote users too — check `type === 'local'` |
 | `screenshareStarted` | `{ userId }` | Screen sharing began |
 | `screenshareStopped` | `{ userId }` | Screen sharing ended |
-| `activeSpeakerChanged` | `{ userId }` | Active speaker changed |
+| `activeSpeakerChanged` | `{ user: User }` | Active speaker changed |
 | `speakerStoppedTalking` | `{ userId }` | Speaker went silent |
-| `mediaDeviceChanged` | `{ type, deviceId }` | Device selection changed |
+| `mediaDeviceChanged` | `{ previousDeviceLabel, label, kind, availableDevices }` | Device selection changed. Devices are identified by `label` + `kind` — there is no device ID in this payload |
 
 #### Recording Events
 
@@ -301,8 +363,8 @@ sambaFrame.on('*', (event) => {
 |-------|---------|-------------|
 | `layoutModeChanged` | `{ mode }` | Layout changed |
 | `appLanguageChanged` | `{ language }` | UI language changed |
-| `roomStateUpdated` | `RoomState` | Any room state changed |
-| `featureSetUpdated` | `FeatureSet` | Available features changed |
+| `roomStateUpdated` | `{ state: RoomState }` | Any room state changed |
+| `featureSetUpdated` | `{ state: FeatureSet }` | Available features changed |
 
 #### Layout Events
 
@@ -318,7 +380,7 @@ sambaFrame.on('*', (event) => {
 |-------|---------|-------------|
 | `captionsEnabled` | - | Captions turned on |
 | `captionsDisabled` | - | Captions turned off |
-| `captionsFontSizeChanged` | `{ size }` | Caption size changed |
+| `captionsFontSizeChanged` | `{ fontSize }` | Caption size changed |
 | `captionsSpokenLanguageChanged` | `{ language }` | Spoken language changed |
 
 #### Interaction Events
@@ -328,14 +390,14 @@ sambaFrame.on('*', (event) => {
 | `handRaised` | `{ userId }` | User raised hand |
 | `handLowered` | `{ userId }` | User lowered hand |
 | `chatMessageReceived` | `{ message, userId }` | Chat message received |
-| `roleChanged` | `{ userId, role }` | User role changed |
-| `permissionsChanged` | `{ permissions }` | Permissions updated |
+| `roleChanged` | `{ userId, to }` | User role changed — `to` is the new role |
+| `permissionsChanged` | `Record<permission, boolean>` | Permissions updated. `event.data` **is** the map of permission name to granted flag — there is no wrapper key |
 
 #### Virtual Background Events
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| `virtualBackgroundChanged` | `{ type, value }` | Background changed |
+| `virtualBackgroundChanged` | `{ virtualBackgroundConfig: { type, value, enforced, name } }` | Background changed |
 | `virtualBackgroundDisabled` | - | Background disabled |
 
 #### Error Events
@@ -356,7 +418,7 @@ Every SDK method at a glance. Use exact names below — see detailed docs in sec
 |----------|--------|-------------|
 | **Lifecycle** | `load()` | Load the iframe (deferred mode) |
 | **Lifecycle** | `leaveSession()` | Leave the session |
-| **Lifecycle** | `endSession(showConfirm?)` | End session for all participants |
+| **Lifecycle** | `endSession(requireConfirmation?)` | End session for all participants. Defaults to `true` — pass `false` to skip the dialog |
 | **Video** | `enableVideo()` | Turn camera on |
 | **Video** | `disableVideo()` | Turn camera off |
 | **Video** | `toggleVideo(force?)` | Toggle or force camera state |
@@ -365,6 +427,8 @@ Every SDK method at a glance. Use exact names below — see detailed docs in sec
 | **Audio** | `toggleAudio(force?)` | Toggle or force mic state |
 | **Screenshare** | `startScreenshare()` | Start screen sharing |
 | **Screenshare** | `stopScreenshare()` | Stop screen sharing |
+| **Screenshare** | `startMobileScreenshare(options)` | Start screen sharing from a mobile SDK feed |
+| **Screenshare** | `stopMobileScreenshare(options)` | Stop a mobile screenshare feed |
 | **Recording** | `startRecording()` | Start recording |
 | **Recording** | `stopRecording()` | Stop recording |
 | **Restreaming** | `startRestreaming()` | Start RTMP restreaming |
@@ -376,7 +440,7 @@ Every SDK method at a glance. Use exact names below — see detailed docs in sec
 | **Moderation** | `requestMute(userId)` | Request user mute |
 | **Moderation** | `requestUnmute(userId)` | Request user unmute |
 | **Moderation** | `requestToggleAudio(userId, force?)` | Toggle user's audio |
-| **Broadcast** | `allowBroadcast(userId\|options)` | Grant broadcast permission |
+| **Broadcast** | `allowBroadcast(options)` | Grant broadcast permission. String `userId` form is deprecated |
 | **Broadcast** | `disallowBroadcast(userId)` | Revoke broadcast permission |
 | **Broadcast** | `allowScreenshare(userId)` | Grant screenshare permission |
 | **Broadcast** | `disallowScreenshare(userId)` | Revoke screenshare permission |
@@ -384,37 +448,37 @@ Every SDK method at a glance. Use exact names below — see detailed docs in sec
 | **Hand Raise** | `lowerHand(userId?)` | Lower hand (own or other's) |
 | **Toolbar** | `showToolbar()` | Show toolbar |
 | **Toolbar** | `hideToolbar()` | Hide toolbar |
-| **Toolbar** | `toggleToolbar()` | Toggle toolbar visibility |
+| **Toolbar** | `toggleToolbar(show?)` | Toggle or force toolbar visibility |
 | **Toolbar** | `changeToolbarPosition(pos)` | Move toolbar: `'left'\|'right'\|'bottom'` |
 | **Topbar** | `showTopbar()` | Show topbar |
 | **Topbar** | `hideTopbar()` | Hide topbar |
-| **Topbar** | `toggleTopbar()` | Toggle topbar visibility |
+| **Topbar** | `toggleTopbar(show?)` | Toggle or force topbar visibility |
 | **Layout** | `changeLayoutMode(mode)` | Set layout: `'auto'\|'tiled'` |
-| **Tiles** | `pinUser(userId, type?)` | Pin user's video tile |
-| **Tiles** | `unpinUser()` | Unpin current pinned tile |
-| **Tiles** | `maximizeUser(userId, type?)` | Maximize user's video tile |
-| **Tiles** | `minimizeUser()` | Minimize maximized tile |
+| **Tiles** | `pinUser(userId, tile?)` | Pin user's tile: `'media'` (default) or `'screenshare'` |
+| **Tiles** | `unpinUser()` | Unpin current pinned tile (alias of `minimizeContent()`) |
+| **Tiles** | `maximizeUser(userId, tile?)` | Maximize user's tile: `'media'` (default) or `'screenshare'` |
+| **Tiles** | `minimizeUser()` | Minimize maximized tile (alias of `minimizeContent()`) |
 | **Tiles** | `minimizeLocalTile()` | Minimize own tile |
 | **Tiles** | `maximizeLocalTile()` | Maximize own tile |
 | **Tiles** | `minimizeContent()` | Minimize pinned/maximized content |
 | **Frame Audio** | `muteFrame()` | Mute all iframe audio output |
 | **Frame Audio** | `unmuteFrame()` | Unmute iframe audio output |
-| **Frame Audio** | `toggleMuteFrame()` | Toggle iframe audio mute |
+| **Frame Audio** | `toggleMuteFrame(mute?)` | Toggle or force iframe audio mute |
 | **Captions** | `showCaptions()` | Show captions |
 | **Captions** | `hideCaptions()` | Hide captions |
-| **Captions** | `toggleCaptions()` | Toggle captions |
+| **Captions** | `toggleCaptions(show?)` | Toggle or force captions |
 | **Captions** | `configureCaptions(options)` | Set font size, language, apply to all |
-| **Virtual BG** | `enableVirtualBackground(options)` | Enable blur, image, or imageUrl background |
+| **Virtual BG** | `enableVirtualBackground(options)` | Enable a blur, image, or video background |
 | **Virtual BG** | `disableVirtualBackground()` | Disable virtual background |
-| **Virtual BG** | `configureVirtualBackground(options)` | Configure without enabling |
+| **Virtual BG** | `configureVirtualBackground(options)` | Alias of `enableVirtualBackground()` |
 | **Whiteboard** | `createWhiteboard(options)` | Create new whiteboard |
-| **Whiteboard** | `openWhiteboard(id)` | Open whiteboard |
-| **Whiteboard** | `closeWhiteboard(id)` | Close whiteboard |
-| **Whiteboard** | `toggleWhiteboard()` | Toggle whiteboard |
+| **Whiteboard** | `openWhiteboard(id?)` | Open whiteboard |
+| **Whiteboard** | `closeWhiteboard(id?)` | Close whiteboard |
+| **Whiteboard** | `toggleWhiteboard(show?, id?)` | Toggle or force whiteboard |
 | **Whiteboard** | `addImageToWhiteboard(options)` | Add image via URL or base64 |
 | **Library** | `openLibraryFile(fileId)` | Open library file |
-| **Library** | `closeLibraryFile(fileId)` | Close library file |
-| **Library** | `toggleLibraryFile(fileId)` | Toggle library file |
+| **Library** | `closeLibraryFile(fileId?)` | Close library file |
+| **Library** | `toggleLibraryFile(fileId?, show?)` | Toggle or force library file |
 | **Features** | `featureEnabled(name)` | Check if feature is enabled |
 | **Custom Tiles** | `addCustomTile(options)` | Add custom HTML tile |
 | **Custom Tiles** | `removeCustomTile(name)` | Remove custom tile |
@@ -453,6 +517,13 @@ sambaFrame.toggleAudio(false);   // Force disable
 sambaFrame.startScreenshare();
 sambaFrame.stopScreenshare();
 
+// Mobile screenshare (for feeds published by the mobile SDKs)
+sambaFrame.startMobileScreenshare({
+  feedId: 'feed-id',
+  streams: [{ type: 'video', mid: '0' }]
+});
+sambaFrame.stopMobileScreenshare({ feedId: 'feed-id', streams: [] });
+
 // Recording
 sambaFrame.startRecording();
 sambaFrame.stopRecording();
@@ -488,8 +559,10 @@ sambaFrame.requestToggleAudio('user-id', true); // Request mute
 
 ```javascript
 // Allow user to broadcast (moderator action)
+sambaFrame.allowBroadcast({ id: 'user-id', audio: true, video: false });
+
+// The bare string form still works but is deprecated
 sambaFrame.allowBroadcast('user-id');
-sambaFrame.allowBroadcast({ userId: 'user-id', audio: true, video: false });
 
 // Revoke broadcast permission
 sambaFrame.disallowBroadcast('user-id');
@@ -498,6 +571,8 @@ sambaFrame.disallowBroadcast('user-id');
 sambaFrame.allowScreenshare('user-id');
 sambaFrame.disallowScreenshare('user-id');
 ```
+
+`BroadcastOptions` is typed as `{ id, audio?, video? }` — the user identifier field is `id`, not `userId`. Omitting `audio`/`video` grants both.
 
 ### Hand Raising
 
@@ -516,13 +591,15 @@ sambaFrame.lowerHand('user-id');
 // Toolbar
 sambaFrame.showToolbar();
 sambaFrame.hideToolbar();
-sambaFrame.toggleToolbar();
+sambaFrame.toggleToolbar();      // Toggle current state
+sambaFrame.toggleToolbar(true);  // Force show
 sambaFrame.changeToolbarPosition('left'); // 'left' | 'right' | 'bottom'
 
 // Topbar
 sambaFrame.showTopbar();
 sambaFrame.hideTopbar();
 sambaFrame.toggleTopbar();
+sambaFrame.toggleTopbar(false);  // Force hide
 
 // Layout
 sambaFrame.changeLayoutMode('tiled'); // 'auto' | 'tiled'
@@ -531,9 +608,9 @@ sambaFrame.changeLayoutMode('tiled'); // 'auto' | 'tiled'
 ### Tile Management
 
 ```javascript
-// Pin user's video
+// Pin user's video — tile type is 'media' (default) or 'screenshare'
 sambaFrame.pinUser('user-id');
-sambaFrame.pinUser('user-id', 'screenshare'); // Pin specific tile type
+sambaFrame.pinUser('user-id', 'screenshare');
 sambaFrame.unpinUser();
 
 // Maximize user's video
@@ -549,13 +626,16 @@ sambaFrame.maximizeLocalTile();
 sambaFrame.minimizeContent();
 ```
 
+> `unpinUser()` and `minimizeUser()` are both aliases for `minimizeContent()` — all three clear whatever tile is currently pinned or maximized. There is no way to unpin one tile while leaving another maximized.
+
 ### Frame Audio
 
 ```javascript
 // Mute all audio output from iframe
 sambaFrame.muteFrame();
 sambaFrame.unmuteFrame();
-sambaFrame.toggleMuteFrame();
+sambaFrame.toggleMuteFrame();      // Toggle current state
+sambaFrame.toggleMuteFrame(true);  // Force mute
 ```
 
 ### Captions
@@ -563,7 +643,8 @@ sambaFrame.toggleMuteFrame();
 ```javascript
 sambaFrame.showCaptions();
 sambaFrame.hideCaptions();
-sambaFrame.toggleCaptions();
+sambaFrame.toggleCaptions();      // Toggle current state
+sambaFrame.toggleCaptions(true);  // Force show
 
 sambaFrame.configureCaptions({
   fontSize: 'large',            // 'small' | 'medium' | 'large'
@@ -574,28 +655,46 @@ sambaFrame.configureCaptions({
 
 ### Virtual Background
 
+The background is selected by **which key you set**, not by a `type`/`value` pair. Set exactly one of `blur`, `image`, `imageUrl`, `video`, or `videoUrl`.
+
 ```javascript
-// Enable blur
-sambaFrame.enableVirtualBackground({ type: 'blur' });
+// Blur — 'balanced' or 'strong'
+sambaFrame.enableVirtualBackground({ blur: 'balanced' });
 
-// Enable image
+// Image from the room's configured backgrounds
+sambaFrame.enableVirtualBackground({ image: 'background-name' });
+
+// Custom image URL
 sambaFrame.enableVirtualBackground({
-  type: 'image',
-  value: 'background-name'  // From configured backgrounds
+  imageUrl: 'https://example.com/background.jpg'
 });
 
-// Enable custom image URL
+// Video background
+sambaFrame.enableVirtualBackground({ video: 'background-name' });
 sambaFrame.enableVirtualBackground({
-  type: 'imageUrl',
-  value: 'https://example.com/background.jpg'
+  videoUrl: 'https://example.com/background.mp4'
 });
+
+// Prevent the participant from turning it off
+sambaFrame.enableVirtualBackground({ blur: 'strong', enforce: true });
 
 // Disable
 sambaFrame.disableVirtualBackground();
-
-// Configure (set options without enabling)
-sambaFrame.configureVirtualBackground({ type: 'blur' });
 ```
+
+**Options:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `blur` | `'balanced' \| 'strong'` | Blur the real background |
+| `image` | string | Name of one of the room's configured backgrounds |
+| `imageUrl` | string | URL of a custom image |
+| `video` | string | Name of one of the room's configured video backgrounds |
+| `videoUrl` | string | URL of a custom video |
+| `enforce` | boolean | Participant cannot disable the background |
+| `thumbnailUrl` | string | Thumbnail shown in the background picker |
+
+> `configureVirtualBackground()` is the same function as `enableVirtualBackground()` — it applies the background immediately rather than staging it. To pre-select a background before the user joins, use `roomSettings.virtualBackground` in `InitOptions` instead.
 
 ### Whiteboard
 
@@ -603,10 +702,11 @@ sambaFrame.configureVirtualBackground({ type: 'blur' });
 // Create new whiteboard
 sambaFrame.createWhiteboard({ personal: false, folderId: 'folder-id' });
 
-// Open/close whiteboard
+// Open/close whiteboard (id optional — omit to act on the current one)
 sambaFrame.openWhiteboard('whiteboard-id');
 sambaFrame.closeWhiteboard('whiteboard-id');
-sambaFrame.toggleWhiteboard();
+sambaFrame.toggleWhiteboard();            // Toggle current state
+sambaFrame.toggleWhiteboard(true, 'whiteboard-id'); // Force open a specific board
 
 // Add image to whiteboard (URL - requires CORS on external server)
 sambaFrame.addImageToWhiteboard({
@@ -625,8 +725,9 @@ sambaFrame.addImageToWhiteboard({
 ```javascript
 // Open file from library
 sambaFrame.openLibraryFile('file-id');
-sambaFrame.closeLibraryFile('file-id');
+sambaFrame.closeLibraryFile('file-id');   // id optional — omit to close the current file
 sambaFrame.toggleLibraryFile('file-id');
+sambaFrame.toggleLibraryFile('file-id', true); // Force open
 ```
 
 ### Session Control
@@ -636,9 +737,11 @@ sambaFrame.toggleLibraryFile('file-id');
 sambaFrame.leaveSession();
 
 // End session for everyone (requires permission)
-sambaFrame.endSession();
-sambaFrame.endSession(true); // Show confirmation dialog
+sambaFrame.endSession();       // Shows a confirmation dialog — this is the default
+sambaFrame.endSession(false);  // End immediately, no dialog
 ```
+
+> `endSession()` takes `requireConfirmation`, which **defaults to `true`**. A bare call prompts the user; pass `false` to end the session straight away.
 
 ### Feature Check
 
@@ -662,7 +765,7 @@ Add custom actions to the 3-dots menu on video tiles.
 sambaFrame.addTileAction(
   'sendEmail',                              // Action identifier
   { label: 'Send Email', scope: 'remote' }, // Properties
-  () => console.log('Send email clicked')   // Callback
+  (source) => console.log('clicked on', source) // Callback receives the source tile
 );
 
 // Remove the action
@@ -681,11 +784,11 @@ sambaFrame.removeTileAction('sendEmail');
 Add custom HTML panels to the video call UI.
 
 ```javascript
-// Add a custom tile (must be called after userJoined)
+// Add a custom tile (must be called after the room connects)
 sambaFrame.addCustomTile({
   name: 'poll-panel',           // Tile identifier and title
   html: '<div>Poll content</div>', // HTML content
-  position: 'last'              // 'first' or 'last' in tile list
+  position: 'last'              // 'first' (default) or 'last' in tile list
 });
 
 // Remove a custom tile
@@ -772,35 +875,45 @@ sambaFrame.changeBrandingOptions({
 
 ## TypeScript Support
 
+The package root exports only the `DigitalSambaEmbedded` class. Supporting types are **not** re-exported — import them from their own paths. Use the `dist/esm/` tree (or `dist/cjs/` for CommonJS): it carries both the declarations and the runtime modules, so it works for enums as well as types. `dist/types/` is declaration-only and has no `.js` files.
+
 ```typescript
-import DigitalSambaEmbedded, {
+import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
+import type {
   InitOptions,
   User,
   RoomState,
-  FeatureSet,
-  PermissionTypes
-} from '@digitalsamba/embedded-sdk';
+  FeatureSet
+} from '@digitalsamba/embedded-sdk/dist/esm/types';
+import { PermissionTypes } from '@digitalsamba/embedded-sdk/dist/esm/utils/vars';
 
 const sambaFrame: DigitalSambaEmbedded = DigitalSambaEmbedded.createControl({
   url: roomUrl,
   root: container
 });
 
-sambaFrame.on('userJoined', (event: { data: User }) => {
-  console.log(event.data.name);
+sambaFrame.on('userJoined', (event: { data: { user: User; type: 'local' | 'remote' } }) => {
+  console.log(event.data.user.name);
 });
 ```
 
 ---
 
-## Important: Wait for userJoined
+## Important: Wait Before Calling Methods
 
-Most methods have no effect before the user joins. Always wait:
+The SDK **silently drops every message** sent to the room until the handshake completes — internally, any call made before the `connected` event is discarded rather than queued. Calling `disableAudio()` too early does nothing at all, with no error.
+
+Wait for `roomJoined`, which fires once the local user is in the room and `localUser`, `roomState`, `features`, and permissions are all populated:
 
 ```javascript
-sambaFrame.once('userJoined', () => {
-  // Now safe to call methods
+sambaFrame.once('roomJoined', () => {
+  // Now safe to call methods and read state
   sambaFrame.disableAudio();
+  console.log(sambaFrame.localUser.name);
 });
 sambaFrame.load();
 ```
+
+`userJoined` also works in practice, since it arrives after the connection is established — but note it fires for remote participants too, so `once()` may resolve on someone else's arrival if you are not the first to join. `roomJoined` is the more precise signal.
+
+Exceptions that are safe to call before connecting: `on()`/`once()`/`off()`, and the queued registrations `addFrameEventListener()`, `addUICallback()`, and `addTileAction()` — these buffer and are replayed on connect.

@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-30
+
+Full audit of the skill against the OpenAPI spec and the published SDK package, with three independent verification passes (API reference vs spec, SDK reference vs @digitalsamba/embedded-sdk, cross-file consistency).
+
+### Fixed
+
+- **api-reference.md** — removed 8 documented endpoints that do not exist in the API (including the entire previous Statistics section and both Live Status count endpoints) and replaced them with the real endpoints; poll options now use `text` (previously documented as `label`, which the API rejects); removed the webhook `secret` field and HMAC/`X-Signature` signing mechanism (the real mechanism is the `authorization_header` bearer token); webhook event names corrected to snake_case (`participant_joined`, `participant_left`), with `GET /api/v1/events` documented as the authoritative list; fixed invalid permission names in the roles example (`chat` → `general_chat`, `emoji_reactions` → `room_reactions`); fixed room settings field names that don't exist in the API (`default_language` → `language`, `logo_url` → `custom_logo`, `toolbar` object → `toolbar_enabled`/`toolbar_position`/`toolbar_color`); `watermark_text` max length corrected from 50 to 150 chars
+- **sdk-reference.md** — corrected most event payload shapes (`userJoined` is `{ user, type }` and fires for remote users too, `userLeft` is `{ user }`, `usersUpdated` is `{ users }`, `permissionsChanged` data is the permission map itself, `roleChanged` uses `to`, `mediaDeviceChanged` identifies devices by `label`/`kind`, and 8 more); rewrote the virtual background API to the real option shape (`{ blur | image | imageUrl | video | videoUrl, enforce }` — the previously documented `{ type, value }` form does nothing); fixed inverted `endSession()` semantics (confirmation dialog is the default; pass `false` to skip); permission strings documented as snake_case with a working `PermissionTypes` import path; fixed the TypeScript import example (previous form didn't compile); `hasPermissions([...])` documented as OR, not AND
+- **SKILL.md / patterns.md / examples** — replaced the non-existent `connectionFailure` event (used in the quick start, six patterns, and the React hook) with the real error events `appError`, `mediaConnectionFailed`, `mediaPermissionsFailed`; removed invented error codes; replaced non-existent `destroy()` with `leaveSession()` + iframe removal; fixed `frame:`/`root:` misuse in two patterns; `lobby_enabled` → `lobby_message`; fixed an undefined variable and relative API URLs; webhook examples rewritten for snake_case events and `Authorization`-header verification (including a crash fix when comparing signatures of different lengths); Python token example no longer emits `"ud": null`
+
+### Added
+
+- **api-reference.md** — 49 previously undocumented endpoints, reaching full coverage of all 142 API operations: recording and transcription start/stop, archived recordings and unarchive, recording bookmarks, per-poll CRUD/results/export, phone participant lifecycle and hand controls, room participants and sessions, room resource deletion, library CRUD/folders/hierarchy/file links/webapps, `GET /api/v1/permissions`, `GET /api/v1/events`; all 127 room settings now documented in grouped tables (previously 44), plus team-only settings `domain` and `favicon`
+- **sdk-reference.md** — `connected` and `roomJoined` events, `startMobileScreenshare`/`stopMobileScreenshare`, `InitOptions.cname` and `templateParams`, the `InstanceProperties` second constructor argument (including `reportErrors`), optional arguments on toggle/open/close methods, and a corrected "wait before calling methods" section explaining that messages before `connected` are silently dropped
+- **examples/** now included in the release zip and manual install instructions
+
+### Changed
+
+- SDK reference version updated to 0.0.57 (verified metadata-only: the entire code delta from 0.0.56 is the `PACKAGE_VERSION` string)
+- Python examples README now recommends local JWT signing for production, consistent with jwt-tokens.md
+
 ## [1.1.14] - 2026-07-30
 
 ### Added

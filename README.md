@@ -59,6 +59,7 @@ git submodule add https://github.com/digitalsamba/digital-samba-skill.git .claud
 git clone https://github.com/digitalsamba/digital-samba-skill.git /tmp/ds-skill
 mkdir -p your-project/.claude/skills/digital-samba
 cp /tmp/ds-skill/{SKILL,api-reference,sdk-reference,patterns,jwt-tokens}.md /tmp/ds-skill/VERSION your-project/.claude/skills/digital-samba/
+cp -R /tmp/ds-skill/examples your-project/.claude/skills/digital-samba/
 ```
 
 ### Claude Desktop
@@ -130,7 +131,7 @@ to S3 and email users when their transcript is ready"
 | File | Description |
 |------|-------------|
 | `SKILL.md` | Quick start guide and overview |
-| `api-reference.md` | Complete REST API reference (97 endpoints) |
+| `api-reference.md` | Complete REST API reference (142 endpoints) |
 | `sdk-reference.md` | SDK methods, events, and properties |
 | `patterns.md` | Integration patterns + iframe sizing guide |
 | `jwt-tokens.md` | Token authentication and user identity |
@@ -146,7 +147,7 @@ The `examples/` directory contains ready-to-use code for common integration scen
 | File | Description |
 |------|-------------|
 | `basic-room.js` | Room provisioning (create, token, list, delete) |
-| `webhook-handler.js` | Express server for processing room events |
+| `webhook-handler.js` | Dependency-free HTTP server for processing room events |
 
 ### React
 

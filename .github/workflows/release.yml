@@ -27,6 +27,8 @@ jobs:
           # Skill files are now at repo root - zip them directly
           # Claude Desktop requires SKILL.md at root level of ZIP
           zip digital-samba.zip SKILL.md api-reference.md sdk-reference.md patterns.md jwt-tokens.md VERSION
+          # Bundle the code examples too, minus any local build artefacts
+          zip -r digital-samba.zip examples -x '*/__pycache__/*' '*.pyc' '*/node_modules/*' '*/.DS_Store'
           echo "Created digital-samba.zip"
           unzip -l digital-samba.zip
 

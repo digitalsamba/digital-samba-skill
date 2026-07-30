@@ -100,8 +100,11 @@ sambaFrame.on('frameLoaded', () => {
   console.log('iframe loaded, waiting for user to join...');
 });
 
+// e.data is { user, type } — type is 'local' for you, 'remote' for everyone else
 sambaFrame.on('userJoined', (e) => {
-  console.log(`Joined as ${e.data.name} (${e.data.role})`);
+  console.log(`${e.data.user.name} joined as ${e.data.user.role} (${e.data.type})`);
+
+  if (e.data.type !== 'local') return;
   // Now safe to call control methods
   document.getElementById('mute-btn').onclick = () => sambaFrame.toggleAudio();
   document.getElementById('camera-btn').onclick = () => sambaFrame.toggleVideo();
@@ -109,11 +112,15 @@ sambaFrame.on('userJoined', (e) => {
 });
 
 sambaFrame.on('userLeft', (e) => {
-  console.log(`${e.data.name} left`);
+  console.log(`${e.data.user.name} left`);
 });
 
-sambaFrame.on('connectionFailure', (e) => {
-  console.error('Connection failed:', e.data);
+sambaFrame.on('appError', (e) => {
+  console.error(`App error [${e.data.code}]: ${e.data.message}`);
+});
+
+sambaFrame.on('mediaConnectionFailed', () => {
+  console.error('Media connection failed — check network/firewall');
 });
 
 // 3. Load the iframe (triggers 'frameLoaded' → user sees join screen → 'userJoined')
@@ -143,7 +150,7 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 
 // Now you can listen to events and call methods
 sambaFrame.on('userJoined', (e) => {
-  console.log(`${e.data.name} joined as ${e.data.role}`);
+  console.log(`${e.data.user.name} joined as ${e.data.user.role}`);
 });
 
 sambaFrame.on('recordingStarted', () => {
@@ -187,36 +194,44 @@ export function EmbeddedRoom({ roomUrl, height = '100vh', onJoined, onLeft, onEr
     // Connection lifecycle
     sambaFrame.on('frameLoaded', () => setStatus('ready'));
 
+    // e.data is { user, type } — only the 'local' join means *we* are in the room
     sambaFrame.on('userJoined', (e) => {
-      setStatus('joined');
-      onJoined?.(e.data);
+      if (e.data.type === 'local') setStatus('joined');
+      onJoined?.(e.data.user);
     });
 
     sambaFrame.on('userLeft', (e) => {
-      setParticipants(prev => prev.filter(p => p.id !== e.data.id));
-      onLeft?.();
+      if (e.data.user.id === sambaFrame.localUser?.id) onLeft?.();
     });
 
+    // e.data is { users } — not a bare array
     sambaFrame.on('usersUpdated', (e) => {
-      setParticipants(e.data.map((u: any) => ({ id: u.id, name: u.name })));
+      setParticipants(e.data.users.map((u: any) => ({ id: u.id, name: u.name })));
     });
 
     // Error handling
-    sambaFrame.on('connectionFailure', (e) => {
+    sambaFrame.on('mediaConnectionFailed', () => {
       setStatus('error');
-      onError?.(e.data?.error || 'Connection failed');
+      onError?.('Media connection failed — check network/firewall');
+    });
+
+    sambaFrame.on('mediaPermissionsFailed', () => {
+      onError?.('Camera/microphone access was denied');
     });
 
     sambaFrame.on('appError', (e) => {
       onError?.(e.data?.message || 'Application error');
     });
 
-    // Load the iframe
-    sambaFrame.load();
+    // Load the iframe. reportErrors makes setup problems (bad URL, insecure
+    // context) throw instead of only logging to the console.
+    sambaFrame.load({ reportErrors: true });
 
-    // Cleanup on unmount
+    // Cleanup on unmount: leave the session, then remove the injected iframe.
+    // The SDK has no destroy() — without removing the frame, a remount stacks iframes.
     return () => {
-      sambaRef.current?.leaveSession();
+      sambaFrame.leaveSession();
+      sambaFrame.frame?.remove();
       sambaRef.current = null;
     };
   }, [roomUrl]);
@@ -362,16 +377,17 @@ The JWT `role` claim sets the user's initial role when they enter the room (see 
 
 ```javascript
 // Initial role is set in the JWT (e.g., role: 'attendee')
-// Promote to speaker dynamically when they raise their hand:
+// Promote to speaker dynamically when they raise their hand.
+// handRaised/handLowered carry { userId } only — use getUser() for the name.
 sambaFrame.on('handRaised', (e) => {
-  const userId = e.data.id;
-  console.log(`${e.data.name} raised hand — promoting to speaker`);
+  const { userId } = e.data;
+  console.log(`${sambaFrame.getUser(userId)?.name ?? userId} raised hand — promoting to speaker`);
   sambaFrame.changeRole(userId, 'speaker');
 });
 
 // Demote back to attendee when hand is lowered
 sambaFrame.on('handLowered', (e) => {
-  sambaFrame.changeRole(e.data.id, 'attendee');
+  sambaFrame.changeRole(e.data.userId, 'attendee');
 });
 ```
 
@@ -386,9 +402,11 @@ Best for: Custom UIs, programmatic control
 ```javascript
 import DigitalSambaEmbedded from '@digitalsamba/embedded-sdk';
 
+// Use `root` for a container element the SDK injects an iframe into.
+// `frame` is only for an <iframe> element you already placed yourself.
 const sambaFrame = DigitalSambaEmbedded.createControl({
   url: roomUrl,
-  frame: document.getElementById('video-container')
+  root: document.getElementById('video-container')
 });
 
 // React to events
@@ -409,20 +427,24 @@ sambaFrame.load();
 Best for: Calendar integrations, booking systems
 
 ```javascript
-// Create room with time constraints
+// Create room with time constraints.
+// is_locked means arrivals wait for approval; lobby_message is what they see.
 const meeting = await createRoom({
   friendly_url: `meeting-${Date.now()}`,
   is_locked: true,
   session_length: 60,
-  lobby_enabled: true
+  lobby_message: 'The host will let you in shortly.'
 });
 
 // Generate invite tokens
-const invites = participants.map(p => ({
-  email: p.email,
-  token: generateRoomToken(p, meeting.id),
-  joinUrl: `https://${TEAM_DOMAIN}.digitalsamba.com/${meeting.friendly_url}?token=${token}`
-}));
+const invites = participants.map(p => {
+  const token = generateRoomToken(p, meeting.id);
+  return {
+    email: p.email,
+    token,
+    joinUrl: `https://${TEAM_DOMAIN}.digitalsamba.com/${meeting.friendly_url}?token=${token}`
+  };
+});
 
 // Send invitations via email
 await sendMeetingInvites(invites);
@@ -455,20 +477,25 @@ const attendeeToken = generateToken({ role: 'attendee', ... });
 ## Pattern 6: Recording & Playback
 
 ```javascript
+// Server-side only — these calls use the developer key, never expose them to a browser
+const API = 'https://api.digitalsamba.com/api/v1';
+
 // Start recording programmatically
-await fetch(`/api/v1/rooms/${roomId}/recordings/start`, {
+await fetch(`${API}/rooms/${roomId}/recordings/start`, {
   method: 'POST',
   headers: { 'Authorization': `Bearer ${DEVELOPER_KEY}` }
 });
 
-// Or via SDK
+// Or from the client, via SDK (no developer key needed)
 sambaFrame.startRecording();
 
 // Later: List and download recordings
-const recordings = await fetch('/api/v1/recordings').then(r => r.json());
+const recordings = await fetch(`${API}/recordings`, {
+  headers: { 'Authorization': `Bearer ${DEVELOPER_KEY}` }
+}).then(r => r.json());
 
 for (const rec of recordings.data) {
-  const downloadUrl = `/api/v1/recordings/${rec.id}/download`;
+  const downloadUrl = `${API}/recordings/${rec.id}/download`;
   // Store or process recording
 }
 ```
@@ -584,30 +611,34 @@ function VirtualClassroom({ courseId }) {
       }
       const { joinUrl } = await res.json();
 
-      // Initialize SDK
+      // Initialize SDK — `root` is a container the SDK injects an iframe into
       const sambaFrame = DigitalSambaEmbedded.createControl({
         url: joinUrl,
-        frame: containerRef.current
+        root: containerRef.current
       });
 
-      // Track attendance
-      sambaFrame.on('userJoined', (e) => {
-        setParticipants(prev => [...prev, { id: e.data.id, name: e.data.name }]);
-      });
-      sambaFrame.on('userLeft', (e) => {
-        setParticipants(prev => prev.filter(p => p.id !== e.data.id));
+      // Track attendance — usersUpdated carries the full roster as { users }
+      sambaFrame.on('usersUpdated', (e) => {
+        setParticipants(e.data.users.map(u => ({ id: u.id, name: u.name })));
       });
 
       // Connection status
       sambaFrame.on('frameLoaded', () => setStatus('connected'));
-      sambaFrame.on('connectionFailure', () => setStatus('error'));
+      sambaFrame.on('mediaConnectionFailed', () => setStatus('error'));
+      sambaFrame.on('appError', () => setStatus('error'));
 
-      sambaFrame.load();
+      sambaFrame.load({ reportErrors: true });
       sambaRef.current = sambaFrame;
     }
 
     joinClassroom();
-    return () => sambaRef.current?.destroy();
+
+    // The SDK has no destroy() — leave the session, then remove the injected iframe
+    return () => {
+      sambaRef.current?.leaveSession();
+      sambaRef.current?.frame?.remove();
+      sambaRef.current = null;
+    };
   }, [courseId]);
 
   return (
@@ -632,15 +663,28 @@ function VirtualClassroom({ courseId }) {
 ### Server-side: Attendance Tracking via Webhooks
 
 ```javascript
-// Set up a webhook to track student attendance automatically
+// Set up a webhook to track student attendance automatically.
 // First, register the webhook via API:
-// POST /api/v1/webhooks { endpoint: "https://yourschool.com/ds-webhook", events: ["participant.joined", "participant.left"] }
+//   POST /api/v1/webhooks {
+//     endpoint: "https://yourschool.com/ds-webhook",
+//     events: ["participant_joined", "participant_left"],
+//     authorization_header: "<a secret bearer token you choose>"
+//   }
+// Event names are snake_case. Call GET /api/v1/events for the authoritative
+// list of event names available to your team.
+
+const WEBHOOK_TOKEN = process.env.DS_WEBHOOK_TOKEN;
 
 app.post('/ds-webhook', (req, res) => {
+  // Digital Samba sends the value you set as `authorization_header`
+  if (req.get('Authorization') !== WEBHOOK_TOKEN) {
+    return res.sendStatus(401);
+  }
+
   const event = req.body;
 
   switch (event.event) {
-    case 'participant.joined':
+    case 'participant_joined':
       db.attendance.create({
         sessionId: event.data.session_id,
         participantId: event.data.external_id, // Maps to your user ID (from JWT 'ud' claim)
@@ -648,12 +692,15 @@ app.post('/ds-webhook', (req, res) => {
       });
       break;
 
-    case 'participant.left':
+    case 'participant_left':
       db.attendance.update(
         { sessionId: event.data.session_id, participantId: event.data.external_id },
         { leftAt: event.timestamp }
       );
       break;
+
+    default:
+      console.log(`Unhandled webhook event: ${event.event}`);
   }
 
   res.sendStatus(200);
@@ -839,7 +886,7 @@ API errors return JSON with this structure:
 | `POST /rooms` | `roles` | Required when `default_role` is set |
 | `POST /rooms` | `privacy` | Must be `"public"` or `"private"` |
 | `POST /rooms` | `session_length` | Must be between 1 and 1440 (minutes) |
-| `POST /recordings/start` | - | No active session in the room |
+| `POST /rooms/{room}/recordings/start` | - | No active session in the room |
 
 ### SDK Initialization Failure Diagnosis
 
@@ -935,17 +982,25 @@ async function checkConnectivity(teamDomain) {
 Wire up error and diagnostic events before calling `load()`:
 
 ```javascript
-// Connection failure — network issue, invalid URL, or room unavailable
-sambaFrame.on('connectionFailure', (e) => {
-  console.error('Connection failed:', e.data);
-  // e.data example: { error: "room_not_found" }
-  // e.data example: { error: "network_error" }
+// Application error — runtime errors from the embedded app.
+// e.data is { code, message }; inspect e.data.code to branch on the cause.
+sambaFrame.on('appError', (e) => {
+  console.error(`App error [${e.data.code}]: ${e.data.message}`);
 });
 
-// Application error — runtime errors from the embedded app
-sambaFrame.on('appError', (e) => {
-  console.error('App error:', e.data);
-  // e.data example: { code: "MEDIA_ACCESS_DENIED", message: "Camera permission denied" }
+// Media connection to the server could not be established (network/firewall)
+sambaFrame.on('mediaConnectionFailed', () => {
+  console.error('Media connection failed — check network and firewall rules');
+});
+
+// Browser denied camera/microphone access
+sambaFrame.on('mediaPermissionsFailed', () => {
+  console.error('Media permissions denied — user must grant camera/mic access');
+});
+
+// Recording could not be started or was interrupted
+sambaFrame.on('recordingFailed', (e) => {
+  console.error('Recording failed:', e.data);
 });
 
 // Debug: log all events during development
@@ -953,6 +1008,11 @@ sambaFrame.on('*', (e) => {
   console.debug('[DS Event]', e.type, e.data);
 });
 ```
+
+> **Setup errors are not events.** Problems detected before the room connects — insecure
+> context, invalid room URL, missing config, an `<iframe>` without an `allow` attribute —
+> are logged to the console rather than emitted. Call `sambaFrame.load({ reportErrors: true })`
+> during development to make the SDK throw them instead, so they surface in your error tracking.
 
 ### Full Diagnostic Initialization Example
 
@@ -977,12 +1037,16 @@ async function initializeRoom({ url, containerId, onReady, onError }) {
   const sambaFrame = DigitalSambaEmbedded.createControl({ url, root: container });
 
   // 4. Set up error listeners before load()
-  sambaFrame.on('connectionFailure', (e) => {
-    onError?.(`Connection failed: ${e.data?.error || 'unknown'}`);
-  });
-
   sambaFrame.on('appError', (e) => {
     onError?.(`App error [${e.data?.code}]: ${e.data?.message}`);
+  });
+
+  sambaFrame.on('mediaConnectionFailed', () => {
+    onError?.('Media connection failed — check network and firewall rules');
+  });
+
+  sambaFrame.on('mediaPermissionsFailed', () => {
+    onError?.('Camera/microphone access was denied by the browser');
   });
 
   // 5. Detect load timeout
@@ -992,7 +1056,13 @@ async function initializeRoom({ url, containerId, onReady, onError }) {
     onReady?.(sambaFrame);
   });
 
-  sambaFrame.load();
+  // reportErrors surfaces setup problems (bad URL, insecure context) as thrown errors
+  try {
+    sambaFrame.load({ reportErrors: true });
+  } catch (err) {
+    onError?.(`Failed to load room: ${err.message}`);
+    return null;
+  }
 
   setTimeout(() => {
     if (!loaded) {
@@ -1102,18 +1172,30 @@ async function diagnoseRoomFailure({ url, token, containerId, teamDomain }) {
 // diagnoseRoomFailure({ url: roomUrl, token, containerId: 'video-container', teamDomain: 'myteam' });
 ```
 
-### Known Error Codes
+### Error Events
 
-Error codes returned by SDK events:
+The SDK reports runtime problems through three events. Only `appError` carries a code, and
+the set of codes is not published — log `e.data.code` and branch on the values you actually
+observe rather than hardcoding a list.
 
-| Event | Code | Meaning | Solution |
-|-------|------|---------|----------|
-| `connectionFailure` | `room_not_found` | Room URL or ID is invalid | Verify room exists via `GET /api/v1/rooms/{room}` |
-| `connectionFailure` | `network_error` | Cannot reach Digital Samba servers | Check network/firewall, verify HTTPS |
-| `connectionFailure` | `token_invalid` | JWT signature or claims rejected | Regenerate token, verify developer key matches |
-| `appError` | `MEDIA_ACCESS_DENIED` | Browser denied camera/mic access | Check permissions policy, user must grant access |
-| `appError` | `MEDIA_NOT_FOUND` | No camera or microphone detected | Check device connections and browser device settings |
-| `appError` | `SCREEN_SHARE_DENIED` | Screen share permission denied | User cancelled the browser screen share prompt |
+| Event | Payload | Meaning | Where to look |
+|-------|---------|---------|---------------|
+| `appError` | `{ code, message }` | Runtime error from the embedded app | Log both fields; `message` is human-readable |
+| `mediaConnectionFailed` | - | Media connection to the server could not be established | Network, firewall, VPN, or restrictive proxy |
+| `mediaPermissionsFailed` | - | Browser denied camera/microphone access | Browser permission prompt, OS privacy settings, iframe `allow` attribute |
+| `recordingFailed` | `{ error }` | Recording could not start or was interrupted | Check the room's `recordings_enabled` setting and the user's role permissions |
+
+**Setup errors** are raised before any of the above can fire, and are logged to the console
+unless you pass `load({ reportErrors: true })`, which makes them throw. Each has a `name` you
+can match on:
+
+| Name | Meaning | Fix |
+|------|---------|-----|
+| `INSECURE_CONTEXT` | Page is not a secure context | Serve over HTTPS (`localhost` is exempt) |
+| `INVALID_URL` | Room URL could not be parsed | Check the URL passed as `url` |
+| `INVALID_INIT_CONFIG` | Neither a URL nor a team + room pair was supplied | Pass `url`, or both `team` and `room` |
+| `ALLOW_ATTRIBUTE_MISSING` | You supplied a `frame` whose `allow` attribute is missing | Add `allow="camera; microphone; display-capture; autoplay"` |
+| `UNKNOWN_TARGET` | The embedded app did not answer the handshake | Verify the room URL loads directly in a browser tab |
 
 ### API Error Handling Wrapper
 

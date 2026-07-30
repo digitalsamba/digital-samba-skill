@@ -55,10 +55,13 @@ def create_room_token(room_id: str, user_name: str, user_id: str = None, role: s
         'td': TEAM_ID,
         'rd': room_id,
         'u': user_name,
-        'ud': user_id,
         'role': role,
         'exp': int(time.time()) + 3600  # 1 hour
     }
+
+    # Only include 'ud' when we have one — sending null is not the same as omitting it
+    if user_id:
+        payload['ud'] = user_id
 
     return jwt.encode(payload, DEVELOPER_KEY, algorithm='HS256')
 

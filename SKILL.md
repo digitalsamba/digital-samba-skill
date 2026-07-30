@@ -58,8 +58,9 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
 });
 
 // Set up events before the iframe loads
-sambaFrame.on('userJoined', (e) => console.log(`${e.data.name} joined`));
-sambaFrame.on('connectionFailure', (e) => console.error('Failed:', e.data));
+sambaFrame.on('userJoined', (e) => console.log(`${e.data.user.name} joined`));
+sambaFrame.on('appError', (e) => console.error(`[${e.data.code}] ${e.data.message}`));
+sambaFrame.on('mediaConnectionFailed', () => console.error('Could not reach the media server'));
 
 sambaFrame.load(); // Now create and load the iframe
 ```
@@ -73,7 +74,7 @@ const sambaFrame = DigitalSambaEmbedded.createControl({
   frame: document.getElementById('video-frame') // Existing iframe element
 });
 
-sambaFrame.on('userJoined', (e) => console.log(`${e.data.name} joined`));
+sambaFrame.on('userJoined', (e) => console.log(`${e.data.user.name} joined`));
 ```
 
 > **Important**: The SDK iframe container must have explicit CSS dimensions (width + height). The iframe does **not** auto-size. See [Iframe Sizing](patterns.md#iframe-sizing-important) in patterns.md.
@@ -150,8 +151,10 @@ Assign roles via JWT `role` field. Common roles:
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | SDK won't load | Not a secure context | Serve over HTTPS (localhost exempt) — check `window.isSecureContext` |
-| `connectionFailure` event | Invalid room URL, network error, or room deleted | Verify room exists and URL is correct |
-| `appError` event | Runtime error (e.g., media permission denied) | Check `e.data.code` and `e.data.message` for details |
+| `appError` event | Runtime error from the embedded app | Check `e.data.code` and `e.data.message` for details |
+| `mediaConnectionFailed` event | Media connection to the server could not be established | Check network/firewall; verify the room URL and token |
+| `mediaPermissionsFailed` event | Browser denied camera/mic access | Prompt the user to grant permissions and reload |
+| Nothing happens, no events at all | Bad room URL or config, silently logged to console | Call `sambaFrame.load({ reportErrors: true })` to make init errors throw |
 | iframe blank / no video | Missing `allow` attribute | Add `allow="camera; microphone; display-capture; autoplay"` to iframe |
 
 For detailed troubleshooting steps, diagnostic code examples, and API error breakdowns, see the **[Troubleshooting & Diagnostics](patterns.md#troubleshooting--diagnostics)** section in patterns.md.

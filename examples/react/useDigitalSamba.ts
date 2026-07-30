@@ -85,18 +85,23 @@ export function useDigitalSamba({
       setIsLoaded(true);
     });
 
+    // userJoined payload is { user, type } — type is 'local' for the current user
     sambaFrame.on('userJoined', (event) => {
-      setIsJoined(true);
-      setLocalUser(event.data);
-      onUserJoined?.(event.data);
+      if (event.data.type === 'local') {
+        setIsJoined(true);
+        setLocalUser(event.data.user);
+      }
+      onUserJoined?.(event.data.user);
     });
 
+    // userLeft payload is { user }
     sambaFrame.on('userLeft', (event) => {
-      onUserLeft?.(event.data);
+      onUserLeft?.(event.data.user);
     });
 
+    // usersUpdated payload is { users } — not a bare array
     sambaFrame.on('usersUpdated', (event) => {
-      setParticipants(event.data);
+      setParticipants(event.data.users);
     });
 
     sambaFrame.on('recordingStarted', () => {
@@ -117,9 +122,16 @@ export function useDigitalSamba({
       onError?.(event.data);
     });
 
-    sambaFrame.on('connectionFailure', (event) => {
-      setError(event.data.error || 'Connection failed');
-      onError?.({ code: 'CONNECTION_FAILURE', message: event.data.error });
+    sambaFrame.on('mediaConnectionFailed', () => {
+      const message = 'Media connection failed — check network and firewall rules';
+      setError(message);
+      onError?.({ code: 'MEDIA_CONNECTION_FAILED', message });
+    });
+
+    sambaFrame.on('mediaPermissionsFailed', () => {
+      const message = 'Camera/microphone access was denied by the browser';
+      setError(message);
+      onError?.({ code: 'MEDIA_PERMISSIONS_FAILED', message });
     });
 
     // Auto-load if enabled
@@ -127,12 +139,12 @@ export function useDigitalSamba({
       sambaFrame.load();
     }
 
-    // Cleanup
+    // Cleanup. The SDK has no destroy() — leave the session, then remove the
+    // iframe it injected, otherwise a remount stacks iframes in the container.
     return () => {
-      if (sambaRef.current) {
-        sambaRef.current.leaveSession();
-        sambaRef.current = null;
-      }
+      sambaFrame.leaveSession();
+      sambaFrame.frame?.remove();
+      sambaRef.current = null;
       setIsLoaded(false);
       setIsJoined(false);
       setLocalUser(null);
