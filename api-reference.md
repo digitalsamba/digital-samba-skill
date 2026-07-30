@@ -93,6 +93,8 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `chat_reactions_extended_enabled` | boolean | team default | When enabled, participants can react to chat messages using an expanded set of emojis |
 | `virtual_backgrounds_v2_enabled` | boolean | team default | When enabled, participants will use the new virtual background engine |
 | `video_fit_mode_enabled` | boolean | team default | When enabled, participant video streams display in full without cropping. Participants can override this from the in-room settings menu, but only for their own view and only for that session |
+| `video_tile_layout_mode` | string | team default | Where the participant name and status icons appear on each video tile. `"top"`: name centered at the top, status icons grouped in the bottom left. `"bottom"`: name at the bottom left, status icons grouped in the top right |
+| `transcription_store_enabled` | boolean | team default | Store transcripts & summaries |
 | `connection_quality_indicator_enabled` | boolean | `false` | When enabled, participants can see their local connection quality indicator in the room |
 | `pin_panels_enabled` | boolean | team default | When enabled, roles with the relevant permission can force-pin tiles for everyone in the room |
 | `chat_persistence_enabled` | boolean | `false` | When enabled, public chat messages from previous sessions are retained and reloaded when rooms are reopened |
@@ -362,7 +364,7 @@ Delete all rooms that have any of the specified tags. Rooms with active sessions
 ## Room Tokens
 
 ### POST /api/v1/rooms/{room}/token
-Generate JWT access token for a room.
+Generate JWT access token for a room. `{room}` accepts the room UUID or the room friendly URL.
 
 **Request Body**:
 ```json
@@ -1013,6 +1015,16 @@ Upload a file to library.
 
 ### DELETE /api/v1/libraries/{library}/files/{file}
 Delete a library file.
+
+### POST /api/v1/libraries/{library}/whiteboards
+Create a new whiteboard file.
+
+**Request Body** (all fields optional):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `folder_id` | string | UUID of the parent library folder |
+| `private` | boolean | Whether the whiteboard is private |
 
 ---
 

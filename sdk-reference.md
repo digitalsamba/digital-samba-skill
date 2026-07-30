@@ -1,7 +1,7 @@
 # Digital Samba Embedded SDK Reference
 
 **Package**: `@digitalsamba/embedded-sdk`
-**Version**: 0.0.55
+**Version**: 0.0.56
 **License**: BSD-2-Clause
 
 ## Installation
@@ -263,6 +263,15 @@ sambaFrame.on('*', (event) => {
 | `userLeft` | `{ id, name }` | User left room |
 | `usersUpdated` | `User[]` | Participant list changed |
 | `sessionEnded` | - | Meeting ended |
+
+> **Note**: When many users leave at once, the room sends a single internal `userLeftBatch` message; the SDK expands it into individual `userLeft` events, so no separate handling is needed.
+
+#### Waiting Room Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `waitingUsersJoined` | `{ users: WaitingUser[] }` | Users joined the waiting room. Each `WaitingUser` has `id`, `name`, `role`, `avatarColor` |
+| `waitingUsersLeft` | `{ userIds }` | Users left the waiting room (admitted, denied, or gave up waiting) |
 
 #### Media Events
 

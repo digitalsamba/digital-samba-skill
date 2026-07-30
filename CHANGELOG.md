@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.13] - 2026-07-30
+
+### Added
+
+- New room settings (fixes #22):
+  - `video_tile_layout_mode` — choose where the participant name and status icons appear on each video tile (`top` or `bottom`)
+  - `transcription_store_enabled` — store transcripts & summaries (also available as a team default setting)
+- New endpoint `POST /libraries/{library}/whiteboards` — create a whiteboard file, with optional `folder_id` and new `private` flag
+- SDK waiting room events `waitingUsersJoined` and `waitingUsersLeft`, with a note that internal `userLeftBatch` messages are expanded into individual `userLeft` events (fixes #23)
+
+### Changed
+
+- SDK version updated to 0.0.56
+- `POST /rooms/{room}/token` documented to accept the room UUID or room friendly URL as the path parameter
+
 ## [1.1.12] - 2026-07-01
 
 ### Added
