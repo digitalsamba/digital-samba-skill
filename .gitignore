@@ -33,3 +33,6 @@ CLAUDE.md
 
 # Internal docs (not distributed)
 SDK-UNDOCUMENTED-FEATURES.md
+
+# Stored OpenAPI spec lives on the spec-data branch; local copy is scratch
+openapi-stored.yaml
