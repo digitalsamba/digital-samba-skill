@@ -35,13 +35,21 @@ function verifyAuthorization(headerValue) {
 
 // Event handlers.
 //
-// `participant_joined` and `participant_left` are the two event names confirmed
-// by the API docs. Event names are snake_case. For the authoritative list of
-// events available to your team, call:
-//   GET https://api.digitalsamba.com/api/v1/events
-// Any event you subscribe to but do not handle here falls through to the
-// default branch below, which logs the name and payload.
+// Event names are snake_case. See api-reference.md "Webhook Events" for the
+// full list (session/room lifecycle, participants, recordings, Q&A, content
+// library), or call GET https://api.digitalsamba.com/api/v1/events for the
+// current list for your team. Any event you subscribe to but do not handle
+// here falls through to the default branch below, which logs the name and
+// payload.
 const eventHandlers = {
+  session_started: (data) => {
+    console.log(`Session started in room ${data.room_id}`);
+  },
+
+  session_ended: (data) => {
+    console.log(`Session ended in room ${data.room_id}`);
+  },
+
   participant_joined: (data) => {
     console.log(`${data.name} joined room ${data.room_id}`);
     console.log(`Participant ID: ${data.participant_id}`);
@@ -53,6 +61,14 @@ const eventHandlers = {
 
   participant_left: (data) => {
     console.log(`${data.name} left room ${data.room_id}`);
+  },
+
+  recording_ready: (data) => {
+    console.log(`Recording ready in room ${data.room_id} — fetch the download link via GET /api/v1/recordings/{id}/download`);
+  },
+
+  session_transcript_ready: (data) => {
+    console.log(`Transcript ready for session ${data.session_id}`);
   }
 };
 

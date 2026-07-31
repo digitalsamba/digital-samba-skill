@@ -670,8 +670,8 @@ function VirtualClassroom({ courseId }) {
 //     events: ["participant_joined", "participant_left"],
 //     authorization_header: "<a secret bearer token you choose>"
 //   }
-// Event names are snake_case. Call GET /api/v1/events for the authoritative
-// list of event names available to your team.
+// Event names are snake_case — see api-reference.md "Webhook Events" for the
+// full list, or call GET /api/v1/events for the current list for your team.
 
 const WEBHOOK_TOKEN = process.env.DS_WEBHOOK_TOKEN;
 

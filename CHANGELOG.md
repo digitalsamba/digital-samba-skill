@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-07-31
+
+### Added
+
+- Full authoritative webhook event list (39 events) in api-reference.md, sourced from `GET /api/v1/events`, organized by category (session/room, participants, phone participants, recordings, Q&A, content library) — replaces the previous two-event placeholder
+- Webhook examples (Node and Python) gained handlers for `session_started`, `session_ended`, `recording_ready`, and `session_transcript_ready`
+
 ## [1.2.0] - 2026-07-30
 
 Full audit of the skill against the OpenAPI spec and the published SDK package, with three independent verification passes (API reference vs spec, SDK reference vs @digitalsamba/embedded-sdk, cross-file consistency).

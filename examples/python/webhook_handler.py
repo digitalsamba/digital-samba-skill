@@ -34,12 +34,20 @@ def verify_authorization(header_value: Optional[str]) -> bool:
 
 # Event handlers.
 #
-# 'participant_joined' and 'participant_left' are the two event names confirmed
-# by the API docs. Event names are snake_case. For the authoritative list of
-# events available to your team, call:
-#     GET https://api.digitalsamba.com/api/v1/events
-# Any event you subscribe to but do not handle here falls through to the
-# default branch in the endpoint below, which logs the name and payload.
+# Event names are snake_case. See api-reference.md "Webhook Events" for the
+# full list (session/room lifecycle, participants, recordings, Q&A, content
+# library), or call GET https://api.digitalsamba.com/api/v1/events for the
+# current list for your team. Any event you subscribe to but do not handle
+# here falls through to the default branch in the endpoint below, which logs
+# the name and payload.
+def handle_session_started(data: dict):
+    print(f'Session started in room {data.get("room_id")}')
+
+
+def handle_session_ended(data: dict):
+    print(f'Session ended in room {data.get("room_id")}')
+
+
 def handle_participant_joined(data: dict):
     print(f'{data.get("name")} joined room {data.get("room_id")}')
     print(f'Participant ID: {data.get("participant_id")}')
@@ -52,9 +60,22 @@ def handle_participant_left(data: dict):
     print(f'{data.get("name")} left room {data.get("room_id")}')
 
 
+def handle_recording_ready(data: dict):
+    print(f'Recording ready in room {data.get("room_id")} — '
+          'fetch the download link via GET /api/v1/recordings/{id}/download')
+
+
+def handle_session_transcript_ready(data: dict):
+    print(f'Transcript ready for session {data.get("session_id")}')
+
+
 EVENT_HANDLERS = {
+    'session_started': handle_session_started,
+    'session_ended': handle_session_ended,
     'participant_joined': handle_participant_joined,
     'participant_left': handle_participant_left,
+    'recording_ready': handle_recording_ready,
+    'session_transcript_ready': handle_session_transcript_ready,
 }
 
 

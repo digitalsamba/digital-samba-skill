@@ -1550,18 +1550,80 @@ Delete a webhook.
 Event names are snake_case.
 
 ### GET /api/v1/events
-Returns the authoritative list of event names available for `POST /api/v1/webhooks`. Query this endpoint rather than hardcoding names — the list grows over time.
+Returns the authoritative list of event names available for `POST /api/v1/webhooks`. The list below is current as of July 2026 — query this endpoint for the latest, as it grows over time.
 
 **Response**:
 ```json
-["participant_joined", "participant_left"]
+["session_started", "session_ended", "participant_joined", "..."]
 ```
+
+**Session & room**
+
+| Event | Triggered When |
+|-------|----------------|
+| `session_started` | Meeting begins |
+| `session_ended` | Meeting ends |
+| `session_summary_ready` | AI session summary is available |
+| `session_transcript_ready` | Session transcript is available |
+| `room_locked` | Room is locked |
+| `room_unlocked` | Room is unlocked |
+| `room_deleted` | Room is deleted |
+| `role_deleted` | Role is deleted |
+
+**Participants**
 
 | Event | Triggered When |
 |-------|----------------|
 | `participant_joined` | User joins room |
 | `participant_left` | User leaves room |
+| `participant_waiting_joined` | User enters the waiting room/lobby |
+| `participant_waiting_left` | User leaves the waiting room/lobby |
+| `participant_invited` | User is invited to the room |
+| `participant_hand_raised` | User raises hand |
+| `participant_hand_lowered` | User lowers hand |
+| `participant_avatar_uploaded` | User uploads an avatar |
+| `participant_avatar_deleted` | User's avatar is deleted |
 
-> Additional events (session, recording, and transcript lifecycle) are available. Call `GET /api/v1/events` for the current list for your team.
+**Phone participants**
+
+| Event | Triggered When |
+|-------|----------------|
+| `phone_participant_muted` | Phone participant is muted |
+| `phone_participant_unmuted` | Phone participant is unmuted |
+| `phone_participant_asked_to_unmute` | Phone participant is asked to unmute |
+
+**Recordings**
+
+| Event | Triggered When |
+|-------|----------------|
+| `recording_started` | Recording begins |
+| `recording_stopped` | Recording ends |
+| `recording_ready` | Recording processed and available |
+| `recording_deleted` | Recording is deleted |
+
+**Q&A**
+
+| Event | Triggered When |
+|-------|----------------|
+| `question_asked` | Question posted |
+| `question_answered` | Question answered |
+| `question_updated` | Question edited |
+| `question_dismissed` | Question dismissed |
+| `question_reopened` | Question reopened |
+| `question_deleted` | Question deleted |
+| `answer_updated` | Answer edited |
+| `answer_deleted` | Answer deleted |
+
+**Content library**
+
+| Event | Triggered When |
+|-------|----------------|
+| `file_added_to_library` | File uploaded to a library |
+| `file_renamed` | Library file renamed |
+| `file_deleted_from_library` | Library file deleted |
+| `file_processing_failed` | Uploaded file failed processing |
+| `folder_added_to_library` | Folder created in a library |
+| `folder_renamed` | Library folder renamed |
+| `folder_deleted_from_library` | Library folder deleted |
 
 **Authenticating deliveries**: Set `authorization_header` when creating the webhook. Digital Samba sends that value as the `Authorization` header on every delivery — compare it against your stored value before trusting the payload.
