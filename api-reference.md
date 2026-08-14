@@ -149,6 +149,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `end_session_enabled` | boolean | Show the "End session" button in the toolbar |
 | `leave_session_enabled` | boolean | Show the "Leave session" button in the toolbar |
 | `mute_sound_enabled` | boolean | Allow participants to locally mute room sound |
+| `local_mute_enabled` | boolean | Allow participants to mute anyone just for themselves, or isolate one person so they only hear that voice. Never changes what the rest of the room hears, and does not touch anyone's actual microphone |
 | `connection_quality_indicator_enabled` | boolean | Show participants their local connection quality indicator |
 | `connection_message_enabled` | boolean | Show a status notification when a weak connection occurs |
 | `room_reactions_enabled` | boolean | All participants can use emoji reactions |
