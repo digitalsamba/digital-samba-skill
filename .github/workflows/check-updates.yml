@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Fetch stored spec from spec-data branch
         run: |
@@ -49,8 +49,8 @@ jobs:
             REMOVED_OPS=$(comm -23 /tmp/old-ops.txt /tmp/new-ops.txt)
 
             # Extract new properties (boolean settings etc)
-            grep -B0 'type: boolean' openapi-new.yaml | grep -v 'type:' | sed 's/://g' | awk '{$1=$1};1' | sort -u > /tmp/new-bools.txt
-            grep -B0 'type: boolean' openapi-stored.yaml | grep -v 'type:' | sed 's/://g' | awk '{$1=$1};1' | sort -u > /tmp/old-bools.txt
+            grep -B1 'type: boolean' openapi-new.yaml | grep -v 'type:' | grep -v '^--$' | sed 's/://g' | awk '{$1=$1};1' | sort -u > /tmp/new-bools.txt
+            grep -B1 'type: boolean' openapi-stored.yaml | grep -v 'type:' | grep -v '^--$' | sed 's/://g' | awk '{$1=$1};1' | sort -u > /tmp/old-bools.txt
 
             NEW_PROPS=$(comm -13 /tmp/old-bools.txt /tmp/new-bools.txt)
 
