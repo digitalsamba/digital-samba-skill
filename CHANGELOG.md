@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.3] - 2026-08-21
+
+### Added
+
+- `global_lock_enabled` and `toolbar_lock_icon_enabled` room settings in api-reference.md, under Join, Lobby & Consent — global lock keeps everyone out once a moderator locks the room (except the first holder of `start_session` or `control_room_entry`, so the room can never lock everyone out), and the toolbar lock icon shows and toggles the current lock state
+
+### Notes
+
+- OpenAPI spec adds a `manage_present_content` role permission, bringing `GET /api/v1/permissions` to 58 keys — the count already documented in api-reference.md, so no change was needed there
+
 ## [1.2.2] - 2026-08-14
 
 ### Added

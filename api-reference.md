@@ -96,6 +96,8 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `join_screen_enabled` | boolean | Show name/device entry screen before joining |
 | `lobby_message` | string | Text shown to participants waiting in the lobby (3–1000 chars) |
 | `lobby_sound_enabled` | boolean | Play a sound whenever someone enters the lobby |
+| `global_lock_enabled` | boolean | When a moderator locks the room, nobody can join regardless of role or permissions. The first person with `start_session` or `control_room_entry` is still admitted, so the room can never lock everyone out. Complements `is_locked` |
+| `toolbar_lock_icon_enabled` | boolean | Show a lock icon in the toolbar for anyone permitted to lock the room. Indicates the current lock state and toggles it when clicked |
 | `consent_message_enabled` | boolean | Remind participants that joining implies consent to personal data processing |
 | `consent_message_type` | string | `"generic"` or `"custom"` |
 | `consent_message` | string | Custom consent message text |
