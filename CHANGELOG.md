@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.4] - 2026-09-01
+
+### Added
+
+- Shared Notes section in api-reference.md — `GET /api/v1/rooms/{room}/shared-notes/export` (`md`, `txt`, or `html`) and `DELETE /api/v1/rooms/{room}/shared-notes`, which starts a fresh document and returns `400` while a session is live
+- `locale` / `lang` query parameters documented on every export endpoint (chat, Q&A, polls, quizzes, room transcripts, session transcripts) — they set the language of column headers and labels, and `lang` is an alias used when `locale` is absent
+- `date_start` / `date_end` on `GET /api/v1/statistics/team/current` and `GET /api/v1/rooms/{room}/statistics/current`
+- Note that `DELETE /api/v1/rooms/{room}/resources` and `DELETE /api/v1/sessions/{session}/resources` return `400` when the room or session is live (the API changed this from `422`)
+
+### Changed
+
+- Export endpoints now take `locale` / `lang` as query parameters instead of an optional request body — the transcript, polls, and quiz export docs were showing a request-body table that no longer applies
+
+### Removed
+
+- `POST /api/v1/rooms/{room}/chat` — the send-chat-message endpoint was withdrawn from the API with no replacement. The Chat section now notes that its endpoints are read/export/delete only
+
 ## [1.2.3] - 2026-08-21
 
 ### Added

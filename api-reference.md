@@ -512,7 +512,7 @@ Update room settings.
 Delete a room.
 
 ### DELETE /api/v1/rooms/{room}/resources
-Hard delete all stored resource data for a room.
+Hard delete all stored resource data for a room. Returns `400` if the room has a live session.
 
 **Request Body** (optional):
 | Field | Type | Description |
@@ -573,6 +573,8 @@ Generate JWT access token for a room. `{room}` accepts the room UUID or the room
 
 ## Chat
 
+> **Note**: The chat endpoints are read/export/delete only. `POST /api/v1/rooms/{room}/chat`, which sent a message into an active session, was withdrawn from the API in August 2026 and there is no replacement — chat messages can only be posted by participants in the room.
+
 ### GET /api/v1/rooms/{room}/chat
 Retrieve chat messages.
 
@@ -602,19 +604,30 @@ Export chat as file.
 **Query Parameters**:
 - `session_id`
 - `format` - `txt` or `json`
-
-### POST /api/v1/rooms/{room}/chat
-Send a chat message to an active session.
-
-**Request Body**:
-```json
-{
-  "message": "Hello!"
-}
-```
+- `locale` - Language for column headers and labels: `en`, `it`, `de`, `es`
+- `lang` - Alias of `locale`, used when `locale` is not given
 
 ### DELETE /api/v1/rooms/{room}/chat
 Delete all chat messages for a room.
+
+---
+
+## Shared Notes
+
+The shared notes document is per-room and persists between sessions.
+
+### GET /api/v1/rooms/{room}/shared-notes/export
+Export the room's shared notes document as a file.
+
+**Query Parameters**:
+- `format` - `md` (default), `txt`, or `html`
+
+Returns the document as `text/plain`.
+
+### DELETE /api/v1/rooms/{room}/shared-notes
+Delete the room's shared notes document. A fresh, empty document is started the next time notes are opened in the room.
+
+Returns `204` on success, or `400` if the room has a live session — deleting mid-session would pull the document out from under the participants working in it.
 
 ---
 
@@ -666,6 +679,12 @@ Create a question in the room.
 
 ### GET /api/v1/rooms/{room}/questions/export
 Export Q&A as `txt` or `json`.
+
+**Query Parameters**:
+- `session_id`
+- `format` - `txt` or `json`
+- `locale` - Language for column headers and labels: `en`, `it`, `de`, `es`
+- `lang` - Alias of `locale`, used when `locale` is not given
 
 ### DELETE /api/v1/rooms/{room}/questions
 Delete all Q&A content.
@@ -773,13 +792,12 @@ Retrieve closed captions/transcripts.
 ### GET /api/v1/rooms/{room}/transcripts/export
 Export transcripts as `txt` or `json`.
 
-**Query Parameters**: `format` (`txt` or `json`)
-
-**Request Body** (optional):
-| Field | Type | Description |
-|-------|------|-------------|
-| `locale` | string | Export locale: `en`, `it`, `de`, `es` |
-| `lang` | string | Export language: `en`, `it`, `de`, `es` |
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `format` | string | `txt` or `json` |
+| `locale` | string | Language for column headers and labels: `en`, `it`, `de`, `es` |
+| `lang` | string | Alias of `locale`, used when `locale` is not given |
 
 ### DELETE /api/v1/rooms/{room}/transcripts
 Delete transcripts.
@@ -869,9 +887,7 @@ Poll results with vote counts and voters.
 ### GET /api/v1/rooms/{room}/polls/export
 Export polls.
 
-**Query Parameters**: `session_id`, `format` (`txt` or `json`)
-
-**Request Body** (optional): `locale` / `lang` — `en`, `it`, `de`, `es`
+**Query Parameters**: `session_id`, `format` (`txt` or `json`), `locale` / `lang` (`en`, `it`, `de`, `es`)
 
 ### POST /api/v1/rooms/{room}/polls/import
 Import polls from a CSV file.
@@ -1013,7 +1029,8 @@ Export quiz results.
 
 **Query Parameters**:
 - `format` - `csv`, `txt`, `json`, or `zip`
-- `locale` - Export language: `en`, `es`, `de`, `it`
+- `locale` - Language for column headers and labels: `en`, `it`, `de`, `es`
+- `lang` - Alias of `locale`, used when `locale` is not given
 
 ---
 
@@ -1106,13 +1123,12 @@ Get session transcripts.
 ### GET /api/v1/sessions/{session}/transcripts/export
 Export session transcripts as `txt` or `json`.
 
-**Query Parameters**: `format` (`txt` or `json`)
-
-**Request Body** (optional):
-| Field | Type | Description |
-|-------|------|-------------|
-| `locale` | string | Export locale: `en`, `it`, `de`, `es` |
-| `lang` | string | Export language: `en`, `it`, `de`, `es` |
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `format` | string | `txt` or `json` |
+| `locale` | string | Language for column headers and labels: `en`, `it`, `de`, `es` |
+| `lang` | string | Alias of `locale`, used when `locale` is not given |
 
 ### POST /api/v1/sessions/{session}/end
 End the specified live session.
@@ -1139,7 +1155,7 @@ Delete all quizzes for a session.
 Delete all recordings for a session.
 
 ### DELETE /api/v1/sessions/{session}/resources
-Hard delete all stored resource data for a specific session.
+Hard delete all stored resource data for a specific session. Returns `400` if the session is still live.
 
 **Request Body** (optional):
 | Field | Type | Description |
@@ -1469,7 +1485,7 @@ Team-wide statistics for a period.
 Team statistics for the current billing period.
 
 ### GET /api/v1/statistics/team/current
-Team-wide statistics for the current period. Accepts `metrics`.
+Team-wide statistics for the current period. Accepts `date_start`, `date_end`, `metrics`.
 
 ### GET /api/v1/statistics/totals
 Team statistics broken down by tag.
@@ -1500,7 +1516,7 @@ Statistics for a single room over a period. Accepts `date_start`, `date_end`, `m
 **Response**: Room metadata (`room_id`, `room_external_id`, `room_friendly_url`, `room_privacy`, …) plus per-device participation minutes, `broadcasted_minutes`, `subscribed_minutes`, `sessions`, `recorded_minutes`, `transcription_minutes`, `e2ee_minutes`, and similar counters.
 
 ### GET /api/v1/rooms/{room}/statistics/current
-Room statistics for the current period. Accepts `metrics`.
+Room statistics for the current period. Accepts `date_start`, `date_end`, `metrics`.
 
 ### GET /api/v1/sessions/{session}/statistics
 Statistics for a single session. Accepts `metrics`.
