@@ -713,7 +713,7 @@ paths:
                 domain:
                   type: string
                   description: 'Must contain only letters, numbers, dashes and underscores. Must not be one of docs, api, dev-api, staging-api, you, or dashboard Must be at least 3 characters. Must not be greater than 32 characters.'
-                  example: enim
+                  example: voluptatem
                 default_role:
                   type: string
                   description: 'Select a role to be assigned to participants who join with no token (shared link to public room) or with a token without a role. Role ID or name.'
@@ -963,15 +963,15 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in rooms and its recordings. Image URL or base64 encoded file source.'
-                  example: rerum
+                  example: ut
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: dolores
+                  example: explicabo
                 favicon:
                   type: string
                   description: 'You may add custom favicon to be displayed in rooms. Image URL or base64 encoded file source.'
-                  example: doloribus
+                  example: sapiente
                 recording_logo_enabled:
                   type: boolean
                   description: 'When enabled, the logo will be shown in recordings.'
@@ -1122,22 +1122,89 @@ paths:
                   example: false
               required:
                 - private_group_chat_roles
+  '/api/v1/rooms/{room}/shared-notes/export':
+    get:
+      summary: 'Export shared notes.'
+      operationId: exportSharedNotes
+      description: "Returns the room's shared notes document as a file."
+      parameters:
+        -
+          in: query
+          name: format
+          description: 'The export format. Defaults to md.'
+          example: md
+          required: false
+          schema:
+            type: string
+            description: 'The export format. Defaults to md.'
+            example: md
+            enum:
+              - md
+              - txt
+              - html
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'Text file - Shared notes'
+      tags:
+        - Rooms
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room or room friendly URL.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
+  '/api/v1/rooms/{room}/shared-notes':
+    delete:
+      summary: 'Delete shared notes.'
+      operationId: deleteSharedNotes
+      description: "Removes the room's shared notes document. A fresh, empty one is started the next\ntime notes are opened in the room. Not allowed while a session is running, because\nparticipants would lose the document they are working in."
+      parameters: []
+      responses:
+        204:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+                properties: {}
+        400:
+          description: 'Room has a live session'
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Cannot delete resources from a room that has an active session.'
+                properties:
+                  message:
+                    type: string
+                    example: 'Cannot delete resources from a room that has an active session.'
+      tags:
+        - Rooms
+    parameters:
+      -
+        in: path
+        name: room
+        description: 'The UUID of the room or room friendly URL.'
+        example: a853d608-e6cf-48eb-a3c9-7d089bbc09b0
+        required: true
+        schema:
+          type: string
   '/api/v1/rooms/{room}/chat':
     get:
       summary: 'Get chat messages.'
       operationId: getChatMessages
       description: '<small class="badge badge-blue">Paginated</small>'
       parameters:
-        -
-          in: query
-          name: session_id
-          description: 'UUID of the session.'
-          example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
-          required: false
-          schema:
-            type: string
-            description: 'UUID of the session.'
-            example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
         -
           in: query
           name: limit
@@ -1178,6 +1245,16 @@ paths:
             type: string
             description: 'The UUID of the chat message after which records will be returned.'
             example: null
+        -
+          in: query
+          name: session_id
+          description: 'UUID of the session.'
+          example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
+          required: false
+          schema:
+            type: string
+            description: 'UUID of the session.'
+            example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
       responses:
         200:
           description: ''
@@ -1259,57 +1336,6 @@ paths:
                           example: '2024-02-13T16:45:05.000000Z'
       tags:
         - Rooms
-    post:
-      summary: 'Send chat message.'
-      operationId: sendChatMessage
-      description: ''
-      parameters: []
-      responses:
-        404:
-          description: ''
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  -
-                    description: ''
-                    type: object
-                    example:
-                      message: 'Not Found'
-                      error: not-found
-                    properties:
-                      message:
-                        type: string
-                        example: 'Not Found'
-                      error:
-                        type: string
-                        example: not-found
-                  -
-                    description: ''
-                    type: object
-                    example:
-                      message: 'Not Found'
-                      error: not-found
-                    properties:
-                      message:
-                        type: string
-                        example: 'Not Found'
-                      error:
-                        type: string
-                        example: not-found
-      tags:
-        - Rooms
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  description: 'Chat message.'
-                  example: Hello!
     delete:
       summary: 'Delete chats by room.'
       operationId: deleteChatsByRoom
@@ -1343,6 +1369,36 @@ paths:
       parameters:
         -
           in: query
+          name: locale
+          description: 'Locale used for the column headers and labels in the exported file.'
+          example: en
+          required: false
+          schema:
+            type: string
+            description: 'Locale used for the column headers and labels in the exported file.'
+            example: en
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
+          name: lang
+          description: 'Alias of locale, used when locale is not given.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Alias of locale, used when locale is not given.'
+            example: null
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
           name: session_id
           description: 'UUID of the Session.'
           example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
@@ -1371,31 +1427,6 @@ paths:
                 example: 'Text file - Chat messages'
       tags:
         - Rooms
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  description: ''
-                  example: en
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
-                lang:
-                  type: string
-                  description: ''
-                  example: de
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
     parameters:
       -
         in: path
@@ -1411,6 +1442,36 @@ paths:
       operationId: exportQuestionsAndAnswers
       description: ''
       parameters:
+        -
+          in: query
+          name: locale
+          description: 'Locale used for the column headers and labels in the exported file.'
+          example: en
+          required: false
+          schema:
+            type: string
+            description: 'Locale used for the column headers and labels in the exported file.'
+            example: en
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
+          name: lang
+          description: 'Alias of locale, used when locale is not given.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Alias of locale, used when locale is not given.'
+            example: null
+            enum:
+              - en
+              - it
+              - de
+              - es
         -
           in: query
           name: session_id
@@ -1441,31 +1502,6 @@ paths:
                 example: 'Text file - Questions and answers'
       tags:
         - Rooms
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  description: ''
-                  example: es
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
-                lang:
-                  type: string
-                  description: ''
-                  example: en
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
     parameters:
       -
         in: path
@@ -1624,6 +1660,36 @@ paths:
       parameters:
         -
           in: query
+          name: locale
+          description: 'Locale used for the column headers and labels in the exported file.'
+          example: en
+          required: false
+          schema:
+            type: string
+            description: 'Locale used for the column headers and labels in the exported file.'
+            example: en
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
+          name: lang
+          description: 'Alias of locale, used when locale is not given.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Alias of locale, used when locale is not given.'
+            example: null
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
           name: format
           description: 'Export format (txt or json).'
           example: txt
@@ -1642,31 +1708,6 @@ paths:
                 example: 'Text file - Transcripts'
       tags:
         - Rooms
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  description: ''
-                  example: it
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
-                lang:
-                  type: string
-                  description: ''
-                  example: en
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
     parameters:
       -
         in: path
@@ -2254,19 +2295,19 @@ paths:
                     id:
                       type: string
                       description: 'Must be a valid UUID.'
-                      example: e5402e78-34ba-39fb-a210-0b92ee787ec5
+                      example: 42c3edd1-78c3-3084-9ea3-59c7d98cfd36
                       nullable: true
                     text:
                       type: string
                       description: 'Must be at least 1 character. Must not be greater than 512 characters.'
-                      example: jknmnfnrofpfmdv
+                      example: reqxdsvu
                   required:
                     - text
                   nullable: true
                 multiple:
                   type: boolean
                   description: 'Deprecated, use type=multiple instead.'
-                  example: true
+                  example: false
               required:
                 - options
     parameters:
@@ -2538,11 +2579,11 @@ paths:
                 time_limit_seconds:
                   type: integer
                   description: 'Must be at least 1.'
-                  example: 26
+                  example: 77
                 passing_score:
                   type: number
                   description: 'Must be at least 0. Must not be greater than 100.'
-                  example: 14
+                  example: 22
                 questions:
                   type: object
                   description: 'Must be an array of quiz questions.'
@@ -2682,10 +2723,10 @@ paths:
                 example:
                   data:
                     -
-                      id: ff48176f-d69c-300a-9393-2c9c2fa5090e
-                      description: 'Suscipit id quam.'
-                      topic: 'Suscipit id quam.'
-                      friendly_url: wZyppt3c7LoTxqwgQkJVh58_gL3z8V4I
+                      id: 4a56bfbb-443d-3591-af84-f3ed5ef54b5d
+                      description: 'Enim ratione sint.'
+                      topic: 'Enim ratione sint.'
+                      friendly_url: 6nm2ez9-l7F_DGO68L2BaMBEW8gO-zyP
                       privacy: public
                       max_participants: 100
                       max_broadcasters: 100
@@ -2761,18 +2802,18 @@ paths:
                       consent_message_type: generic
                       recordings_layout_mode: tiled
                       layout_mode_on_join: tiled
-                      room_url: 'https://c6150bf218f5fc023c520a941f81a24f.digitalsamba.com/wZyppt3c7LoTxqwgQkJVh58_gL3z8V4I'
-                      external_id: EXTID10134936
+                      room_url: 'https://ae091183dcc5f13941ab08635de9f6fe.digitalsamba.com/6nm2ez9-l7F_DGO68L2BaMBEW8gO-zyP'
+                      external_id: EXTID1051953242
                       transcription_auto_start_enabled: true
                       transcription_store_enabled: true
                       captions_language: en
-                      created_at: '2026-08-14T18:50:43Z'
-                      updated_at: '2026-08-14T18:50:43Z'
+                      created_at: '2026-08-28T14:24:11Z'
+                      updated_at: '2026-08-28T14:24:11Z'
                     -
-                      id: e01e7538-3508-3ff6-b210-df3fdd532943
-                      description: 'Pariatur et.'
-                      topic: 'Pariatur et.'
-                      friendly_url: pjzFtQRIk6eHXU3ni2-v4lOLmG5v6XMA
+                      id: 4f42e8ab-4705-3585-a6dc-6d6bf0dc9807
+                      description: 'Cum ea voluptatum.'
+                      topic: 'Cum ea voluptatum.'
+                      friendly_url: Hpvuv_mNiQ1P08oRW_Si4hlxE2kpmns_
                       privacy: public
                       max_participants: 100
                       max_broadcasters: 100
@@ -2848,23 +2889,23 @@ paths:
                       consent_message_type: generic
                       recordings_layout_mode: tiled
                       layout_mode_on_join: tiled
-                      room_url: 'https://b303e028e63bebf749e2938e4a7054a8.digitalsamba.com/pjzFtQRIk6eHXU3ni2-v4lOLmG5v6XMA'
-                      external_id: EXTID529857820
+                      room_url: 'https://10f9ad69b3e329effb431e0a649d8f0b.digitalsamba.com/Hpvuv_mNiQ1P08oRW_Si4hlxE2kpmns_'
+                      external_id: EXTID314287582
                       transcription_auto_start_enabled: true
                       transcription_store_enabled: true
                       captions_language: en
-                      created_at: '2026-08-14T18:50:43Z'
-                      updated_at: '2026-08-14T18:50:43Z'
+                      created_at: '2026-08-28T14:24:11Z'
+                      updated_at: '2026-08-28T14:24:11Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
                       -
-                        id: ff48176f-d69c-300a-9393-2c9c2fa5090e
-                        description: 'Suscipit id quam.'
-                        topic: 'Suscipit id quam.'
-                        friendly_url: wZyppt3c7LoTxqwgQkJVh58_gL3z8V4I
+                        id: 4a56bfbb-443d-3591-af84-f3ed5ef54b5d
+                        description: 'Enim ratione sint.'
+                        topic: 'Enim ratione sint.'
+                        friendly_url: 6nm2ez9-l7F_DGO68L2BaMBEW8gO-zyP
                         privacy: public
                         max_participants: 100
                         max_broadcasters: 100
@@ -2940,18 +2981,18 @@ paths:
                         consent_message_type: generic
                         recordings_layout_mode: tiled
                         layout_mode_on_join: tiled
-                        room_url: 'https://c6150bf218f5fc023c520a941f81a24f.digitalsamba.com/wZyppt3c7LoTxqwgQkJVh58_gL3z8V4I'
-                        external_id: EXTID10134936
+                        room_url: 'https://ae091183dcc5f13941ab08635de9f6fe.digitalsamba.com/6nm2ez9-l7F_DGO68L2BaMBEW8gO-zyP'
+                        external_id: EXTID1051953242
                         transcription_auto_start_enabled: true
                         transcription_store_enabled: true
                         captions_language: en
-                        created_at: '2026-08-14T18:50:43Z'
-                        updated_at: '2026-08-14T18:50:43Z'
+                        created_at: '2026-08-28T14:24:11Z'
+                        updated_at: '2026-08-28T14:24:11Z'
                       -
-                        id: e01e7538-3508-3ff6-b210-df3fdd532943
-                        description: 'Pariatur et.'
-                        topic: 'Pariatur et.'
-                        friendly_url: pjzFtQRIk6eHXU3ni2-v4lOLmG5v6XMA
+                        id: 4f42e8ab-4705-3585-a6dc-6d6bf0dc9807
+                        description: 'Cum ea voluptatum.'
+                        topic: 'Cum ea voluptatum.'
+                        friendly_url: Hpvuv_mNiQ1P08oRW_Si4hlxE2kpmns_
                         privacy: public
                         max_participants: 100
                         max_broadcasters: 100
@@ -3027,28 +3068,28 @@ paths:
                         consent_message_type: generic
                         recordings_layout_mode: tiled
                         layout_mode_on_join: tiled
-                        room_url: 'https://b303e028e63bebf749e2938e4a7054a8.digitalsamba.com/pjzFtQRIk6eHXU3ni2-v4lOLmG5v6XMA'
-                        external_id: EXTID529857820
+                        room_url: 'https://10f9ad69b3e329effb431e0a649d8f0b.digitalsamba.com/Hpvuv_mNiQ1P08oRW_Si4hlxE2kpmns_'
+                        external_id: EXTID314287582
                         transcription_auto_start_enabled: true
                         transcription_store_enabled: true
                         captions_language: en
-                        created_at: '2026-08-14T18:50:43Z'
-                        updated_at: '2026-08-14T18:50:43Z'
+                        created_at: '2026-08-28T14:24:11Z'
+                        updated_at: '2026-08-28T14:24:11Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: ff48176f-d69c-300a-9393-2c9c2fa5090e
+                          example: 4a56bfbb-443d-3591-af84-f3ed5ef54b5d
                         description:
                           type: string
-                          example: 'Suscipit id quam.'
+                          example: 'Enim ratione sint.'
                         topic:
                           type: string
-                          example: 'Suscipit id quam.'
+                          example: 'Enim ratione sint.'
                         friendly_url:
                           type: string
-                          example: wZyppt3c7LoTxqwgQkJVh58_gL3z8V4I
+                          example: 6nm2ez9-l7F_DGO68L2BaMBEW8gO-zyP
                         privacy:
                           type: string
                           example: public
@@ -3242,10 +3283,10 @@ paths:
                           example: tiled
                         room_url:
                           type: string
-                          example: 'https://c6150bf218f5fc023c520a941f81a24f.digitalsamba.com/wZyppt3c7LoTxqwgQkJVh58_gL3z8V4I'
+                          example: 'https://ae091183dcc5f13941ab08635de9f6fe.digitalsamba.com/6nm2ez9-l7F_DGO68L2BaMBEW8gO-zyP'
                         external_id:
                           type: string
-                          example: EXTID10134936
+                          example: EXTID1051953242
                         transcription_auto_start_enabled:
                           type: boolean
                           example: true
@@ -3257,10 +3298,10 @@ paths:
                           example: en
                         created_at:
                           type: string
-                          example: '2026-08-14T18:50:43Z'
+                          example: '2026-08-28T14:24:11Z'
                         updated_at:
                           type: string
-                          example: '2026-08-14T18:50:43Z'
+                          example: '2026-08-28T14:24:11Z'
                   total_count:
                     type: string
                     example: '2'
@@ -4047,11 +4088,11 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in this room and its recordings. Image URL or base64 encoded file source.'
-                  example: consequatur
+                  example: quia
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: est
+                  example: sunt
                 virtual_backgrounds_enabled:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
@@ -5419,11 +5460,11 @@ paths:
                 custom_logo:
                   type: string
                   description: 'You may add a custom logo to be displayed in this room and its recordings. Image URL or base64 encoded file source.'
-                  example: omnis
+                  example: est
                 application_logo:
                   type: string
                   description: 'You may add an application logo to be displayed in rooms join page. Image URL or base64 encoded file source.'
-                  example: aut
+                  example: ex
                 virtual_backgrounds_enabled:
                   type: boolean
                   description: 'When enabled, participants on desktop devices will be able to appear on virtual backgrounds.'
@@ -5654,7 +5695,7 @@ paths:
                 type: object
                 example: {}
                 properties: {}
-        422:
+        400:
           description: 'Room has a live session'
           content:
             application/json:
@@ -5994,7 +6035,7 @@ paths:
                 type: object
                 example: {}
                 properties: {}
-        422:
+        400:
           description: 'Session is live'
           content:
             application/json:
@@ -6037,22 +6078,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -6228,22 +6269,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -6681,6 +6722,36 @@ paths:
       parameters:
         -
           in: query
+          name: locale
+          description: 'Locale used for the column headers and labels in the exported file.'
+          example: en
+          required: false
+          schema:
+            type: string
+            description: 'Locale used for the column headers and labels in the exported file.'
+            example: en
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
+          name: lang
+          description: 'Alias of locale, used when locale is not given.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Alias of locale, used when locale is not given.'
+            example: null
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
           name: format
           description: 'Export format (txt or json).'
           example: txt
@@ -6699,31 +6770,6 @@ paths:
                 example: 'Text file - Transcripts'
       tags:
         - Sessions
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  description: ''
-                  example: de
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
-                lang:
-                  type: string
-                  description: ''
-                  example: de
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
     parameters:
       -
         in: path
@@ -6767,22 +6813,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -7073,22 +7119,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -7348,22 +7394,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -7523,21 +7569,6 @@ paths:
                     example: '2'
       tags:
         - Participants
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                date_start:
-                  type: string
-                  description: 'Must be a valid date in the format <code>Y-m-d</code>.'
-                  example: '2026-08-14'
-                date_end:
-                  type: string
-                  description: 'Must be a valid date in the format <code>Y-m-d</code>.'
-                  example: '2026-08-14'
     parameters:
       -
         in: path
@@ -7916,99 +7947,99 @@ paths:
                 example:
                   data:
                     -
-                      id: 6cc99b2c-91ca-3bdd-8990-474225234df0
-                      name: 'Tempora temporibus.'
+                      id: c93bc9e5-d0a5-3ace-a6cd-9ba1c769e03e
+                      name: 'Delectus at aut.'
                       status: AWAITING_START
-                      room_id: 28f12a60-c687-3ab4-9636-e77d9e6555cd
-                      external_room_id: EXTID881310753
-                      friendly_url: 8BFi9lrfdht4t6Ld2YnLPDTWmsbqZdwr
+                      room_id: 8a2266c2-696b-362d-ba4a-3b58b961bd86
+                      external_room_id: EXTID756429921
+                      friendly_url: viQ-6vT4AtsD9XoE9TSGOo--Oxp36_oI
                       privacy: public
-                      participant_id: 95476c07-4bbf-4333-91c4-0b7be124cc11
-                      participant_name: sylvester50
-                      participant_external_id: EXTID87
-                      created_at: '2026-08-14T18:50:44Z'
-                      updated_at: '2026-08-14T18:50:44Z'
+                      participant_id: a53bbfcd-98e5-4163-8764-0a8bc3c960b3
+                      participant_name: hhauck
+                      participant_external_id: EXTID5
+                      created_at: '2026-08-28T14:24:12Z'
+                      updated_at: '2026-08-28T14:24:12Z'
                     -
-                      id: d9f4f73f-0e81-3fa8-96ff-060a95e5c9ef
-                      name: Similique.
+                      id: 92b46f1b-4db5-3dbf-a547-9aead4a0c23a
+                      name: Perferendis.
                       status: AWAITING_START
-                      room_id: a53fcc0f-85d7-3d4a-b52f-d503604a7a32
-                      external_room_id: EXTID689287296
-                      friendly_url: 8NKkC87GQnxWNI26x4ObVa_w_dqf5zQd
+                      room_id: d5bf6fc1-8b8b-3787-890e-adfa0c8a16c8
+                      external_room_id: EXTID945563161
+                      friendly_url: M9wys_WRYFNozWtorTieYP6xAA-lu-d8
                       privacy: public
-                      participant_id: 96194d6a-1ab2-4aec-b761-96e8a7622d52
-                      participant_name: billie.collins
-                      participant_external_id: EXTID62
-                      created_at: '2026-08-14T18:50:44Z'
-                      updated_at: '2026-08-14T18:50:44Z'
+                      participant_id: 986267a4-b30d-4788-863b-3b85e9557b17
+                      participant_name: ellen.kuhic
+                      participant_external_id: EXTID34
+                      created_at: '2026-08-28T14:24:12Z'
+                      updated_at: '2026-08-28T14:24:12Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
-                      - id: 6cc99b2c-91ca-3bdd-8990-474225234df0
-                        name: 'Tempora temporibus.'
+                      - id: c93bc9e5-d0a5-3ace-a6cd-9ba1c769e03e
+                        name: 'Delectus at aut.'
                         status: AWAITING_START
-                        room_id: 28f12a60-c687-3ab4-9636-e77d9e6555cd
-                        external_room_id: EXTID881310753
-                        friendly_url: 8BFi9lrfdht4t6Ld2YnLPDTWmsbqZdwr
+                        room_id: 8a2266c2-696b-362d-ba4a-3b58b961bd86
+                        external_room_id: EXTID756429921
+                        friendly_url: viQ-6vT4AtsD9XoE9TSGOo--Oxp36_oI
                         privacy: public
-                        participant_id: 95476c07-4bbf-4333-91c4-0b7be124cc11
-                        participant_name: sylvester50
-                        participant_external_id: EXTID87
-                        created_at: '2026-08-14T18:50:44Z'
-                        updated_at: '2026-08-14T18:50:44Z'
-                      - id: d9f4f73f-0e81-3fa8-96ff-060a95e5c9ef
-                        name: Similique.
+                        participant_id: a53bbfcd-98e5-4163-8764-0a8bc3c960b3
+                        participant_name: hhauck
+                        participant_external_id: EXTID5
+                        created_at: '2026-08-28T14:24:12Z'
+                        updated_at: '2026-08-28T14:24:12Z'
+                      - id: 92b46f1b-4db5-3dbf-a547-9aead4a0c23a
+                        name: Perferendis.
                         status: AWAITING_START
-                        room_id: a53fcc0f-85d7-3d4a-b52f-d503604a7a32
-                        external_room_id: EXTID689287296
-                        friendly_url: 8NKkC87GQnxWNI26x4ObVa_w_dqf5zQd
+                        room_id: d5bf6fc1-8b8b-3787-890e-adfa0c8a16c8
+                        external_room_id: EXTID945563161
+                        friendly_url: M9wys_WRYFNozWtorTieYP6xAA-lu-d8
                         privacy: public
-                        participant_id: 96194d6a-1ab2-4aec-b761-96e8a7622d52
-                        participant_name: billie.collins
-                        participant_external_id: EXTID62
-                        created_at: '2026-08-14T18:50:44Z'
-                        updated_at: '2026-08-14T18:50:44Z'
+                        participant_id: 986267a4-b30d-4788-863b-3b85e9557b17
+                        participant_name: ellen.kuhic
+                        participant_external_id: EXTID34
+                        created_at: '2026-08-28T14:24:12Z'
+                        updated_at: '2026-08-28T14:24:12Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: 6cc99b2c-91ca-3bdd-8990-474225234df0
+                          example: c93bc9e5-d0a5-3ace-a6cd-9ba1c769e03e
                         name:
                           type: string
-                          example: 'Tempora temporibus.'
+                          example: 'Delectus at aut.'
                         status:
                           type: string
                           example: AWAITING_START
                         room_id:
                           type: string
-                          example: 28f12a60-c687-3ab4-9636-e77d9e6555cd
+                          example: 8a2266c2-696b-362d-ba4a-3b58b961bd86
                         external_room_id:
                           type: string
-                          example: EXTID881310753
+                          example: EXTID756429921
                         friendly_url:
                           type: string
-                          example: 8BFi9lrfdht4t6Ld2YnLPDTWmsbqZdwr
+                          example: viQ-6vT4AtsD9XoE9TSGOo--Oxp36_oI
                         privacy:
                           type: string
                           example: public
                         participant_id:
                           type: string
-                          example: 95476c07-4bbf-4333-91c4-0b7be124cc11
+                          example: a53bbfcd-98e5-4163-8764-0a8bc3c960b3
                         participant_name:
                           type: string
-                          example: sylvester50
+                          example: hhauck
                         participant_external_id:
                           type: string
-                          example: EXTID87
+                          example: EXTID5
                         created_at:
                           type: string
-                          example: '2026-08-14T18:50:44Z'
+                          example: '2026-08-28T14:24:12Z'
                         updated_at:
                           type: string
-                          example: '2026-08-14T18:50:44Z'
+                          example: '2026-08-28T14:24:12Z'
                   total_count:
                     type: string
                     example: '2'
@@ -8080,99 +8111,99 @@ paths:
                 example:
                   data:
                     -
-                      id: e0c06a87-2243-3294-bb0c-ff705a1d55f9
-                      name: 'Velit perferendis.'
+                      id: 9d6ac4c8-1c47-35c2-9132-e95d53101584
+                      name: 'Ea optio quod.'
                       status: AWAITING_START
-                      room_id: 15a6ad3d-e29f-3e5e-9d8f-0ad5ba26fcdf
-                      external_room_id: EXTID218701469
-                      friendly_url: eGrrLKfgcvIt7pM-b5yRBkn0YSuW9JFK
+                      room_id: 0408c26f-9e18-387f-8ff9-4d3601992606
+                      external_room_id: EXTID723139907
+                      friendly_url: yQdnd3NFKD1qaVUpEjtQCcZ0a-F_Z7Jz
                       privacy: public
-                      participant_id: 8ae3f808-7cc4-4fce-be9a-97b105cdd926
-                      participant_name: lmorissette
-                      participant_external_id: EXTID8
-                      created_at: '2026-08-14T18:50:45Z'
-                      updated_at: '2026-08-14T18:50:45Z'
+                      participant_id: a523a7f8-32cf-4bb9-bbea-a5c0b73d081a
+                      participant_name: garnet.mann
+                      participant_external_id: EXTID40
+                      created_at: '2026-08-28T14:24:13Z'
+                      updated_at: '2026-08-28T14:24:13Z'
                     -
-                      id: f4c10133-226e-3776-acdf-18281c2a81dd
-                      name: 'Quam quo sed iste.'
+                      id: 49ce15aa-08b3-3bfb-aa03-a9aea995e6f2
+                      name: 'Sit alias eos.'
                       status: AWAITING_START
-                      room_id: bdae1491-aac7-3c2c-a386-b045339141b0
-                      external_room_id: EXTID69643963
-                      friendly_url: JdImzQQvlseH3IpLDoQRinNU2__aMwGm
+                      room_id: 1e1869b1-c41d-34ff-99b8-d6bc46b50c40
+                      external_room_id: EXTID141607880
+                      friendly_url: 4X0AUAQpDW4wXRr_PdweNPZgQ4bsiKEs
                       privacy: public
-                      participant_id: e3e73b9c-94f7-4831-8408-9a7373c59109
-                      participant_name: kessler.audreanne
-                      participant_external_id: EXTID78
-                      created_at: '2026-08-14T18:50:45Z'
-                      updated_at: '2026-08-14T18:50:45Z'
+                      participant_id: 29413de1-5124-4370-be34-bacaa28f0f08
+                      participant_name: nienow.elliott
+                      participant_external_id: EXTID14
+                      created_at: '2026-08-28T14:24:13Z'
+                      updated_at: '2026-08-28T14:24:13Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
-                      - id: e0c06a87-2243-3294-bb0c-ff705a1d55f9
-                        name: 'Velit perferendis.'
+                      - id: 9d6ac4c8-1c47-35c2-9132-e95d53101584
+                        name: 'Ea optio quod.'
                         status: AWAITING_START
-                        room_id: 15a6ad3d-e29f-3e5e-9d8f-0ad5ba26fcdf
-                        external_room_id: EXTID218701469
-                        friendly_url: eGrrLKfgcvIt7pM-b5yRBkn0YSuW9JFK
+                        room_id: 0408c26f-9e18-387f-8ff9-4d3601992606
+                        external_room_id: EXTID723139907
+                        friendly_url: yQdnd3NFKD1qaVUpEjtQCcZ0a-F_Z7Jz
                         privacy: public
-                        participant_id: 8ae3f808-7cc4-4fce-be9a-97b105cdd926
-                        participant_name: lmorissette
-                        participant_external_id: EXTID8
-                        created_at: '2026-08-14T18:50:45Z'
-                        updated_at: '2026-08-14T18:50:45Z'
-                      - id: f4c10133-226e-3776-acdf-18281c2a81dd
-                        name: 'Quam quo sed iste.'
+                        participant_id: a523a7f8-32cf-4bb9-bbea-a5c0b73d081a
+                        participant_name: garnet.mann
+                        participant_external_id: EXTID40
+                        created_at: '2026-08-28T14:24:13Z'
+                        updated_at: '2026-08-28T14:24:13Z'
+                      - id: 49ce15aa-08b3-3bfb-aa03-a9aea995e6f2
+                        name: 'Sit alias eos.'
                         status: AWAITING_START
-                        room_id: bdae1491-aac7-3c2c-a386-b045339141b0
-                        external_room_id: EXTID69643963
-                        friendly_url: JdImzQQvlseH3IpLDoQRinNU2__aMwGm
+                        room_id: 1e1869b1-c41d-34ff-99b8-d6bc46b50c40
+                        external_room_id: EXTID141607880
+                        friendly_url: 4X0AUAQpDW4wXRr_PdweNPZgQ4bsiKEs
                         privacy: public
-                        participant_id: e3e73b9c-94f7-4831-8408-9a7373c59109
-                        participant_name: kessler.audreanne
-                        participant_external_id: EXTID78
-                        created_at: '2026-08-14T18:50:45Z'
-                        updated_at: '2026-08-14T18:50:45Z'
+                        participant_id: 29413de1-5124-4370-be34-bacaa28f0f08
+                        participant_name: nienow.elliott
+                        participant_external_id: EXTID14
+                        created_at: '2026-08-28T14:24:13Z'
+                        updated_at: '2026-08-28T14:24:13Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: e0c06a87-2243-3294-bb0c-ff705a1d55f9
+                          example: 9d6ac4c8-1c47-35c2-9132-e95d53101584
                         name:
                           type: string
-                          example: 'Velit perferendis.'
+                          example: 'Ea optio quod.'
                         status:
                           type: string
                           example: AWAITING_START
                         room_id:
                           type: string
-                          example: 15a6ad3d-e29f-3e5e-9d8f-0ad5ba26fcdf
+                          example: 0408c26f-9e18-387f-8ff9-4d3601992606
                         external_room_id:
                           type: string
-                          example: EXTID218701469
+                          example: EXTID723139907
                         friendly_url:
                           type: string
-                          example: eGrrLKfgcvIt7pM-b5yRBkn0YSuW9JFK
+                          example: yQdnd3NFKD1qaVUpEjtQCcZ0a-F_Z7Jz
                         privacy:
                           type: string
                           example: public
                         participant_id:
                           type: string
-                          example: 8ae3f808-7cc4-4fce-be9a-97b105cdd926
+                          example: a523a7f8-32cf-4bb9-bbea-a5c0b73d081a
                         participant_name:
                           type: string
-                          example: lmorissette
+                          example: garnet.mann
                         participant_external_id:
                           type: string
-                          example: EXTID8
+                          example: EXTID40
                         created_at:
                           type: string
-                          example: '2026-08-14T18:50:45Z'
+                          example: '2026-08-28T14:24:13Z'
                         updated_at:
                           type: string
-                          example: '2026-08-14T18:50:45Z'
+                          example: '2026-08-28T14:24:13Z'
                   total_count:
                     type: string
                     example: '2'
@@ -8192,28 +8223,28 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 872d5ebe-fdba-3ab6-8f7e-1c7cfd9468af
-                  name: 'Ab nam ab ducimus.'
+                  id: 2e8226b7-2bd8-3c3b-8ccd-6d149fa287fe
+                  name: 'Et voluptas.'
                   duration: 0
                   status: AWAITING_START
-                  room_id: 1e40249a-8c96-3d22-a5d0-04d8fc3dbf37
-                  external_room_id: EXTID1792965367
-                  friendly_url: H5HDTY6H9hnXYQ95gGM07cj19n2Frhee
+                  room_id: 116b0d1d-e854-3873-ad71-6166cc4d52c1
+                  external_room_id: EXTID659580058
+                  friendly_url: Qi6UJO1jCrYEkqFJjT_CKr-DMhZFNNBb
                   room_is_deleted: false
                   privacy: public
                   session_id: null
-                  participant_id: 67cf93c8-b40d-4b11-8178-c8b7e9d68056
-                  participant_name: jany72
-                  participant_external_id: EXTID69
-                  created_at: '2026-08-14T18:50:45Z'
-                  updated_at: '2026-08-14T18:50:45Z'
+                  participant_id: 45a973a1-25f9-4b2e-b876-17108d7cb54c
+                  participant_name: veum.maxime
+                  participant_external_id: EXTID46
+                  created_at: '2026-08-28T14:24:13Z'
+                  updated_at: '2026-08-28T14:24:13Z'
                 properties:
                   id:
                     type: string
-                    example: 872d5ebe-fdba-3ab6-8f7e-1c7cfd9468af
+                    example: 2e8226b7-2bd8-3c3b-8ccd-6d149fa287fe
                   name:
                     type: string
-                    example: 'Ab nam ab ducimus.'
+                    example: 'Et voluptas.'
                   duration:
                     type: integer
                     example: 0
@@ -8222,13 +8253,13 @@ paths:
                     example: AWAITING_START
                   room_id:
                     type: string
-                    example: 1e40249a-8c96-3d22-a5d0-04d8fc3dbf37
+                    example: 116b0d1d-e854-3873-ad71-6166cc4d52c1
                   external_room_id:
                     type: string
-                    example: EXTID1792965367
+                    example: EXTID659580058
                   friendly_url:
                     type: string
-                    example: H5HDTY6H9hnXYQ95gGM07cj19n2Frhee
+                    example: Qi6UJO1jCrYEkqFJjT_CKr-DMhZFNNBb
                   room_is_deleted:
                     type: boolean
                     example: false
@@ -8241,19 +8272,19 @@ paths:
                     nullable: true
                   participant_id:
                     type: string
-                    example: 67cf93c8-b40d-4b11-8178-c8b7e9d68056
+                    example: 45a973a1-25f9-4b2e-b876-17108d7cb54c
                   participant_name:
                     type: string
-                    example: jany72
+                    example: veum.maxime
                   participant_external_id:
                     type: string
-                    example: EXTID69
+                    example: EXTID46
                   created_at:
                     type: string
-                    example: '2026-08-14T18:50:45Z'
+                    example: '2026-08-28T14:24:13Z'
                   updated_at:
                     type: string
-                    example: '2026-08-14T18:50:45Z'
+                    example: '2026-08-28T14:24:13Z'
       tags:
         - Recordings
     delete:
@@ -10289,7 +10320,7 @@ paths:
         in: path
         name: libraryFolder
         description: ''
-        example: error
+        example: est
         required: true
         schema:
           type: string
@@ -10589,7 +10620,7 @@ paths:
         in: path
         name: libraryFile
         description: ''
-        example: sed
+        example: perspiciatis
         required: true
         schema:
           type: string
@@ -10669,7 +10700,7 @@ paths:
         in: path
         name: libraryFile
         description: ''
-        example: dolorem
+        example: ut
         required: true
         schema:
           type: string
@@ -10839,6 +10870,36 @@ paths:
       parameters:
         -
           in: query
+          name: locale
+          description: 'Locale used for the column headers and labels in the exported file.'
+          example: en
+          required: false
+          schema:
+            type: string
+            description: 'Locale used for the column headers and labels in the exported file.'
+            example: en
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
+          name: lang
+          description: 'Alias of locale, used when locale is not given.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Alias of locale, used when locale is not given.'
+            example: null
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
           name: session_id
           description: 'UUID of the Session.'
           example: 16719c1b-cc82-4dfe-9f6f-40d9093fa695
@@ -10867,31 +10928,6 @@ paths:
                 example: 'Text file - Polls'
       tags:
         - Polls
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  description: ''
-                  example: en
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
-                lang:
-                  type: string
-                  description: ''
-                  example: de
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
     parameters:
       -
         in: path
@@ -11152,7 +11188,7 @@ paths:
                 anonymous:
                   type: boolean
                   description: ''
-                  example: false
+                  example: true
                   nullable: true
                 type:
                   type: string
@@ -11169,12 +11205,12 @@ paths:
                     id:
                       type: string
                       description: 'Must be a valid UUID.'
-                      example: b700a6ca-4c8a-3e4b-bef2-963506db0dd6
+                      example: 1a803768-c6a4-32d6-8937-8e7a8783d54b
                       nullable: true
                     text:
                       type: string
                       description: 'Must be at least 1 character. Must not be greater than 512 characters.'
-                      example: ggtzjwclro
+                      example: txvaxrablrtaxlrmrktunc
                   required:
                     - text
                   nullable: true
@@ -11487,6 +11523,36 @@ paths:
       parameters:
         -
           in: query
+          name: locale
+          description: 'Locale used for the column headers and labels in the exported file.'
+          example: en
+          required: false
+          schema:
+            type: string
+            description: 'Locale used for the column headers and labels in the exported file.'
+            example: en
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
+          name: lang
+          description: 'Alias of locale, used when locale is not given.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Alias of locale, used when locale is not given.'
+            example: null
+            enum:
+              - en
+              - it
+              - de
+              - es
+        -
+          in: query
           name: format
           description: 'Export format (csv, txt, json or zip).'
           example: txt
@@ -11495,16 +11561,6 @@ paths:
             type: string
             description: 'Export format (csv, txt, json or zip).'
             example: txt
-        -
-          in: query
-          name: locale
-          description: 'Export language (en, es, de, it).'
-          example: it
-          required: false
-          schema:
-            type: string
-            description: 'Export language (en, es, de, it).'
-            example: it
       responses:
         404:
           description: ''
@@ -11540,31 +11596,6 @@ paths:
                         example: not-found
       tags:
         - Quizzes
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  description: ''
-                  example: de
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
-                lang:
-                  type: string
-                  description: ''
-                  example: es
-                  enum:
-                    - en
-                    - it
-                    - de
-                    - es
     parameters:
       -
         in: path
@@ -11845,7 +11876,7 @@ paths:
                 timing_mode:
                   type: string
                   description: ''
-                  example: question
+                  example: quiz
                   enum:
                     - quiz
                     - question
@@ -11853,11 +11884,11 @@ paths:
                 time_limit_seconds:
                   type: integer
                   description: 'Must be at least 1.'
-                  example: 44
+                  example: 62
                 passing_score:
                   type: number
                   description: 'Must be at least 0. Must not be greater than 100.'
-                  example: 10
+                  example: 18
                 questions:
                   type: object
                   description: 'Must be an array of quiz questions.'
@@ -12889,22 +12920,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -13085,6 +13116,26 @@ paths:
       operationId: getTeamGlobalStatisticsByCurrentPeriod
       description: ''
       parameters:
+        -
+          in: query
+          name: date_start
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
+            example: null
+        -
+          in: query
+          name: date_end
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
+            example: null
         -
           in: query
           name: metrics
@@ -13369,22 +13420,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -13468,22 +13519,22 @@ paths:
         -
           in: query
           name: date_start
-          description: 'Period start date. Must be a valid date in the format Y-m-d.'
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period start date. Must be a valid date in the format Y-m-d.'
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
           name: date_end
-          description: 'Period end date. Must be a valid date in the format Y-m-d.'
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
           example: null
           required: false
           schema:
             type: string
-            description: 'Period end date. Must be a valid date in the format Y-m-d.'
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
             example: null
         -
           in: query
@@ -13685,6 +13736,26 @@ paths:
       operationId: getRoomStatisticsByCurrentPeriod
       description: ''
       parameters:
+        -
+          in: query
+          name: date_start
+          description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Period start date. Must be a valid date in the format <code>Y-m-d</code>.'
+            example: null
+        -
+          in: query
+          name: date_end
+          description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
+          example: null
+          required: false
+          schema:
+            type: string
+            description: 'Period end date. Must be a valid date in the format <code>Y-m-d</code>.'
+            example: null
         -
           in: query
           name: metrics
@@ -14311,57 +14382,57 @@ paths:
                 example:
                   data:
                     -
-                      id: d399fd5c-a5c4-42da-9f29-f3baf501e8e5
-                      endpoint: 'http://herman.com/'
-                      authorization_header: a606fe99431961fed8b966e3ff3577f6
-                      name: 'My webhook 6'
-                      created_at: '2026-08-14T18:50:46Z'
-                      updated_at: '2026-08-14T18:50:46Z'
+                      id: dc4956dc-6b5c-4844-ae98-ff9027850440
+                      endpoint: 'https://keebler.com/quis-voluptatem-adipisci-sit-est-magni.html'
+                      authorization_header: ad3687d8fab6b460da11f357568021fa
+                      name: 'My webhook 5'
+                      created_at: '2026-08-28T14:24:14Z'
+                      updated_at: '2026-08-28T14:24:14Z'
                     -
-                      id: b922c660-3933-465d-800d-8f8de509c447
-                      endpoint: 'https://zieme.com/asperiores-aperiam-qui-mollitia-provident-ratione.html'
-                      authorization_header: 8bac179a49c04b4f5d448999905ef8ce
-                      name: 'My webhook 0'
-                      created_at: '2026-08-14T18:50:46Z'
-                      updated_at: '2026-08-14T18:50:46Z'
+                      id: 379fa51c-10ec-4b20-bc22-f6dc7ad53e8c
+                      endpoint: 'http://corwin.net/nostrum-et-vel-architecto-ut-quae-et'
+                      authorization_header: 4f13968c4b92f3589514b9e6f51739a6
+                      name: 'My webhook 4'
+                      created_at: '2026-08-28T14:24:14Z'
+                      updated_at: '2026-08-28T14:24:14Z'
                   total_count: '2'
                 properties:
                   data:
                     type: array
                     example:
-                      - id: d399fd5c-a5c4-42da-9f29-f3baf501e8e5
-                        endpoint: 'http://herman.com/'
-                        authorization_header: a606fe99431961fed8b966e3ff3577f6
-                        name: 'My webhook 6'
-                        created_at: '2026-08-14T18:50:46Z'
-                        updated_at: '2026-08-14T18:50:46Z'
-                      - id: b922c660-3933-465d-800d-8f8de509c447
-                        endpoint: 'https://zieme.com/asperiores-aperiam-qui-mollitia-provident-ratione.html'
-                        authorization_header: 8bac179a49c04b4f5d448999905ef8ce
-                        name: 'My webhook 0'
-                        created_at: '2026-08-14T18:50:46Z'
-                        updated_at: '2026-08-14T18:50:46Z'
+                      - id: dc4956dc-6b5c-4844-ae98-ff9027850440
+                        endpoint: 'https://keebler.com/quis-voluptatem-adipisci-sit-est-magni.html'
+                        authorization_header: ad3687d8fab6b460da11f357568021fa
+                        name: 'My webhook 5'
+                        created_at: '2026-08-28T14:24:14Z'
+                        updated_at: '2026-08-28T14:24:14Z'
+                      - id: 379fa51c-10ec-4b20-bc22-f6dc7ad53e8c
+                        endpoint: 'http://corwin.net/nostrum-et-vel-architecto-ut-quae-et'
+                        authorization_header: 4f13968c4b92f3589514b9e6f51739a6
+                        name: 'My webhook 4'
+                        created_at: '2026-08-28T14:24:14Z'
+                        updated_at: '2026-08-28T14:24:14Z'
                     items:
                       type: object
                       properties:
                         id:
                           type: string
-                          example: d399fd5c-a5c4-42da-9f29-f3baf501e8e5
+                          example: dc4956dc-6b5c-4844-ae98-ff9027850440
                         endpoint:
                           type: string
-                          example: 'http://herman.com/'
+                          example: 'https://keebler.com/quis-voluptatem-adipisci-sit-est-magni.html'
                         authorization_header:
                           type: string
-                          example: a606fe99431961fed8b966e3ff3577f6
+                          example: ad3687d8fab6b460da11f357568021fa
                         name:
                           type: string
-                          example: 'My webhook 6'
+                          example: 'My webhook 5'
                         created_at:
                           type: string
-                          example: '2026-08-14T18:50:46Z'
+                          example: '2026-08-28T14:24:14Z'
                         updated_at:
                           type: string
-                          example: '2026-08-14T18:50:46Z'
+                          example: '2026-08-28T14:24:14Z'
                   total_count:
                     type: string
                     example: '2'
@@ -14380,39 +14451,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 28cdf50b-bd46-49e0-bad6-bb6edf2e9ed8
-                  endpoint: 'http://hudson.org/quo-magnam-perspiciatis-suscipit-a-est-autem-aliquam'
-                  authorization_header: 2c35052fe5e4bf177da74a510ad8f7c2
-                  name: 'My webhook 4'
+                  id: 3fdca0d9-6b01-407e-bcab-4a768cc5e60f
+                  endpoint: 'http://kautzer.com/nemo-accusantium-asperiores-error-quo-quisquam-eos'
+                  authorization_header: 069b470c1959579d7f0d8ee58537bdc5
+                  name: 'My webhook 5'
                   events:
-                    - participant_sit
-                  created_at: '2026-08-14T18:50:46Z'
-                  updated_at: '2026-08-14T18:50:46Z'
+                    - participant_provident
+                  created_at: '2026-08-28T14:24:14Z'
+                  updated_at: '2026-08-28T14:24:14Z'
                 properties:
                   id:
                     type: string
-                    example: 28cdf50b-bd46-49e0-bad6-bb6edf2e9ed8
+                    example: 3fdca0d9-6b01-407e-bcab-4a768cc5e60f
                   endpoint:
                     type: string
-                    example: 'http://hudson.org/quo-magnam-perspiciatis-suscipit-a-est-autem-aliquam'
+                    example: 'http://kautzer.com/nemo-accusantium-asperiores-error-quo-quisquam-eos'
                   authorization_header:
                     type: string
-                    example: 2c35052fe5e4bf177da74a510ad8f7c2
+                    example: 069b470c1959579d7f0d8ee58537bdc5
                   name:
                     type: string
-                    example: 'My webhook 4'
+                    example: 'My webhook 5'
                   events:
                     type: array
                     example:
-                      - participant_sit
+                      - participant_provident
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-08-14T18:50:46Z'
+                    example: '2026-08-28T14:24:14Z'
                   updated_at:
                     type: string
-                    example: '2026-08-14T18:50:46Z'
+                    example: '2026-08-28T14:24:14Z'
       tags:
         - Webhooks
       requestBody:
@@ -14460,39 +14531,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: cd312862-468d-4f3d-9743-c7d18a03ce07
-                  endpoint: 'http://www.prohaska.com/'
-                  authorization_header: d8d2fd32c74b69045cf36ff018e72528
+                  id: ba641978-73fb-41a9-b9fb-35c7c48aff4a
+                  endpoint: 'http://www.kihn.com/'
+                  authorization_header: 139c795eaff9bf2fec745478d92ee6a4
                   name: 'My webhook 5'
                   events:
-                    - participant_voluptatem
-                  created_at: '2026-08-14T18:50:46Z'
-                  updated_at: '2026-08-14T18:50:46Z'
+                    - participant_deleniti
+                  created_at: '2026-08-28T14:24:14Z'
+                  updated_at: '2026-08-28T14:24:14Z'
                 properties:
                   id:
                     type: string
-                    example: cd312862-468d-4f3d-9743-c7d18a03ce07
+                    example: ba641978-73fb-41a9-b9fb-35c7c48aff4a
                   endpoint:
                     type: string
-                    example: 'http://www.prohaska.com/'
+                    example: 'http://www.kihn.com/'
                   authorization_header:
                     type: string
-                    example: d8d2fd32c74b69045cf36ff018e72528
+                    example: 139c795eaff9bf2fec745478d92ee6a4
                   name:
                     type: string
                     example: 'My webhook 5'
                   events:
                     type: array
                     example:
-                      - participant_voluptatem
+                      - participant_deleniti
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-08-14T18:50:46Z'
+                    example: '2026-08-28T14:24:14Z'
                   updated_at:
                     type: string
-                    example: '2026-08-14T18:50:46Z'
+                    example: '2026-08-28T14:24:14Z'
       tags:
         - Webhooks
     patch:
@@ -14508,39 +14579,39 @@ paths:
               schema:
                 type: object
                 example:
-                  id: 435ddd4e-21e5-49eb-a897-cb61807d0d04
-                  endpoint: 'http://nicolas.biz/id-placeat-animi-voluptatum'
-                  authorization_header: eee1da2656d4e75d8169ff6f86008e8a
-                  name: 'My webhook 2'
+                  id: 89201e41-436d-4a32-abec-2255c9d592fc
+                  endpoint: 'http://feest.com/excepturi-libero-ut-aut-sit-est-eum'
+                  authorization_header: 7ae43e7a1b619eae8011277074288260
+                  name: 'My webhook 8'
                   events:
-                    - participant_voluptatibus
-                  created_at: '2026-08-14T18:50:46Z'
-                  updated_at: '2026-08-14T18:50:46Z'
+                    - participant_quos
+                  created_at: '2026-08-28T14:24:14Z'
+                  updated_at: '2026-08-28T14:24:14Z'
                 properties:
                   id:
                     type: string
-                    example: 435ddd4e-21e5-49eb-a897-cb61807d0d04
+                    example: 89201e41-436d-4a32-abec-2255c9d592fc
                   endpoint:
                     type: string
-                    example: 'http://nicolas.biz/id-placeat-animi-voluptatum'
+                    example: 'http://feest.com/excepturi-libero-ut-aut-sit-est-eum'
                   authorization_header:
                     type: string
-                    example: eee1da2656d4e75d8169ff6f86008e8a
+                    example: 7ae43e7a1b619eae8011277074288260
                   name:
                     type: string
-                    example: 'My webhook 2'
+                    example: 'My webhook 8'
                   events:
                     type: array
                     example:
-                      - participant_voluptatibus
+                      - participant_quos
                     items:
                       type: string
                   created_at:
                     type: string
-                    example: '2026-08-14T18:50:46Z'
+                    example: '2026-08-28T14:24:14Z'
                   updated_at:
                     type: string
-                    example: '2026-08-14T18:50:46Z'
+                    example: '2026-08-28T14:24:14Z'
       tags:
         - Webhooks
       requestBody:
