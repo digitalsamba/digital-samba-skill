@@ -131,7 +131,7 @@ to S3 and email users when their transcript is ready"
 | File | Description |
 |------|-------------|
 | `SKILL.md` | Quick start guide and overview |
-| `api-reference.md` | Complete REST API reference (142 endpoints) |
+| `api-reference.md` | Complete REST API reference (147 endpoints) |
 | `sdk-reference.md` | SDK methods, events, and properties |
 | `patterns.md` | Integration patterns + iframe sizing guide |
 | `jwt-tokens.md` | Token authentication and user identity |

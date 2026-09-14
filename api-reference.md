@@ -573,8 +573,6 @@ Generate JWT access token for a room. `{room}` accepts the room UUID or the room
 
 ## Chat
 
-> **Note**: The chat endpoints are read/export/delete only. `POST /api/v1/rooms/{room}/chat`, which sent a message into an active session, was withdrawn from the API in August 2026 and there is no replacement — chat messages can only be posted by participants in the room.
-
 ### GET /api/v1/rooms/{room}/chat
 Retrieve chat messages.
 
@@ -597,6 +595,27 @@ Retrieve chat messages.
   }]
 }
 ```
+
+### POST /api/v1/rooms/{room}/chat
+Send a chat message to the room.
+
+**Request Body**:
+```json
+{
+  "participant": {
+    "name": "John Doe",
+    "external_id": "ABCDEF123"
+  },
+  "message": "Hello!",
+  "breakout_id": null
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of existing participant) |
+| `message` | string | yes | The chat message |
+| `breakout_id` | string | no | UUID of breakout room (nullable) |
 
 ### GET /api/v1/rooms/{room}/chat/export
 Export chat as file.
@@ -1064,6 +1083,27 @@ Download recording file.
 ### GET /api/v1/recordings/{recording}/bookmarks
 Get bookmarks marked during the recorded session.
 
+### POST /api/v1/recordings/{recording}/bookmarks
+Mark a moment of a recording, either while it is being recorded or afterwards. Bookmarks created this way are returned by the bookmarks endpoint alongside the ones added from the room.
+
+**Request Body**:
+```json
+{
+  "participant": {
+    "name": "Recording Bot",
+    "external_id": "ABCDEF123"
+  },
+  "bookmark": "Demo starts here",
+  "time": 125
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of a participant of the recorded session) |
+| `bookmark` | string | yes | Bookmark text, maximum 255 characters |
+| `time` | integer | yes | Position in the recording in seconds, counted from the start of the recorded file |
+
 ### DELETE /api/v1/recordings/{recording}
 Delete a specific recording.
 
@@ -1382,6 +1422,14 @@ Delete a library file.
 ### GET /api/v1/libraries/{library}/files/{libraryFile}/links
 Get the file's download and thumbnail links.
 
+### POST /api/v1/libraries/{library}/files/{libraryFile}/move
+Move the file to another folder. The target folder must belong to the same library.
+
+**Request Body**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `folder_id` | string | yes | UUID of the target folder, or `null` to move the file to the library root |
+
 **Folders**
 
 ### GET /api/v1/libraries/{library}/folders
@@ -1404,6 +1452,14 @@ Update the specified folder.
 
 ### DELETE /api/v1/libraries/{library}/folders/{libraryFolder}
 Delete the specified folder.
+
+### POST /api/v1/libraries/{library}/folders/{libraryFolder}/move
+Move the folder into another folder. The target parent must belong to the same library and cannot be the folder itself or one of its subfolders.
+
+**Request Body**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `parent_id` | string | yes | UUID of the target parent folder, or `null` to move the folder to the library root |
 
 **Whiteboards & webapps**
 

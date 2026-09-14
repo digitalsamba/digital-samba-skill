@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2026-09-14
+
+### Added
+
+- `POST /api/v1/recordings/{recording}/bookmarks` — marks a moment of a recording, either live or after the fact; takes a `participant` (either `{ name, external_id }` or `{ id }`), `bookmark` text (max 255 characters) and a `time` offset in seconds. Bookmarks added this way come back from the existing bookmarks endpoint alongside the ones added from the room
+- `POST /api/v1/libraries/{library}/files/{libraryFile}/move` — moves a file to another folder in the same library; `folder_id` is required and accepts `null` for the library root
+- `POST /api/v1/libraries/{library}/folders/{libraryFolder}/move` — moves a folder under another parent in the same library; `parent_id` is required and accepts `null` for the library root. The target cannot be the folder itself or one of its subfolders
+
+### Changed
+
+- `POST /api/v1/rooms/{room}/chat` is back in the API and documented again, with a different request body than the version withdrawn in August 2026: it now takes a `participant` object (either `{ name, external_id }` or `{ id }`) alongside `message`, plus an optional `breakout_id`. The Chat section's note saying the endpoints were read/export/delete only has been removed
+
 ## [1.2.4] - 2026-09-01
 
 ### Added
