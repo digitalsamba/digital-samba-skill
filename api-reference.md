@@ -229,8 +229,8 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `transcription_enabled` | boolean | Transcribe participants' speech into text (incompatible with E2EE) |
 | `transcription_auto_start_enabled` | boolean | Transcription starts automatically when the first participant joins |
 | `transcription_store_enabled` | boolean | Store transcripts & summaries |
-| `captions_enabled` | boolean | Allow participants to enable or disable captions on their end |
-| `captions_language` | string | Default input language to be transcribed. One of: `bg`, `ca`, `da`, `de`, `en`, `es`, `fi`, `fr`, `it`, `nl`, `pt`, `ro`, `sv`, `tr` |
+| `captions_enabled` | boolean | Allow participants to enable or disable captions on their end. Has no effect unless `transcription_enabled` is also `true` — captions are rendered from the transcription |
+| `captions_language` | string | Default input language to be transcribed — also the transcription language (there is no separate `transcription_language` setting). One of: `bg`, `ca`, `da`, `de`, `en`, `es`, `fi`, `fr`, `it`, `nl`, `pt`, `ro`, `sv`, `tr` |
 | `captions_in_recordings_enabled` | boolean | Display session transcriptions as subtitles in the room's recordings |
 
 #### Restreaming
@@ -1100,9 +1100,9 @@ Mark a moment of a recording, either while it is being recorded or afterwards. B
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of a participant of the recorded session) |
+| `participant` | object | yes | Either `{ "name", "external_id" }` or `{ "id" }` (UUID of a participant of the recorded session). Must be an existing participant once the session has finished |
 | `bookmark` | string | yes | Bookmark text, maximum 255 characters |
-| `time` | integer | yes | Position in the recording in seconds, counted from the start of the recorded file |
+| `time` | integer | yes | Position in the recording in seconds, counted from the start of the recorded file. Must not exceed the length of the recorded material |
 
 ### DELETE /api/v1/recordings/{recording}
 Delete a specific recording.
@@ -1221,6 +1221,22 @@ Get participant statistics. See [Statistics](#statistics).
 List participants for a single room.
 
 **Query Parameters**: `date_start`, `date_end`, `live` (boolean), `session_id`, plus `limit`, `offset`, `order`, `after`
+
+### PATCH /api/v1/rooms/{room}/participants/{participant}
+Change properties of a participant who is currently in the room. A new role takes effect in the live session — the participant does not have to leave and rejoin.
+
+**Request Body**:
+```json
+{
+  "role": "moderator"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `role` | string | yes | Name or UUID of a role the room offers |
+
+**Response**: `200 OK`
 
 ### POST /api/v1/rooms/{room}/participants/{participant}/raise-hand
 Raise a participant's hand on their behalf.
@@ -1538,13 +1554,20 @@ Team-wide statistics for a period.
 **Response**: Object with usage counters — `participation_minutes`, `live_sessions`, `live_participants`, `active_recorders`, `recorded_minutes`, `stored_recorded_minutes`, `transcription_minutes`, `max_concurrent_participants`, `max_concurrent_sessions`, plus the resolved `date_start` / `date_end`.
 
 ### GET /api/v1/statistics/current
-Team statistics for the current billing period.
+Team statistics for the current billing period. Always reports the current billing period — any `date_start` / `date_end` sent is ignored; use `GET /api/v1/statistics` for a custom range.
 
 ### GET /api/v1/statistics/team/current
-Team-wide statistics for the current period. Accepts `date_start`, `date_end`, `metrics`.
+Team-wide statistics for the current billing period. Accepts `metrics`. Any `date_start` / `date_end` sent is ignored; use `GET /api/v1/statistics` for a custom range.
 
 ### GET /api/v1/statistics/totals
-Team statistics broken down by tag.
+Team statistics broken down by tag over a period — the endpoint to bill end clients of a multi-tenant setup per period.
+
+**Query Parameters**: `date_start`, `date_end` (format `Y-m-d`)
+
+- Usage is attributed to the tags of the room it happened in. Rooms with no tag are reported under `common`
+- Every tag of the team is reported, with zeroes when it saw no usage in the period
+- A room carrying several tags contributes its full usage to each of them, so the sum across tags can exceed `GET /api/v1/statistics`
+- `rooms` counts the rooms that held a session in the period, the same way `GET /api/v1/statistics` does
 
 **Response**:
 ```json
@@ -1572,13 +1595,72 @@ Statistics for a single room over a period. Accepts `date_start`, `date_end`, `m
 **Response**: Room metadata (`room_id`, `room_external_id`, `room_friendly_url`, `room_privacy`, …) plus per-device participation minutes, `broadcasted_minutes`, `subscribed_minutes`, `sessions`, `recorded_minutes`, `transcription_minutes`, `e2ee_minutes`, and similar counters.
 
 ### GET /api/v1/rooms/{room}/statistics/current
-Room statistics for the current period. Accepts `date_start`, `date_end`, `metrics`.
+Room statistics for the current billing period. Accepts `metrics`. Any `date_start` / `date_end` sent is ignored; use `GET /api/v1/rooms/{room}/statistics` for a custom range.
 
 ### GET /api/v1/sessions/{session}/statistics
 Statistics for a single session. Accepts `metrics`.
 
 ### GET /api/v1/participants/{participant}/statistics
 Statistics for a single participant.
+
+---
+
+## Usage
+
+### GET /api/v1/usage
+Participation minutes the team has used in its current billing period against the minutes included in its plan. This is the same figure the usage alert emails are based on, so it can be polled instead of waiting for them.
+
+**Response**:
+```json
+{
+  "participation_minutes_used": 1634,
+  "participation_minutes_limit": 2000,
+  "participation_minutes_percentage": 81.7,
+  "period_start": "2026-09-01",
+  "period_end": "2026-09-30"
+}
+```
+
+A plan without a minutes limit reports `null` for `participation_minutes_limit` and `participation_minutes_percentage`.
+
+---
+
+## Alert Recipients
+
+Extra addresses that receive the team notification emails (usage and limit alerts) in addition to the team owner, who is always notified and is not part of this list.
+
+**Recipient object**:
+```json
+{
+  "id": "uuid",
+  "email": "ops@example.com",
+  "created_at": "2026-09-25T16:18:31Z",
+  "updated_at": "2026-09-25T16:18:31Z"
+}
+```
+
+### GET /api/v1/alert-recipients
+List every extra recipient configured for the team.
+
+### POST /api/v1/alert-recipients
+Add a recipient.
+
+**Request Body**:
+```json
+{
+  "email": "ops@example.com"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | yes | Address to notify. Must not already be a recipient of this team |
+
+### PATCH /api/v1/alert-recipients/{alertRecipient}
+Update a recipient. Accepts the same `email` field (optional).
+
+### DELETE /api/v1/alert-recipients/{alertRecipient}
+Remove a recipient.
 
 ---
 

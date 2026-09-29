@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.6] - 2026-09-29
+
+### Added
+
+- `PATCH /api/v1/rooms/{room}/participants/{participant}` — changes the `role` (name or UUID) of a participant who is currently in the room; the new role takes effect live, without the participant rejoining
+- Usage section — `GET /api/v1/usage` reports participation minutes used in the current billing period against the plan limit (`null` limit and percentage on unlimited plans), the same figure the usage alert emails are based on
+- Alert Recipients section — `GET`/`POST /api/v1/alert-recipients` and `PATCH`/`DELETE /api/v1/alert-recipients/{alertRecipient}` manage extra addresses that receive usage and limit alert emails alongside the team owner
+- `date_start` / `date_end` on `GET /api/v1/statistics/totals`, plus notes on how per-tag usage is attributed (untagged rooms under `common`, multi-tag rooms counted in full for each tag, so tag sums can exceed `GET /api/v1/statistics`)
+
+### Changed
+
+- `GET /api/v1/statistics/team/current` and `GET /api/v1/rooms/{room}/statistics/current` no longer take `date_start` / `date_end` (added in 1.2.4) — they always report the current billing period and ignore any dates sent. `GET /api/v1/statistics/current` documented the same way
+- `captions_enabled` notes that it has no effect unless `transcription_enabled` is also true; `captions_language` notes that it is also the transcription language
+- Recording bookmark `POST`: `participant` must be an existing participant once the session has finished, and `time` must not exceed the recording length
+
 ## [1.2.5] - 2026-09-14
 
 ### Added
