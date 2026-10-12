@@ -82,7 +82,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `expires_at` | datetime | Room is automatically deleted after this time. Future date, format `YYYY-MM-DD hh:mm:ss` |
 | `privacy` | string | `"public"` (anyone with URL) or `"private"` (requires JWT token) |
 | `is_locked` | boolean | Locked rooms require acceptance to join. Single-role rooms cannot be locked |
-| `max_participants` | integer | Maximum concurrent participants (min 2, plan-limited, up to 2000) |
+| `max_participants` | integer | Maximum concurrent participants (min 2, plan-limited, up to 2000). While `e2ee_enabled` is on, also capped by the plan's `max_e2ee_participants` |
 | `max_broadcasters` | integer | Maximum concurrent broadcasters (min 1, capped by `max_participants`) |
 | `session_length` | integer | Max session duration in minutes (1–1440). Empty means unlimited |
 | `default_role` | string | Role assigned to users who join without a role in their token. **Must** be included in `roles` array |
@@ -119,7 +119,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `audio_echo_cancellation_enabled` | boolean | Eliminate echo and feedback |
 | `audio_noise_suppression_enabled` | boolean | Reduce background noise |
 | `virtual_backgrounds_enabled` | boolean | Allow desktop participants to use virtual backgrounds |
-| `virtual_backgrounds_v2_enabled` | boolean | Use the new virtual background engine |
+| `virtual_backgrounds_v2_enabled` | boolean | Use the new virtual background engine (sharper segmentation). Requires hardware graphics acceleration — virtual backgrounds become unavailable on virtual desktops, thin clients and older computers |
 | `screenshare_enabled` | boolean | Allow screen sharing (not available on mobile) |
 
 #### Layout & Video Tiles
@@ -163,9 +163,9 @@ Create a new room. All fields are **optional** — a room can be created with an
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `language` | string | Default room UI language. One of: `ar-SA`, `en`, `es-ES`, `de-DE`, `it-IT`, `nl-NL`, `pt-PT`, `ro-RO`, `zh-CN`, `zh-TW` |
+| `language` | string | Default room UI language. One of: `ar-SA`, `bg-BG`, `ca-ES`, `da-DK`, `de-DE`, `en`, `es-ES`, `fi-FI`, `fr-FR`, `it-IT`, `nb-NO`, `nl-NL`, `pt-PT`, `ro-RO`, `sv-SE`, `tr-TR`, `zh-CN`, `zh-TW`. Must also be in `languages` |
 | `language_selection_enabled` | boolean | Allow each user to change the UI language on their side |
-| `languages` | array | Subset of language codes participants can choose from |
+| `languages` | array | Subset of language codes participants can choose from (same codes as `language`) |
 
 #### Branding & Appearance
 
@@ -219,7 +219,8 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `recording_consent_message_enabled` | boolean | Remind the initiating participant that all participants' consent may be legally required |
 | `recording_logo_enabled` | boolean | Show the logo in recordings |
 | `recordings_layout_mode` | string | Layout mode for recordings: `auto` or `tiled` |
-| `hide_tiles_in_recordings_enabled` | boolean | Recordings capture only audio and shared screens (blank screen if none) |
+| `hide_tiles_in_recordings_enabled` | boolean | Recordings capture only audio and shared screens (blank screen if none) for the roles in `hide_tiles_in_recordings_roles` |
+| `hide_tiles_in_recordings_roles` | array | Roles (IDs or names) whose tiles are left out of recordings while `hide_tiles_in_recordings_enabled` is on. All roles are hidden until one is removed from the list. An empty list hides nobody and switches `hide_tiles_in_recordings_enabled` off; enabling it without this list while no role is hidden hides every role |
 | `participant_names_in_recordings_enabled` | boolean | Include participant name badges on tiles in recordings |
 
 #### Transcription & Captions
@@ -264,7 +265,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `e2ee_enabled` | boolean | End-to-end encrypt usernames, chat, and media streams with keys only room participants hold |
+| `e2ee_enabled` | boolean | End-to-end encrypt usernames, chat, and media streams with keys only room participants hold. Cannot be enabled while `max_participants` exceeds the plan's `max_e2ee_participants` |
 | `e2ee_badge_enabled` | boolean | Display an E2EE status badge in the meeting interface |
 
 #### Telephony & External Ingest

@@ -1,7 +1,7 @@
 # Digital Samba Embedded SDK Reference
 
 **Package**: `@digitalsamba/embedded-sdk`
-**Version**: 0.0.57
+**Version**: 0.0.58
 **License**: BSD-2-Clause
 
 ## Installation
@@ -431,6 +431,7 @@ Every SDK method at a glance. Use exact names below — see detailed docs in sec
 | **Screenshare** | `stopMobileScreenshare(options)` | Stop a mobile screenshare feed |
 | **Recording** | `startRecording()` | Start recording |
 | **Recording** | `stopRecording()` | Stop recording |
+| **Recording** | `addRecordingBookmark(bookmark)` | Bookmark the current moment of the recording in progress |
 | **Restreaming** | `startRestreaming()` | Start RTMP restreaming |
 | **Restreaming** | `stopRestreaming()` | Stop RTMP restreaming |
 | **Users** | `listUsers()` | Get all participants |
@@ -527,6 +528,12 @@ sambaFrame.stopMobileScreenshare({ feedId: 'feed-id', streams: [] });
 // Recording
 sambaFrame.startRecording();
 sambaFrame.stopRecording();
+
+// Recording bookmark (v0.0.58+) — label is trimmed, then 1–255 chars.
+// Only works while recording, with recording_bookmarks_enabled on and the
+// 'recording' permission; otherwise emits appError (not-allowed,
+// forbidden-action or add-recording-bookmark). Wait for recordingStarted.
+sambaFrame.addRecordingBookmark('Q&A starts');
 
 // Restreaming (RTMP)
 sambaFrame.startRestreaming();

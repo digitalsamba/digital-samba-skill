@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.7] - 2026-10-12
+
+### Added
+
+- `hide_tiles_in_recordings_roles` room setting — limits `hide_tiles_in_recordings_enabled` to the listed roles (IDs or names); an empty list hides nobody and switches the feature off
+- SDK `addRecordingBookmark(bookmark)` (embedded SDK 0.0.58) — bookmarks the current moment of the recording in progress, with its preconditions and `appError` codes
+
+### Changed
+
+- `language` / `languages` list the expanded set of UI languages (`bg-BG`, `ca-ES`, `da-DK`, `fi-FI`, `fr-FR`, `nb-NO`, `sv-SE`, `tr-TR` added); `language` must also be among `languages`
+- `e2ee_enabled` and `max_participants` note the plan's `max_e2ee_participants` cap while E2EE is on
+- `virtual_backgrounds_v2_enabled` notes that it requires hardware graphics acceleration
+- SDK reference version bumped to 0.0.58
+
 ## [1.2.6] - 2026-09-29
 
 ### Added
