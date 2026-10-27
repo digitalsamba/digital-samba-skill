@@ -626,6 +626,7 @@ Export chat as file.
 - `format` - `txt` or `json`
 - `locale` - Language for column headers and labels: `en`, `it`, `de`, `es`
 - `lang` - Alias of `locale`, used when `locale` is not given
+- `timezone` - IANA timezone for times in `txt`/`csv`/`pdf` output (e.g. `Europe/Rome`); defaults to UTC. JSON is always UTC
 
 ### DELETE /api/v1/rooms/{room}/chat
 Delete all chat messages for a room.
@@ -705,6 +706,7 @@ Export Q&A as `txt` or `json`.
 - `format` - `txt` or `json`
 - `locale` - Language for column headers and labels: `en`, `it`, `de`, `es`
 - `lang` - Alias of `locale`, used when `locale` is not given
+- `timezone` - IANA timezone for times in `txt`/`csv`/`pdf` output (e.g. `Europe/Rome`); defaults to UTC. JSON is always UTC
 
 ### DELETE /api/v1/rooms/{room}/questions
 Delete all Q&A content.
@@ -818,6 +820,7 @@ Export transcripts as `txt` or `json`.
 | `format` | string | `txt` or `json` |
 | `locale` | string | Language for column headers and labels: `en`, `it`, `de`, `es` |
 | `lang` | string | Alias of `locale`, used when `locale` is not given |
+| `timezone` | string | IANA timezone for times in `txt`/`csv`/`pdf` output (e.g. `Europe/Rome`); defaults to UTC. JSON is always UTC |
 
 ### DELETE /api/v1/rooms/{room}/transcripts
 Delete transcripts.
@@ -907,7 +910,7 @@ Poll results with vote counts and voters.
 ### GET /api/v1/rooms/{room}/polls/export
 Export polls.
 
-**Query Parameters**: `session_id`, `format` (`txt` or `json`), `locale` / `lang` (`en`, `it`, `de`, `es`)
+**Query Parameters**: `session_id`, `format` (`txt` or `json`), `locale` / `lang` (`en`, `it`, `de`, `es`), `timezone` (IANA name, default UTC; not applied to JSON)
 
 ### POST /api/v1/rooms/{room}/polls/import
 Import polls from a CSV file.
@@ -1051,6 +1054,7 @@ Export quiz results.
 - `format` - `csv`, `txt`, `json`, or `zip`
 - `locale` - Language for column headers and labels: `en`, `it`, `de`, `es`
 - `lang` - Alias of `locale`, used when `locale` is not given
+- `timezone` - IANA timezone for times in `txt`/`csv`/`pdf` output (e.g. `Europe/Rome`); defaults to UTC. JSON is always UTC
 
 ---
 
@@ -1170,6 +1174,7 @@ Export session transcripts as `txt` or `json`.
 | `format` | string | `txt` or `json` |
 | `locale` | string | Language for column headers and labels: `en`, `it`, `de`, `es` |
 | `lang` | string | Alias of `locale`, used when `locale` is not given |
+| `timezone` | string | IANA timezone for times in `txt`/`csv`/`pdf` output (e.g. `Europe/Rome`); defaults to UTC. JSON is always UTC |
 
 ### POST /api/v1/sessions/{session}/end
 End the specified live session.
