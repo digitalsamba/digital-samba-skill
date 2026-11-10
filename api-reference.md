@@ -1160,7 +1160,9 @@ Get AI-generated summary of a session's transcribed content. Summaries are gener
 }
 ```
 
-> **Note**: Summary generation is asynchronous. Poll approximately every minute until `status` changes to `READY`. Requires transcription to have been enabled during the session.
+> **Note**: Summary generation is asynchronous. The first request starts the summary; poll approximately every minute until `status` changes to `READY`. Requires transcription to have been enabled during the session.
+
+**Failed attempts**: when an attempt has failed, the next request returns `"status": "FAILED"`, and the request after that starts a new attempt under a new `job_id`. Treat `FAILED` as terminal for that job — request again to retry, and track the new `job_id`.
 
 ### GET /api/v1/sessions/{session}/transcripts
 Get session transcripts.
@@ -1628,6 +1630,38 @@ Participation minutes the team has used in its current billing period against th
 ```
 
 A plan without a minutes limit reports `null` for `participation_minutes_limit` and `participation_minutes_percentage`.
+
+---
+
+## System Check
+
+### GET /api/v1/system-checks/{supportId}
+Get the report of a team's system check run, exactly as the check page uploaded it. `supportId` is the support ID the user was shown by the check (e.g. `SC-7K2M-Q9XD`) — have users send it to support or your app so you can look up their device and network results.
+
+**Response**:
+```json
+{
+  "schemaVersion": 1,
+  "verdict": "good",
+  "network": {
+    "turnReachable": true
+  },
+  "devices": {
+    "cameras": ["FaceTime HD Camera"]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `schemaVersion` | integer | Version of the report format |
+| `verdict` | string | Overall result of the check (e.g. `good`) |
+| `network.turnReachable` | boolean | Whether the TURN relay server was reachable from the user's network |
+| `devices.cameras` | string[] | Camera devices detected |
+
+**Notes**:
+- A run is kept, with its report, for a limited time: 30 days after its start by default
+- A run that has not uploaded its results yet returns `404` with error type `no_results` — retry later rather than treating it as an unknown ID
 
 ---
 

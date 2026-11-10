@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.9] - 2026-11-10
+
+### Added
+
+- `GET /api/v1/system-checks/{supportId}` — fetch a system check report (`verdict`, `network.turnReachable`, detected cameras) by the support ID the user got from the check; kept 30 days by default, `404` `no_results` until uploaded
+
+### Changed
+
+- Session summary documents the `FAILED` status: the request after a failure returns `FAILED`, the next one starts a new attempt under a new `job_id`
+
 ## [1.2.8] - 2026-10-27
 
 ### Added
