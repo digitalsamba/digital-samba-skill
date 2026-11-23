@@ -130,6 +130,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `layout_mode_switch_enabled` | boolean | Show the layout mode switcher |
 | `video_fit_mode_enabled` | boolean | Display video streams in full without cropping. Participants can override for their own view per session |
 | `video_tile_layout_mode` | string | Where the participant name and status icons appear on each video tile. `"top"`: name centered at the top, status icons grouped in the bottom left. `"bottom"`: name at the bottom left, status icons grouped in the top right |
+| `always_show_names_on_tiles_enabled` | boolean | Always show participant names on their tiles, not only on hover |
 | `broadcaster_tile_visibility` | string | Visibility of tiles showing broadcaster initials by cam/mic state: `all`, `cam_mic`, or `cam` |
 | `full_screen_enabled` | boolean | Allow expanding any tile to full screen (not in Auto mode) |
 | `pin_enabled` | boolean | Allow participants to pin (enlarge and watch) a participant |
@@ -193,11 +194,11 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `chat_persistence_enabled` | boolean | Retain and reload public chat messages across sessions |
 | `chat_reactions_enabled` | boolean | React to chat messages with emojis |
 | `chat_reactions_extended_enabled` | boolean | Expanded emoji set for chat reactions |
-| `qa_enabled` | boolean | Allow posting, answering, and moderating questions (answering/moderating require permission) |
+| `qa_enabled` | boolean | Allow posting, answering, and moderating questions (answering/moderating require permission). Incompatible with E2EE |
 | `qa_default_filter` | string | Default Q&A panel filter: `all`, `open`, or `answered` |
-| `upvote_qa_enabled` | boolean | Participants with the 'Upvote Q&A' permission can vote for questions |
-| `polls_enabled` | boolean | Participants with the 'manage polls' permission can create and launch polls |
-| `shared_notes_enabled` | boolean | Shared notes panel for collaborative note-taking |
+| `upvote_qa_enabled` | boolean | Participants with the 'Upvote Q&A' permission can vote for questions. Incompatible with E2EE |
+| `polls_enabled` | boolean | Participants with the 'manage polls' permission can create and launch polls. Incompatible with E2EE |
+| `shared_notes_enabled` | boolean | Shared notes panel for collaborative note-taking. Incompatible with E2EE |
 
 #### Content Library & Whiteboard
 
@@ -206,7 +207,7 @@ Create a new room. All fields are **optional** — a room can be created with an
 | `content_library_enabled` | boolean | Add the Content Library component so permitted participants can present files |
 | `default_content_library` | string | Library tab selected by default: `room` or `personal` |
 | `library_id` | string | Wire a content library to this room (library UUID) |
-| `whiteboard_enabled` | boolean | Add a whiteboard (requires 'edit whiteboard' permission to edit). Not compatible with E2EE |
+| `whiteboard_enabled` | boolean | Add a whiteboard (requires 'edit whiteboard' permission to edit). Supported in E2EE rooms, where whiteboard content is end-to-end encrypted and transient (not saved) |
 
 #### Recording
 
@@ -265,17 +266,24 @@ Create a new room. All fields are **optional** — a room can be created with an
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `e2ee_enabled` | boolean | End-to-end encrypt usernames, chat, and media streams with keys only room participants hold. Cannot be enabled while `max_participants` exceeds the plan's `max_e2ee_participants` |
+| `e2ee_enabled` | boolean | End-to-end encrypt usernames, chat, and media streams with keys only room participants hold. Cannot be enabled while `max_participants` exceeds the plan's `max_e2ee_participants`. See E2EE restrictions below |
 | `e2ee_badge_enabled` | boolean | Display an E2EE status badge in the meeting interface |
+
+**While E2EE is on**:
+- Unavailable: polls, Q&A (including upvoting), shared notes, transcription and captions, telephony, WHIP, breakout rooms
+- Chat messages cannot be sent through the REST API, and chat export is turned off
+- Still available: recording and restreaming — E2EE is suspended while recording
+- Whiteboard works, end-to-end encrypted and not saved
+- Content Library files are not end-to-end encrypted
 
 #### Telephony & External Ingest
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `telephony_enabled` | boolean | Enable telephony |
+| `telephony_enabled` | boolean | Enable telephony. Incompatible with E2EE |
 | `telephony_phone_number` | string | PSTN/SIP number used to dial into the conference bridge |
 | `telephony_pin_dtmf` | string | DTMF PIN for the bridge. `W` = 1s delay, `w` = 500ms delay |
-| `whip_enabled` | boolean | Enable WHIP (WebRTC-HTTP Ingestion Protocol) to inject live streams from OBS, vMix, FFmpeg, etc. |
+| `whip_enabled` | boolean | Enable WHIP (WebRTC-HTTP Ingestion Protocol) to inject live streams from OBS, vMix, FFmpeg, etc. Incompatible with E2EE |
 
 **Validation Rules**:
 - `friendly_url`: 3–32 characters, URL-safe, unique per team
@@ -618,8 +626,10 @@ Send a chat message to the room.
 | `message` | string | yes | The chat message |
 | `breakout_id` | string | no | UUID of breakout room (nullable) |
 
+> **Note**: Not available in E2EE rooms (`e2ee_enabled: true`).
+
 ### GET /api/v1/rooms/{room}/chat/export
-Export chat as file.
+Export chat as file. Turned off for E2EE rooms.
 
 **Query Parameters**:
 - `session_id`
@@ -847,7 +857,7 @@ Create a new poll.
   "type": "single",
   "anonymous": true,
   "options": [
-    {"id": "uuid-optional", "text": "API Design"},
+    {"id": "uuid-optional", "text": "API Design", "correct": true},
     {"id": "uuid-optional", "text": "Security"},
     {"id": "uuid-optional", "text": "Performance"}
   ]
@@ -858,6 +868,7 @@ Create a new poll.
 |-------|------|----------|-------------|
 | `options` | array | yes | Poll options. Each needs `text`; pass `id` only to update an existing option |
 | `options[].text` | string | yes | Option label, 1–512 characters |
+| `options[].correct` | boolean | no | Mark the option as a correct answer. A `single` poll keeps only the first option marked correct. Options sent without `correct` keep their current mark |
 | `question` | string | no | Question text, minimum 5 characters |
 | `type` | string | no | See poll types below |
 | `anonymous` | boolean | no | Hide who voted for what |
@@ -882,9 +893,9 @@ Create a new poll.
   "multiple": false,
   "anonymous": true,
   "options": [
-    {"id": "uuid", "text": "API Design"},
-    {"id": "uuid", "text": "Security"},
-    {"id": "uuid", "text": "Performance"}
+    {"id": "uuid", "text": "API Design", "correct": true},
+    {"id": "uuid", "text": "Security", "correct": false},
+    {"id": "uuid", "text": "Performance", "correct": false}
   ],
   "created_at": "2024-01-15T10:30:00Z"
 }
@@ -894,7 +905,7 @@ Create a new poll.
 Get a single poll with its options.
 
 ### PATCH /api/v1/rooms/{room}/polls/{poll}
-Update a poll. Include an option `id` to update an existing option, omit it to create a new one.
+Update a poll. Include an option `id` to update an existing option, omit it to create a new one. Options sent without `correct` keep their current correct-answer mark.
 
 ### DELETE /api/v1/rooms/{room}/polls/{poll}
 Delete a specific poll.
@@ -1084,6 +1095,15 @@ Get recording details.
 
 ### GET /api/v1/recordings/{recording}/download
 Download recording file.
+
+### GET /api/v1/recordings/{recording}/captions
+Download a captions file built from the recorded session's transcripts, timed from the start of the recording. Returns `text/plain`.
+
+**Query Parameters**: `format` — `vtt` (default) or `srt`
+
+- Needs `transcription_store_enabled` on the room; without stored transcripts the file has no cues
+- Times are accurate to the millisecond; for older recordings and transcripts they may be off by up to a second
+- Recordings of breakout rooms are not supported
 
 ### GET /api/v1/recordings/{recording}/bookmarks
 Get bookmarks marked during the recorded session.

@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.10] - 2026-11-23
+
+### Added
+
+- `GET /api/v1/recordings/{recording}/captions` — download a recording's captions as WebVTT (default) or SRT, built from stored transcripts (`transcription_store_enabled`); breakout recordings not supported
+- `always_show_names_on_tiles_enabled` room setting — show participant names on tiles at all times, not only on hover
+- Poll options accept and return `correct` to mark correct answers (a `single` poll keeps only the first; options sent without `correct` keep their mark)
+
+### Changed
+
+- E2EE: documented what is unavailable while it is on (polls, Q&A incl. upvoting, shared notes, transcription/captions, telephony, WHIP; REST chat sending and chat export), that recording/restreaming still work with E2EE suspended while recording, and that Content Library files are not encrypted; affected settings now say "Incompatible with E2EE"
+- `whiteboard_enabled` is now supported in E2EE rooms (encrypted, transient content)
+
 ## [1.2.9] - 2026-11-10
 
 ### Added
